@@ -6,6 +6,7 @@
         <language minSize="790" name="Python" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="JupyterPackageInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
@@ -14,6 +15,9 @@
           <option value="E127" />
           <option value="E131" />
           <option value="E741" />
+          <option value="E402" />
+          <option value="E302" />
+          <option value="E306" />
         </list>
       </option>
     </inspection_tool>
