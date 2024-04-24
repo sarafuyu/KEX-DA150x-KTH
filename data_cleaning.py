@@ -1,4 +1,4 @@
-def clean_data():
+def clean_data(dataset=None):
     """
     # Data Cleaning
     
@@ -22,16 +22,18 @@ def clean_data():
     * Run a SVM with our input data
     """
     # %%
+    ## Imports
     import pandas as pd
     
-    # %% md
+    # %%
     # Load CSV file through pandas dataframe
-    # %%
-    dataset = pd.read_csv('normalised_data_all_w_clinical_kex_20240321.csv')
+    if 'dataset' not in locals() or dataset is None:
+        dataset = pd.read_csv('normalised_data_all_w_clinical_kex_20240321.csv')
     dataset.head()  # Pre-view first five rows
-    # %% raw
-    ## First Data Visualization & Processing
+    
     # %%
+    ## First Data Visualization & Processing
+    
     # Dictionary for value conversion
     token_to_val = {"DMD": 1, "Cnt": 0}
     # Rename columns
@@ -47,18 +49,19 @@ def clean_data():
     # Verify the change
     print(dataset.columns)
     dataset.head()
+    
     # %%
     # Give control group (non DMD) default value of 34 (top score) on FT5
     in_control = dataset['Disease'] == 0.0
     control_index = in_control[in_control == True].index
     dataset.loc[control_index, 'FT5'] = 34
     
-    # Verify the change
+    # Verify change
     print(dataset.iloc[:15, 7:12])
     
-    # %% raw
-    ## Column Based Data Clean-up
     # %%
+    ## Column Based Data Clean-up
+
     def calculate_column_value_percentage(df, start_column=1):  # TODO: add end_column param
         """
         Calculates the percentage of actual (non-NA) data points for each column in a pandas DataFrame
@@ -101,6 +104,7 @@ def clean_data():
         num += 1
     
     print(f"We have {num} proteins with less than {limit}% datapoints")
+    
     # %%
     # Remove empty columns
     columns_to_drop = low_percentage_columns.index
@@ -110,6 +114,7 @@ def clean_data():
     print("Before drop:", dataset.shape)
     dataset.drop(labels=columns_to_drop, axis="columns", inplace=True)
     print("After drop:", dataset.shape)
+    
     # %%
     # Remove abundant data and calibration columns
     print("Before drop:", dataset.shape)
@@ -117,10 +122,9 @@ def clean_data():
                  axis='columns', inplace=True)
     print("After drop:", dataset.shape)
     
-    
-    # %% raw
-    ## Row Based Data Clean-up
     # %%
+    ## Row Based Data Clean-up
+    
     def remove_wrong_value_rows(df, column_name, wrong_val):
         """
       Removes rows from the DataFrame where the specified column has the specified wrong value.
@@ -141,22 +145,20 @@ def clean_data():
             df.drop(idxs_to_drop, inplace=True)
         return df
     
-    
     # %%
     # Drop rows with invalid sample data
     print("Before drop:", dataset.shape)
     dataset = remove_wrong_value_rows(dataset, 'Sample_ID', ['BLANK', 'POOL 1', 'POOL 2'])
     print("After drop:", dataset.shape)
+    
     # %%
     # Drop rows with NaN in the row's key values
     print("Before drop:", dataset.shape)
     dataset.dropna(subset=['Sample_ID', 'Disease'], inplace=True)
     print("After drop:", dataset.shape)
     
-    
-    # %% raw
-    #### Handle sample duplicates
     # %%
+    ## Handle sample duplicates
     def get_duplicate_indices(df, cols):
         """
       Find indices of rows with the wrong value in the specified column.
@@ -164,7 +166,6 @@ def clean_data():
         duplicate = df.duplicated(subset=cols, keep=False)
         duplicate_idxs = duplicate[duplicate == True].index
         return duplicate_idxs
-    
     
     # %%
     def calculate_row_value_percentage(df, start_column=0):
@@ -192,7 +193,6 @@ def clean_data():
         
         return value_percentage_per_row
     
-    
     # %%
     def remove_duplicate_rows(df, duplicate_idxs, row_val_perc):
         for i in duplicate_idxs:
@@ -218,7 +218,6 @@ def clean_data():
             # Drop the rest of the duplicates
             df.drop(index=duplicate_sample_ID_indices, inplace=True)
     
-    
     # %%
     # Remove duplicate rows for same Sample_ID
     duplicate_indexes = get_duplicate_indices(dataset, 'Sample_ID')
@@ -228,9 +227,10 @@ def clean_data():
     print("Before drop:", dataset.shape)
     remove_duplicate_rows(dataset, duplicate_indexes, row_val_percentages)
     print("After drop:", dataset.shape)
-    # %% raw
-    ### Row handling based on FT5 (Should consider data generation based on age/other tests)
+    
     # %%
+    ## Row handling based on FT5 (Should consider data generation based on age/other tests)
+
     # Drop rows with NaN values in the FT5 column
     not_na = dataset['FT5'].notna()
     indices_to_drop = not_na[not_na == False].index
@@ -241,9 +241,10 @@ def clean_data():
     print("After drop:", dataset.shape)
     
     dataset.head(15)
-    # %% raw
-    ## Cleaned Data Export
+    
     # %%
+    ## Cleaned Data Export
+
     # Export cleaned data to a new CSV file
     dataset.to_csv('cleaned_data.csv', index=False)
     dataset.head()
