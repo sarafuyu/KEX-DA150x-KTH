@@ -160,13 +160,23 @@ def create_KNN_imputers():
 
 
 # %%
-## Option 4: No imputation (NaN elimination)
-def nan_elimination(df):
+## Option 4: NaN elimination
+def eliminate_nan(df):
     """
     Drop rows with any NaN values in the dataset.
     """
     df_dropped = df.copy().dropna()
-    return [{'type': 'NaN_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
+    return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
+
+
+# %%
+## Option 5: No imputation
+def no_imputer(df):
+    """
+    Drop rows with any NaN values in the dataset.
+    """
+    df = df.copy()  # TODO: do we need to copy?
+    return [{'type': 'no_imputation', 'dataset': df, 'date': pd.Timestamp.now()}]
 
 
 def impute_data(imputer_dict, df, cols=10):
@@ -187,6 +197,7 @@ def impute_data(imputer_dict, df, cols=10):
     imputer_dict['date'] = pd.Timestamp.now()
     
     return imputer_dict
+
 
 # %%
 ## Export imputed data
@@ -226,12 +237,12 @@ def export_imputed_data(imputer_dict, filename=None):
                 imputer_dict['weights'] + '_' +
                 imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
             )
-        elif imputer_dict['type'] == 'NaN_elimination':
+        elif imputer_dict['type'] == 'nan_elimination':
             imputer_string = (
                 imputer_dict['type'] + '_' +
                 imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
             )
-        elif imputer_dict['no_imputation']:
+        elif imputer_dict['type'] == 'no_imputation':
             imputer_string = (
                 imputer_dict['type'] + '_' +
                 imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
