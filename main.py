@@ -5,64 +5,133 @@ Authors:
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
+# %% Configuration
 
-# %%
-## Imports & Data Initialization
-import pandas as pd
-import numpy as np
+## Verbosity
+verbose = 1  # The higher, the more verbose. Can be 0, 1, 2, or 3.
 
-dataset = pd.read_csv('normalised_data_all_w_clinical_kex_20240321.csv')
-dataset.head()  # Pre-view first five rows
+## Data extraction
+path = 'normalised_data_all_w_clinical_kex_20240321.csv'
 
-# %%
-# Local imports
-from data_cleaning import clean_data
-from data_imputation import (
-    create_simple_imputers,
-    create_iterative_imputers,
-    create_KNN_imputers,
-    eliminate_nan,
-    no_imputer,
-    impute_data,
-)
-
-# %%
-## Data cleaning
-dataset = clean_data(dataset)
-
-# %%
 ## Data imputation
-
-# Configuration
-# Pick the imputers to use
+# Pick imputers to use
 simple_imputer = True
-iterative_imputer = True
-KNN_imputer = True
+iterative_imputer = False
+KNN_imputer = False
 nan_elimination = True
 no_imputation = True
-# For detailed configuration, see data_imputation.py
+# For detailed configuration for each imputation mode, see imputation.py
+
+## Train-test split & Feature selection
+# For detailed configuration for each feature selection mode, see features.py
+test_proportion = 0.2
+seed = 42
+k = 100
+start_column = 11  # Column index to start from. Will split the data [cols:] into input
+                   # and target variables. # noqa
+
+
+# %% Imports
+
+## External imports
+import pandas as pd
+
+## Local imports
+import utils
+utils.verbosity_level = verbose  # Set verbosity level for all modules
+utils.random_seed = seed         # Set random seed for all modules
+
+import cleaning
+import imputation
+import normalization
+import features
+import svm
+
+
+# %% Load data
+
+# Load the data
+dataset = pd.read_csv(path)
+
+if verbose:
+    print("Data loaded successfully.")
+if verbose == 2:
+    dataset.head()  # Pre-view first five rows
+
+
+# %% Data cleaning
+
+# Clean and preprocess the data
+dataset = cleaning.clean_data(dataset)
+
+
+# %% Data imputation
 
 # Create imputers
-imputed_dataset_dicts = []
+dataset_dicts = []
 if simple_imputer:
-    imputed_dataset_dicts = imputed_dataset_dicts + create_simple_imputers()
+    dataset_dicts = dataset_dicts + imputation.create_simple_imputers()
 if iterative_imputer:
-    imputed_dataset_dicts = imputed_dataset_dicts + create_iterative_imputers()
+    dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(dataset)
 if KNN_imputer:
-    imputed_dataset_dicts = imputed_dataset_dicts + create_KNN_imputers()
+    dataset_dicts = dataset_dicts + imputation.create_KNN_imputers()
 
-# %%
-## Impute data
-
-# Impute data using the previously generated imputers
-imputed_dataset_dicts = [impute_data(imputer_dict, dataset, 10) for imputer_dict in imputed_dataset_dicts]
+# Impute data using generated imputers
+dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11)
+                 for imputer_dict in dataset_dicts]
 
 # Add NaN-eliminated and un-imputed datasets
 if nan_elimination:
-    imputed_dataset_dicts = imputed_dataset_dicts + eliminate_nan(dataset)
+    dataset_dicts = dataset_dicts + imputation.eliminate_nan(dataset)
 if no_imputation:
-    imputed_dataset_dicts = imputed_dataset_dicts + no_imputer(dataset)
+    dataset_dicts = dataset_dicts + imputation.no_imputer(dataset)
     
-# %%
-## Feature selection
 
+# %% Data Normalization
+
+# Columns to normalize
+columns_to_normalize = list(range(11, dataset.shape[1]))
+# Note: we only normalize the antibody/protein intensity columns (cols 11 and up)
+# age, disease, FTs not normalized
+
+# Normalize the datasets
+dataset_dicts = [
+    normalization.normalize(
+        data_dict,
+        columns_to_normalize,
+        utils.summary_statistics(data_dict, columns_to_normalize)
+    )
+    for data_dict in dataset_dicts
+]
+
+
+# %% Train-test split & Feature selection
+
+# Split data
+dataset_dicts = [
+    features.split_data(
+        dataset_dict, test_size=test_proportion,
+        random_state=seed, col=start_column
+    )
+    for dataset_dict in dataset_dicts
+]
+
+# Feature selection
+dataset_dicts = [features.select_KBest(dataset_dict=data_dict, k=k, northstar_cutoff=0)
+                 for data_dict in dataset_dicts]
+
+# dataset_dicts is now a list that contains dict with the following:
+# 1. Imputed and normalized data sets, date of imputation, type of imputation, imputer objects,
+#    summary statistics, ANOVA P-values and feature selection scores (F-values).
+# 2. Input and target variables for the feature-selected training and testing data.
+
+
+# %% Model Training & Fitting
+
+# Create SVM models
+dataset_dicts = [svm.create_svm_models(dataset_dict) for dataset_dict in dataset_dicts]
+
+
+# %%
+
+breakpoint()
