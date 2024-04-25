@@ -1,5 +1,6 @@
 # Data imputation
 # %%
+## Imports & Data Initialization
 import pandas as pd
 import numpy as np
 
@@ -11,7 +12,7 @@ dataset.head()
 
 def create_simple_imputers():
     """
-    Impute missing values (e.g., with the mean of each column) using SimpleImputer.
+    Impute missing values (e.g., with simple statistical values of each column) using SimpleImputer.
     
     Required imports:
     from sklearn.impute import SimpleImputer
@@ -42,6 +43,7 @@ def create_simple_imputers():
             "add_indicator": add_indicator,
         }
         simple_imputers.append(imputer_dict)
+        
     return simple_imputers
 
 
@@ -118,36 +120,30 @@ def create_iterative_imputers():
 
 def create_KNN_imputers():
     """
-    Impute missing values using KNNImputer.
+    Impute missing values using K-Nearest Neighbour Imputer.
+    
+    Required imports:
+    from sklearn.impute import KNNImputer
     
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
     from sklearn.impute import KNNImputer
     
     # Configuration
-    # missing_values: default = np.nan
-    # n_neighbors: default = 5
-    n_neighbours = [5, 10, 20, 30, 40, 50]  # initial span of neighbours
-    # weights: default 'uniform', callable over course for now but has potential for later fitting
-    weights = ['uniform', 'distance']
-    indicator = False  # interesting for later, TODO: explore
-    # metric: default = 'nan_euclidean', callable over course for now but has  potential for later
-    # copy: default = True, Best option for reuse of dataframe dataset
-    # add_indicator: default = False
-    # add_indicator = [True, False] later potentially True instead
-    # keep_empty_features: default = False, since we do not have empty features
-    
+    n_neighbours = [5, 10, 20, 30, 40, 50]  # initial span of neighbours considering dataset size
+    weights = ['uniform', 'distance'] # default='uniform', callable has potential for later fitting
+ 
     KNN_imputers = []
     for num in n_neighbours:
         for weight in weights:
             imputer = KNNImputer(
-                missing_values=np.nan,
-                n_neighbors=num,
+                missing_values=np.nan, # default
+                n_neighbors=num, # default = 5
                 weights=weight,
-                metric='nan_euclidean',
-                copy=True,
-                add_indicator=False,
-                keep_empty_features=False
+                metric='nan_euclidean', # default, callable has potential for later fitting
+                copy=True, # default, best option for reuse of dataframe dataset
+                add_indicator=False, # default, interesting for later, TODO: explore
+                keep_empty_features=False # default, we have removed empty features in cleanup
             )
             imputer_dict = {
                 'type': 'KNNImputer',
@@ -156,21 +152,27 @@ def create_KNN_imputers():
                 'weights': weight,
             }
             KNN_imputers.append(imputer_dict)
+            
     return KNN_imputers
 
 
 # %%
 ## Option 4: NaN elimination
+
 def eliminate_nan(df):
     """
     Drop rows with any NaN values in the dataset.
+    
+    :return: A list of dictionaries, each containing the type of imputation, the imputed dataset, and the date of imputation.
     """
     df_dropped = df.copy().dropna()
+    
     return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
 
 
 # %%
 ## Option 5: No imputation
+
 def no_imputer(df):
     """
     Drop rows with any NaN values in the dataset.
@@ -183,16 +185,17 @@ def impute_data(imputer_dict, df, cols=10):
     """
     Impute missing values in the dataset using the specified imputer.
     
-    :param imputer_dict:
-    :param df:
-    :param cols:
-    :return:
+    :param imputer_dict: A dictionary containing the imputer object and its configuration.
+    :param df: The dataset to impute.
+    :param cols: The start index of the columns to impute.
+    :return: A dictionary containing the type of imputation, the imputed dataset, and the date of imputation.
     """
     # Isolate relevant data
     d = df.iloc[:, cols:]
     df_imputed = df.copy()
     df_imputed.iloc[:, cols:] = pd.DataFrame(imputer_dict['imputer'].fit_transform(d), columns=d.columns)
     
+    # Add content to imputer dictionary
     imputer_dict['dataset'] = df_imputed
     imputer_dict['date'] = pd.Timestamp.now()
     
@@ -206,7 +209,7 @@ def export_imputed_data(imputer_dict, filename=None):
     """
     Export imputed data to a CSV file.
     
-    :param imputer_dict: A dictionary containing the imputer object, the imputed dataset,
+    :param imputer_dict: A dictionary containing the imputer object, the imputed dataset, 
                          and the date of imputation.
     :param filename: The name of the file to which the imputed data will be saved.
     """

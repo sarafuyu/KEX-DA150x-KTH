@@ -1,8 +1,11 @@
+# Feature Selection Techniques
+# %%
+## Imports & Data Initialization
 import pandas as pd
 
-# %%
 df_imputed = pd.read_csv('imputed_data.csv')
 df_imputed.head()
+
 # %%
 from sklearn.model_selection import train_test_split
 
@@ -13,6 +16,7 @@ X = df_imputed.iloc[:, 1:]  # Matrix with variable input
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 # %% md
 ## 1. Univariate Feature Selection
+
 '''This method selects the best features based on univariate statistical tests. It can be seen as a preprocessing step to an estimator.'''
 # %% md
 
@@ -27,6 +31,7 @@ X_test_selected = select_k_best.transform(X_test)
 print("Selected Features Shape:", X_train_selected.shape)
 # %% md
 ## 2. Feature Selection Using Model
+
 '''You can use a model to determine the importance of each feature and select the most important features accordingly. Here, we'll use ExtraTreesClassifier as an example for classification. For regression tasks, you could use ExtraTreesRegressor.'''
 # %%
 from sklearn.ensemble import ExtraTreesClassifier
@@ -43,6 +48,7 @@ X_test_model = model_select.transform(X_test)
 print("Model Selected Features Shape:", X_train_model.shape)
 # %% md
 ## 3. Recursive Feature Elimination (RFE)
+
 '''RFE works by recursively removing the least important feature and building a model on those features that remain.'''
 # %%
 from sklearn.feature_selection import RFE
