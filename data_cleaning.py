@@ -2,46 +2,42 @@ def clean_data(dataset=None):
     """
     # Data Cleaning
     
-    Data visualization, cleaning, division, and normalization.
+    Function for data visualization, and cleaning.
     
-    * Execute small adjustments/renaming of columns
+    * Executes small adjustments/renaming of columns
     * Disease parameter: DMD/Cnt -> 1/0
     * Remove rows if:
       * Sample.ID's value is "BLANK", "POOL 1" or "POOL 2"
       * Disease or Sample.ID value for row is missing
     * If there are multiple rows with same Sample.ID, drop the duplicate rows with fewer value entires
       * Might need to evalueate manually or reevaluate the heuristiics (which proteins to prioritize over others)
-    * Remove columns of antibody consentrations if there are no data entries
+    * Remove columns of antibody consentrations if there are no data entries or low percentage content
     
     * TODO: debugg, continue with later points
-    * Potentionally normalize intensities: [-1, 1] or [0, 1]
-    * Create new column for LoA based on FT1-5
-    
-    * Flytta om ordningen på kolumnerna så att varje rad blir en vektor på formen <<METADATA>,<Y>,<X>> där <X> är [LoA], <Y> är intensiteterna (och eventuellt ålder senare) och <METADATA> är allt annat.
-    
-    * Run a SVM with our input data
     """
     # %%
     ## Imports
     import pandas as pd
     
     # %%
-    # Load CSV file through pandas dataframe
+    ## Load CSV file through pandas dataframe
+    
     if 'dataset' not in locals() or dataset is None:
         dataset = pd.read_csv('normalised_data_all_w_clinical_kex_20240321.csv')
-    dataset.head()  # Pre-view first five rows
+    dataset.head() # Pre-view first five rows
     
     # %%
     ## First Data Visualization & Processing
     
-    # Dictionary for value conversion
-    token_to_val = {"DMD": 1, "Cnt": 0}
     # Rename columns
     dataset.rename(columns={dataset.columns[0]: 'ID'}, inplace=True)
     dataset.rename(columns={'Sample.ID': 'Sample_ID'}, inplace=True)
     dataset.rename(columns={'Participant.ID': 'Participant_ID'}, inplace=True)
     dataset.rename(columns={'dataset': 'Dataset'}, inplace=True)
     dataset.rename(columns={'patregag': 'Age'}, inplace=True)
+    
+    # Dictionary for value conversion
+    token_to_val = {"DMD": 1, "Cnt": 0}
     
     # Replace the string values in the column using the mapping in token_to_val
     dataset['Disease'] = dataset['Disease'].replace(token_to_val)
@@ -61,7 +57,7 @@ def clean_data(dataset=None):
     
     # %%
     ## Column Based Data Clean-up
-
+    
     def calculate_column_value_percentage(df, start_column=1):  # TODO: add end_column param
         """
         Calculates the percentage of actual (non-NA) data points for each column in a pandas DataFrame
@@ -127,13 +123,13 @@ def clean_data(dataset=None):
     
     def remove_wrong_value_rows(df, column_name, wrong_val):
         """
-      Removes rows from the DataFrame where the specified column has the specified wrong value.
-    
-      :param df: A pandas DataFrame from which rows will be removed.
-      :param column_name: The name of the column to check for the wrong value.
-      :param wrong_val: The value considered wrong in the specified column.
-      :return: A pandas DataFrame with rows containing the wrong value in the specified column removed.
-      """
+        Removes rows from the DataFrame where the specified column has the specified wrong value.
+        
+        :param df: A pandas DataFrame from which rows will be removed.
+        :param column_name: The name of the column to check for the wrong value.
+        :param wrong_val: The value considered wrong in the specified column.
+        :return: A pandas DataFrame with rows containing the wrong value in the specified column removed.
+        """
         if isinstance(wrong_val, str):
             wrong_val = list([wrong_val])
         
@@ -143,7 +139,9 @@ def clean_data(dataset=None):
             idxs_to_drop = incorrect[incorrect == True].index
             # Drop these rows
             df.drop(idxs_to_drop, inplace=True)
+        
         return df
+    
     
     # %%
     # Drop rows with invalid sample data
@@ -159,23 +157,25 @@ def clean_data(dataset=None):
     
     # %%
     ## Handle sample duplicates
+    
     def get_duplicate_indices(df, cols):
         """
-      Find indices of rows with the wrong value in the specified column.
-      """
+        Find indices of rows with the wrong value in the specified column.
+        """
         duplicate = df.duplicated(subset=cols, keep=False)
         duplicate_idxs = duplicate[duplicate == True].index
         return duplicate_idxs
     
+    
     # %%
     def calculate_row_value_percentage(df, start_column=0):
         """
-      Calculates the percentage of actual (non-NA) data points for each row in a pandas DataFrame.
-    
-      :param start_column:
-      :param df: A pandas DataFrame with potential NA values.
-      :return: A pandas Series with the percentage of non-NA values for each row.
-      """
+        Calculates the percentage of actual (non-NA) data points for each row in a pandas DataFrame.
+        
+        :param start_column:
+        :param df: A pandas DataFrame with potential NA values.
+        :return: A pandas Series with the percentage of non-NA values for each row.
+        """
         # Adjust for 0-based indexing
         start_index = max(0, start_column - 1)
         
@@ -192,6 +192,7 @@ def clean_data(dataset=None):
         value_percentage_per_row = (value_counts_per_row / total_columns) * 100
         
         return value_percentage_per_row
+    
     
     # %%
     def remove_duplicate_rows(df, duplicate_idxs, row_val_perc):
@@ -230,7 +231,7 @@ def clean_data(dataset=None):
     
     # %%
     ## Row handling based on FT5 (Should consider data generation based on age/other tests)
-
+    
     # Drop rows with NaN values in the FT5 column
     not_na = dataset['FT5'].notna()
     indices_to_drop = not_na[not_na == False].index
@@ -244,7 +245,7 @@ def clean_data(dataset=None):
     
     # %%
     ## Cleaned Data Export
-
+    
     # Export cleaned data to a new CSV file
     dataset.to_csv('cleaned_data.csv', index=False)
     dataset.head()

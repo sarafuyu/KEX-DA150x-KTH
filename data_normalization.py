@@ -1,13 +1,14 @@
 # %% md
 # Data Normalization
 # %%
+## Imports & Data Initialization
 import pandas as pd
 
-# %%
 dataset = pd.read_csv('cleaned_data.csv')
 dataset.head()
 # %%
-# Get summary statistics for whole data set
+## Summary statistics for whole data set
+
 columns_to_normalize = list(range(4, dataset.shape[1]))
 max_values = dataset.iloc[:, columns_to_normalize].max()
 min_values = dataset.iloc[:, columns_to_normalize].min()
@@ -19,14 +20,14 @@ print(min_values)
 # %%
 print(med_values)
 
-
 # %%
-# Normalize dataset
+## Normalize dataset
+
 def normalize(df, columns, min_vals, max_vals):
     """
-    Normalize given columns in the given DataFrame using the provided dequences of minimum and maximum values.
+    Normalize given columns in the given DataFrame using the provided sequences of minimum and maximum values.
 
-    X_normalized = (X - X_min) / (X_max - X_min)
+    Formula: X_normalized = (X - X_min) / (X_max - X_min)
 
     :param df: A pandas DataFrame to normalize.
     :param columns: A list of column indices to normalize.
@@ -39,19 +40,18 @@ def normalize(df, columns, min_vals, max_vals):
     
     # Normalize the specified columns
     for col in columns:
-        # if col == 296:
-        #     break
         col_range = max_vals[col - 4] - min_vals[col - 4]
         # Normalize the current column using scaling formula
         df_normalized.iloc[:, col] = (df.iloc[:, col] - min_vals[
-            col - 4]) / col_range  # print(df_normalized.iloc[:, col])
+            col - 4]) / col_range  
     
     return df_normalized
 
 
 # %%
+# Execute Normalization
 dataset_normalized = normalize(dataset, columns_to_normalize, min_values, max_values)
 # %%
-# Export cleaned data to a new CSV file
+# Export normalized data to a new CSV file
 dataset_normalized.to_csv('normalized_data.csv', index=False)
 dataset_normalized
