@@ -1,11 +1,13 @@
-# %% md
-# Data Normalization
 # %%
-## Imports & Data Initialization
+# Data Normalization
+
+## Imports
 import pandas as pd
 
+## Data Initialization
 dataset = pd.read_csv('cleaned_data.csv')
 dataset.head()
+
 # %%
 ## Summary statistics for whole data set
 
@@ -13,12 +15,15 @@ columns_to_normalize = list(range(4, dataset.shape[1]))
 max_values = dataset.iloc[:, columns_to_normalize].max()
 min_values = dataset.iloc[:, columns_to_normalize].min()
 med_values = dataset.iloc[:, columns_to_normalize].median()
+
 # %%
-print(max_values)
-# %%
-print(min_values)
-# %%
-print(med_values)
+## Print summary statistics
+verbose = True
+
+if verbose:
+    print(max_values)
+    print(min_values)
+    print(med_values)
 
 # %%
 ## Normalize dataset
@@ -49,8 +54,9 @@ def normalize(df, columns, min_vals, max_vals):
 
 
 # %%
-# Execute Normalization
+# Perform Normalization
 dataset_normalized = normalize(dataset, columns_to_normalize, min_values, max_values)
+
 # %%
 # Export normalized data to a new CSV file
 dataset_normalized.to_csv('normalized_data.csv', index=False)
