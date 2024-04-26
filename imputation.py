@@ -82,11 +82,13 @@ def create_iterative_imputers(df):
     # Configuration
     
     estimator = BayesianRidge()  # can probably be customized, but leave default for now
-    max_iter = 10  # try low number of iterations first, see if converges, then try higher numbers
+    max_iter = 100  # try low number of iterations first, see if converges, then try higher numbers
     tol = 1e-3  # might need to adjust
-    initial_strategy = ["mean", "median", "most_frequent", "constant"]
-    n_nearest_features = [10, 100, 500, None]  # try low numbers first, None means all features
-    imputation_order = ["ascending", "random"]  # ascending: From features w fewest missing to most
+    initial_strategy = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
+    n_nearest_features = [100, 500, None]  # [10, 100, 500, None]  # try low numbers first, None means all
+    # features
+    imputation_order = ["ascending"]  # ["ascending", "descending" "random"]
+    # ascending: From the features with the fewest missing values to those with the most
     min_value = 0  # no features have negative values, adjust tighter for prot intensities?
     max_value = 1.1*utils.summary_statistics(df, range(11, df.shape[1]))[1].max()
     # We set max_value to 1.1*max value of the dataset, to avoid imputing values significantly
@@ -111,7 +113,7 @@ def create_iterative_imputers(df):
                 max_value=max_value,
                 verbose=verbose,
                 random_state=seed,
-                add_indicator=False,  # interesting for later, TODO: explore
+                add_indicator=False,        # interesting for later, TODO: explore
                 keep_empty_features=False,  # no effect: we have removed empty features in cleanup
             )
             imputer_dict = {

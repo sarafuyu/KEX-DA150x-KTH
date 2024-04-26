@@ -9,6 +9,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 
 # External imports
 import pandas as pd
+import numpy as np
 
 # Local imports
 import utils
@@ -54,10 +55,13 @@ def clean_data(dataset=None):
     dataset.rename(columns={'patregag': 'Age'}, inplace=True)
     
     # Dictionary for value conversion
-    token_to_val = {"DMD": 1, "Cnt": 0}
+    token_to_val = {'DMD': np.int64(1), 'Cnt': np.int64(0), 'nan': np.int64(-1)}
     
     # Replace the string values in the column using the mapping in token_to_val
-    dataset['Disease'] = dataset['Disease'].replace(token_to_val)
+    with pd.option_context('future.no_silent_downcasting', True):
+        dataset['Disease'] = dataset['Disease'].astype(str).replace(token_to_val).infer_objects(
+            copy=False
+        )
     
     # Verify the change
     if verbose > 1:

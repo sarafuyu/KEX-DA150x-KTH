@@ -10,22 +10,24 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 ## Verbosity
 verbose = 1  # The higher, the more verbose. Can be 0, 1, 2, or 3.
 
+## Randomness seed
+seed = 42
+
 ## Data extraction
 path = 'normalised_data_all_w_clinical_kex_20240321.csv'
 
 ## Data imputation
-# Pick imputers to use
+# For detailed configuration for each imputation mode, see imputation.py
+# Pick imputers to use:
 simple_imputer = True
 iterative_imputer = False
 KNN_imputer = False
 nan_elimination = True
 no_imputation = True
-# For detailed configuration for each imputation mode, see imputation.py
 
 ## Train-test split & Feature selection
 # For detailed configuration for each feature selection mode, see features.py
 test_proportion = 0.2
-seed = 42
 k = 100
 start_column = 11  # Column index to start from. Will split the data [cols:] into input
                    # and target variables. # noqa
@@ -35,6 +37,7 @@ start_column = 11  # Column index to start from. Will split the data [cols:] int
 
 ## External imports
 import pandas as pd
+import numpy as np
 
 ## Local imports
 import utils
