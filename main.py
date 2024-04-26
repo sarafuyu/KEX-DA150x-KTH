@@ -8,7 +8,12 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # %% Configuration
 
 ## Verbosity
-verbose = 1  # The higher, the more verbose. Can be 0, 1, 2, or 3.
+verbose = 1
+# The higher, the more verbose. Can be 0, 1, 2, or 3.
+# Level 0: No prints.
+# Level 1: Only essential prints.
+# Level 2: Essential prints and previews of data.
+# Level 3: All prints.
 
 ## Randomness seed
 seed = 42
@@ -19,8 +24,8 @@ path = 'normalised_data_all_w_clinical_kex_20240321.csv'
 ## Data imputation
 # For detailed configuration for each imputation mode, see imputation.py
 # Pick imputers to use:
-simple_imputer = True
-iterative_imputer = False
+simple_imputer = False
+iterative_imputer = True
 KNN_imputer = False
 nan_elimination = True
 no_imputation = True
