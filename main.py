@@ -48,7 +48,7 @@ import features
 import svm
 
 
-# %% Load data
+# %% Load Data
 
 # Load the data
 dataset = pd.read_csv(path)
@@ -59,13 +59,13 @@ if verbose == 2:
     dataset.head()  # Pre-view first five rows
 
 
-# %% Data cleaning
+# %% Data Cleaning
 
 # Clean and preprocess the data
 dataset = cleaning.clean_data(dataset)
 
 
-# %% Data imputation
+# %% Data Imputation
 
 # Create imputers
 dataset_dicts = []
@@ -105,7 +105,7 @@ dataset_dicts = [
 ]
 
 
-# %% Train-test split & Feature selection
+# %% Train-test Split & Feature selection
 
 # Split data
 dataset_dicts = [

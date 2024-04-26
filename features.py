@@ -16,7 +16,7 @@ verbose = utils.verbosity_level  # get verbosity level
 seed = utils.random_seed  # get random seed
 
 
-# %% Data splitting
+# %% Data Splitting
 
 def split_data(data, test_size=0.2, random_state=42, col=11):
     """
@@ -126,7 +126,7 @@ def select_KBest(dataset_dict, k=100, northstar_cutoff=0.5):
 # %% Main
 def main():
     
-    # %% Read data
+    # %% Load Data
     
     df_imputed = pd.read_csv('imputed_data.csv')
     if verbose:
@@ -180,7 +180,7 @@ def main():
         print("RFE Selected Features Shape:", X_train_rfe.shape)
     
     
-    # %% Feature selection using SelectKBest
+    # %% Feature Selection using SelectKBest
     
     from sklearn.feature_selection import SelectKBest, f_classif
     
@@ -193,7 +193,7 @@ def main():
         print("Selected Features Shape:", X_train_selected.shape)
     
     
-    # %% Feature selection using ExtraTreesClassifier
+    # %% Feature Selection using ExtraTreesClassifier
     
     from sklearn.ensemble import ExtraTreesClassifier
     from sklearn.feature_selection import SelectFromModel
@@ -210,7 +210,7 @@ def main():
         print("Model Selected Features Shape:", X_train_model.shape)
     
     
-    # %% Feature selection using Recursive Feature Elimination (RFE)
+    # %% Feature Selection using Recursive Feature Elimination (RFE)
     
     from sklearn.feature_selection import RFE
     from sklearn.linear_model import LogisticRegression

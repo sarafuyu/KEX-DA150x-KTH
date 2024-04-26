@@ -16,7 +16,7 @@ verbose = utils.verbosity_level  # get verbosity level
 seed = utils.random_seed  # get random seed
 
 
-# %% SVC model
+# %% SVM Classifier Model
 # TODO: later, try probability=True
 
 def create_svm_models(dataset_dict):
@@ -88,13 +88,13 @@ def create_svm_models(dataset_dict):
     return dataset_dict
 
 
-# %% SVR model
+# %% SVR Model
 
 svr_model = SVR(kernel='rbf', degree=3, gamma='scale', coef0=0.0, tol=0.001, C=1.0,
                 epsilon=0.1, shrinking=True, cache_size=200, verbose=False, max_iter=-1)
 
 
-# %% LinearSVC model
+# %% LinearSVC Model
 
 linear_model = LinearSVR(epsilon=0.0, tol=0.0001, C=1.0, loss='epsilon_insensitive',
                          fit_intercept=True, intercept_scaling=1.0, dual='warn', verbose=0,
