@@ -72,17 +72,17 @@ def create_svm_models(dataset_dict):
             print("Finished with model training!")
             
         # Validate SVM model
-        if verbose:
-            print("Started prediction!")
         y_prediction = svm_model.predict(X_testing)
-        
         if verbose:
-            print("Started calculating accuracy!")
+            print("Prediction finished!")
+        
         accuracy = accuracy_score(y_testing, y_prediction)
+        if verbose:
+            print(f"Accuracy calculated: {accuracy}")
         
         # Append SVM model to list
         svm_model_list.append({'model': svm_model, 'accuracy': accuracy})
-    
+        
     dataset_dict['svm'] = svm_model_list
     
     return dataset_dict
