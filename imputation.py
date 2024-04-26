@@ -169,7 +169,7 @@ def create_KNN_imputers():
     return KNN_imputers
 
 
-# %% Option 4: NaN elimination
+# %% Option 4: NaN Elimination
 
 def eliminate_nan(df):
     """
@@ -182,7 +182,7 @@ def eliminate_nan(df):
     return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
 
 
-# %% Option 5: No imputation
+# %% Option 5: No Imputation
 
 def no_imputer(df):
     """
@@ -213,7 +213,7 @@ def impute_data(imputer_dict, df, cols=11):
     return imputer_dict
 
 
-# %% Export imputed data
+# %% Export Imputed Data
 
 def export_imputed_data(imputer_dict, filename=None):
     """

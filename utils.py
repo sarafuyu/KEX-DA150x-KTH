@@ -12,12 +12,16 @@ import pandas as pd
 
 
 # %% Verbosity
-# Is set in main. Module variable 'verbosity_level' should be imported from other modules.
+
+# Is set in main.
+# Module variable 'verbosity_level' should be imported from other modules.
 verbosity_level = 1  # Default is 1. The higher, the more verbose. Can be 0, 1, 2, or 3.
 
 
 # %% Random Seed
-# Is set in main. Module variable 'random_seed' should be imported from other modules.
+
+# Is set in main.
+# Module variable 'random_seed' should be imported from other modules.
 random_seed = 42  # Default is 42.
 
 
