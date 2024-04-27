@@ -85,8 +85,9 @@ def create_iterative_imputers(df):
     max_iter = 100  # try low number of iterations first, see if converges, then try higher numbers
     tol = 1e-3  # might need to adjust
     initial_strategy = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
-    n_nearest_features = [100, 500, None]  # [10, 100, 500, None]  # try low numbers first, None means all
-    # features
+    # Number of other features to use to estimate the missing values of each feature column.
+    # None means all features, which might be too many.
+    n_nearest_features = [500]  # [10, 100, 500, None]
     imputation_order = ["ascending"]  # ["ascending", "descending" "random"]
     # ascending: From the features with the fewest missing values to those with the most
     min_value = 0  # no features have negative values, adjust tighter for prot intensities?
@@ -105,7 +106,7 @@ def create_iterative_imputers(df):
                 sample_posterior=False,
                 max_iter=max_iter,
                 tol=tol,
-                n_nearest_features=n_nearest_features[1],
+                n_nearest_features=n_nearest_features,
                 initial_strategy=strat,
                 imputation_order=order,
                 skip_complete=False,
@@ -148,7 +149,7 @@ def create_KNN_imputers():
     n_neighbours = [5, 10, 20, 30, 40, 50]  # initial span of neighbours considering dataset size
     weights = ['uniform', 'distance']  # default='uniform', callable has potential for later fitting
  
-    KNN_imputers = []
+    knn_imputers = []
     for num in n_neighbours:
         for weight in weights:
             imputer = KNNImputer(
@@ -166,9 +167,9 @@ def create_KNN_imputers():
                 'n_neighbors': num,
                 'weights': weight,
             }
-            KNN_imputers.append(imputer_dict)
+            knn_imputers.append(imputer_dict)
             
-    return KNN_imputers
+    return knn_imputers
 
 
 # %% Option 4: NaN Elimination
@@ -190,29 +191,31 @@ def no_imputer(df):
     """
     Drop rows with any NaN values in the dataset.
     """
-    df = df.copy()  # TODO: do we need to copy?
+    df = df.copy()  # TODO: copy or not? Probably not necessary, but we do it in other imputers.
     return [{'type': 'no_imputation', 'dataset': df, 'date': pd.Timestamp.now()}]
 
 
-def impute_data(imputer_dict, df, cols=11):
+def impute_data(imp_dict, df, start_col=11):
     """
     Impute missing values in the dataset using the specified imputer.
     
-    :param imputer_dict: A dictionary containing the imputer object and its configuration.
+    :param imp_dict: A dictionary containing the imputer object and its configuration.
     :param df: The dataset to impute.
-    :param cols: The start index of the columns to impute.
-    :return: A dictionary containing the type of imputation, the imputed dataset, and the date of imputation.
+    :param start_col: The start index of the columns to impute.
+    :return: A dictionary containing the type of imputation, the imputed dataset, and the date
+    of imputation.
     """
     # Isolate relevant data
-    d = df.iloc[:, cols:]
+    d = df.iloc[:, start_col:]
     df_imputed = df.copy()
-    df_imputed.iloc[:, cols:] = pd.DataFrame(imputer_dict['imputer'].fit_transform(d), columns=d.columns)
+    df_imputed.iloc[:, start_col:] = pd.DataFrame(imp_dict['imputer'].fit_transform(d),
+                                                  columns=d.columns)
     
-    # Add content to imputer dictionary
-    imputer_dict['dataset'] = df_imputed
-    imputer_dict['date'] = pd.Timestamp.now()
+    # Add imputed dataset and date to dictionary
+    imp_dict['dataset'] = df_imputed
+    imp_dict['date'] = pd.Timestamp.now()
     
-    return imputer_dict
+    return imp_dict
 
 
 # %% Export Imputed Data

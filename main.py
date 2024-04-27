@@ -8,12 +8,16 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # %% Configuration
 
 ## Verbosity
-verbose = 1
 # The higher, the more verbose. Can be 0, 1, 2, or 3.
+verbose = 1
 # Level 0: No prints.
 # Level 1: Only essential prints.
 # Level 2: Essential prints and previews of data.
 # Level 3: All prints.
+
+## Logging
+# Set to True to log the output to a file.
+log = False
 
 ## Randomness seed
 seed = 42
@@ -43,6 +47,7 @@ start_column = 11  # Column index to start from. Will split the data [cols:] int
 ## External imports
 import pandas as pd
 import numpy as np
+import logging as log
 
 ## Local imports
 import utils
