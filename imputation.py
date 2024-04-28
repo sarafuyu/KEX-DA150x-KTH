@@ -174,14 +174,15 @@ def create_KNN_imputers():
 
 # %% Option 4: NaN Elimination
 
+# TODO: check illegal passing of dicts or lists, might be incompatible with following funcs
 def eliminate_nan(df):
     """
     Drop rows with any NaN values in the dataset.
     
     :return: A list of dictionaries, each containing the type of imputation, the imputed dataset, and the date of imputation.
     """
-    df_dropped = df.copy().dropna()
-    
+    #df_dropped = df.copy().dropna()
+    df_dropped = df.copy().dropna(axis=1)
     return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
 
 
@@ -208,8 +209,7 @@ def impute_data(imp_dict, df, start_col=11):
     # Isolate relevant data
     d = df.iloc[:, start_col:]
     df_imputed = df.copy()
-    df_imputed.iloc[:, start_col:] = pd.DataFrame(imp_dict['imputer'].fit_transform(d),
-                                                  columns=d.columns)
+    df_imputed.iloc[:, start_col:] = pd.DataFrame(imp_dict['imputer'].fit_transform(d), columns=d.columns)
     
     # Add imputed dataset and date to dictionary
     imp_dict['dataset'] = df_imputed

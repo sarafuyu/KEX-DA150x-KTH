@@ -27,7 +27,7 @@ random_seed = 42  # Default is 42.
 
 # %% Utility Functions
 
-def make_binary(data, column, cutoff, copy=True):
+def make_binary(df, column, cutoff, copy=True):
     """
     Convert the values in a column to binary based on a cutoff value.
 
@@ -37,6 +37,13 @@ def make_binary(data, column, cutoff, copy=True):
     :param copy: Whether to create a copy of the DataFrame (True) or modify it in place (False).
     :return: A pandas DataFrame with the specified column converted to binary.
     """
+    # TODO: review, new part to handle df or dict, quick edit
+    data = None
+    if type(df) is dict:
+        data = df['dataset']  # noqa
+    elif type(df) is pd.DataFrame:
+        data = df
+
     # Copy the data to avoid modifying the original DataFrame
     if copy:
         data_copy = data.copy()

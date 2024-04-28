@@ -91,14 +91,14 @@ logger = logging.getLogger('LOGGER_NAME')
 if verbose:
     logger.info("#------ # SVM CLASSIFICATION # ------#")
     logger.info("|--- HYPERPARAMETERS ---|")
-    logger.info(f"Dataset: {path}")
-    logger.info(f"Impute: {data_imputation}")
+    logger.info(f"Dataset file: {path}")
+    logger.info(f"Impute status: {data_imputation}")
     logger.info(f"add_indicator: {add_indicator}")
     logger.info(f"Random seed: {seed}")
     logger.info(f"Strategy: {strategy}")
     logger.info(f"Test proportion: {test_proportion}")
-    logger.info(f"K: {k}")
-    logger.info(f"Start column: {start_column}")
+    logger.info(f"K selected features: {k}")
+    logger.info(f"Start column features: {start_column}\n")
     
 
 # %% Load Data
@@ -110,8 +110,6 @@ if verbose > 1:
     logger.info("Data loaded successfully.")
 if verbose == 2:
     dataset.head()  # Pre-view first five rows
-if verbose:
-    logger.info("\n")
 
 
 # %% Data Cleaning
@@ -148,7 +146,7 @@ else:
     data_dict = {'type': 'nan_elimination', 'dataset': df_imputed, 'date': pd.Timestamp.now()}
     
 # Add imputed dataset and date to dictionary
-data_dict['date'] = pd.Timestamp.now()
+data_dict['date'] = pd.Timestamp.now() # Varför??
 
 
 logger.info("|--- DATA IMPUTATION ---|")
@@ -344,7 +342,12 @@ from sklearn.metrics import accuracy_score
 
 if verbose > 1:
     print("Start naive test...")
-    
+
+X_training = data_dict['X_training']
+X_testing = data_dict['X_testing']
+y_training = data_dict['y_training']
+y_testing = data_dict['y_testing']
+
 gnb = GaussianNB()
 gnb.fit(X_training, y_training)
 y_prediction = gnb.predict(X_testing)
@@ -355,6 +358,34 @@ accuracy_bayes = accuracy_score(y_testing, y_prediction)
 if verbose:
     logger.info(f"Number of mislabeled out of a total {X_testing.shape[0]} points: {res}")
     logger.info(f"Accuracy: {accuracy_bayes}")
+    logger.info("\n")
+
+# %% trees
+
+if verbose:
+    logger.info("#--- MODEL TRAINING & FITTING (TREE) ---#")
+    logger.info("\n")
+
+from sklearn.tree import DecisionTreeClassifier
+
+if verbose > 1:
+    print("Start tree test...")
+
+X_training = data_dict['X_training']
+X_testing = data_dict['X_testing']
+y_training = data_dict['y_training']
+y_testing = data_dict['y_testing']
+
+tree = DecisionTreeClassifier(random_state=seed)
+tree.fit(X_training, y_training)
+y_prediction = tree.predict(X_testing)
+
+res = sum((a != b) for (a, b) in zip(y_testing, y_prediction))
+accuracy_tree = accuracy_score(y_testing, y_prediction)
+
+if verbose:
+    logger.info(f"Number of mislabeled out of a total {X_testing.shape[0]} points: {res}")
+    logger.info(f"Accuracy: {accuracy_tree}")
     logger.info("\n")
 
 
@@ -439,12 +470,87 @@ for c in [0.1, 1.0, 10.0]:
     
     if verbose:
         logger.info("") # formatting
-    
-# Append SVM model to list
-data_dict['svm'] = models
+
+
+# %% SVR
+
+"""
+from sklearn.svm import SVR
+
+kernel_type = ['rbf'] # 'poly', 'linear', 'sigmoid', 'precomputed'
+degree = [3]
+C = [1.0]
+
+for kernel in kernel_type:
+    for d in degree:
+        for c in C:
+            svr_model = SVR(
+                kernel=kernel,
+                degree=d,
+                gamma='scale',
+                coef0=0.0,
+                tol=0.001,
+                C=c,
+                epsilon=0.1,
+                shrinking=True,
+                cache_size=200,
+                verbose=False,
+                max_iter=-1
+            )
+
+            if verbose:
+                logger.info(f"|--- SVR MODEL PARAMETERS kernel={kernel}, degree={d}, C={c}")
+
+            X_training = data_dict['X_training']
+            X_testing = data_dict['X_testing']
+            y_training = data_dict['y_training']
+            y_testing = data_dict['y_testing']
+
+            svr_model.fit(X_training, y_training)
+            y_prediction = svr_model.predict(X_testing)
+            
+            # TODO: need specific script since we get predicted vals
+            accuracy_svr = accuracy_score(y_testing, y_prediction)
+            #res = sum((a != b) for (a, b) in zip(y_testing, y_prediction))
+
+            if verbose:
+                #logger.info(f"Number of mislabeled out of a total {X_testing.shape[0]} points: {res}")
+                logger.info(f"Model accuracy: {accuracy_svr}")
+"""
+
+
+# %%
+
+from sklearn.svm import LinearSVR
+from sklearn.datasets import make_regression
+from sklearn.pipeline import make_pipeline
+
+X, y = make_regression(n_features=4, random_state=0)
+# TODO: dual='auto'/ 'warn' error now
+# TODO: maxiter 1000,5000,10000 too small
+linear_model = LinearSVR(epsilon=0.0, tol=0.0001, C=1.0, loss='epsilon_insensitive', fit_intercept=True, intercept_scaling=1.0, dual='auto', verbose=0, random_state=None, max_iter=10000)
+regr = make_pipeline(StandardScaler(), linear_model)
+regr
 
 if verbose:
-    logger.info("Finished with model training and validation!")
+    logger.info(f"|--- Linear SVR MODEL PARAMETERS")
+
+X_training = data_dict['X_training']
+X_testing = data_dict['X_testing']
+y_training = data_dict['y_training']
+y_testing = data_dict['y_testing']
+
+linear_model.fit(X_training, y_training)
+y_prediction = linear_model.predict(X_testing)
+
+# TODO: need specific script since we get predicted vals
+"""
+accuracy_svr = accuracy_score(y_testing, y_prediction)
+
+if verbose:
+    logger.info(f"Model accuracy: {accuracy_svr}")
+"""
+
 
 # %%
 

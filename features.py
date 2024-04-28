@@ -73,7 +73,7 @@ It can be seen as a preprocessing step to an estimator. There are three options.
    strategy. This allows to select the best univariate selection strategy with hyper-parameter
    search estimator.
 """
-def select_KBest(dataset_dict, k=100, northstar_cutoff=0.5):
+def select_KBest(dataset_dict, k=100): # northstar_cutoff=0.5
     """
     Does KBest feature selection on given test data.
     
@@ -94,10 +94,11 @@ def select_KBest(dataset_dict, k=100, northstar_cutoff=0.5):
     y_train = dataset_dict['y_training']
      
     # Make the Northstar score binary
+    """
     if northstar_cutoff:
         from utils import make_binary
         y_train = make_binary(y_train, column='FT5', cutoff=northstar_cutoff)
-    
+    """
     # Configure the SelectKBest selector (default: f_classif ANOVA F-test)
     k_best_selector = SelectKBest(score_func=f_classif, k=k)
     

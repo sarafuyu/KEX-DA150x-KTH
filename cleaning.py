@@ -148,7 +148,8 @@ def clean_data(dataset=None):
 
     if verbose > 1:
         print("Before drop:", dataset.shape)
-    
+
+    # TODO: in data_ditc and data_dicts Empty_SBA1_rep1 is still a parameter -> major error look into it!
     dataset.drop(labels=['TREAT', 'Plate', 'Location', 'Empty_SBA1_rep1', 'Rabbit.IgG_SBA1_rep1'],
                  axis='columns', inplace=True)
     

@@ -18,7 +18,22 @@ seed = utils.random_seed  # get random seed
 
 # %% Dataset Normalization
 
-def normalize(data, columns, statistics):
+def normalize(data, start_column):
+    from sklearn.preprocessing import StandardScaler
+    df_normalized = None
+    if type(data) is dict:
+        df_normalized = data['dataset']
+    elif type(data) is pd.DataFrame:
+        df_normalized = data
+
+    scaler = StandardScaler()
+    d_protein_intensities = df_normalized.iloc[:, start_column:]
+    scaler.fit(d_protein_intensities)
+    df_normalized.iloc[:, start_column:] = scaler.transform(d_protein_intensities)
+    # d_protein_intensities_normalized = df_normalized.iloc[:, start_column:] # for statistics
+    return df_normalized
+
+def normalize_old(data, columns, statistics):
     """
     Normalize given columns in the given DataFrame using the provided sequences of minimum and maximum values.
 

@@ -34,7 +34,7 @@ def create_svm_models(dataset_dict):
     
     # Configuration
     # for poly specification for degree will be needed
-    kernel_types = ['linear']  # ['linear', 'poly', 'sigmoid', 'precomputed']
+    kernel_types = ['poly']  # ['linear', 'sigmoid', 'precomputed']
 
     # If no imputation has been done, return the dataset_dict as is
     if dataset_dict['type'] == 'no_imputation':
