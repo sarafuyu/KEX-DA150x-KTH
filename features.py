@@ -1,7 +1,9 @@
 """
 ## Feature Selection Techniques
 
-Authors:
+:Date: 2024-05-01
+:Authors: Sara Rydell, Noah Hopkins
+
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
@@ -9,6 +11,8 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 
 # External imports
 import pandas as pd
+import scipy
+from sklearn.feature_selection import f_classif
 
 # Local imports
 import utils
@@ -18,15 +22,14 @@ seed = utils.random_seed  # get random seed
 
 # %% Data Splitting
 
-def split_data(data, test_size=0.2, random_state=42, col=11):
+def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
     """
     Split the data into input and target variables.
- 
+
     :param data: A pandas DataFrame or a dictionary with a 'data' key.
     :param test_size: The proportion of the dataset to include in the test split.
     :param random_state: The seed used by the random number generator.
-    :param col: Column index to start from. Will split the data [cols:] into
-                 input and target variables.
+    :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
     :return: A tuple of input and target variables.
     """
     from sklearn.model_selection import train_test_split
@@ -39,12 +42,14 @@ def split_data(data, test_size=0.2, random_state=42, col=11):
         raise ValueError("Argument data must be a pandas DataFrame or a dictionary "
                          "with a 'dataset' key.")
     
-    y_data = df['FT5']  # Vector for the target variable
-    X_data = df.iloc[:, col:]  # Matrix with variable input
+    y_data = df[y_col_label]         # Vector for the target variable
+    X_data = df.iloc[:, start_col:]  # Matrix with variable input
 
-    # Splitting the dataset into training and testing sets (80% - 20%)
+    # Split the dataset into training and testing sets (default 80% - 20%)
     X_training, X_testing, y_training, y_testing = train_test_split(
-        X_data, y_data, test_size=test_size, random_state=random_state
+        X_data, y_data,
+        test_size=test_size,
+        random_state=random_state
     )
     
     if type(data) is dict:
@@ -54,6 +59,7 @@ def split_data(data, test_size=0.2, random_state=42, col=11):
         data['y_testing'] = y_testing
         return data
     else:
+        Warning(f"The data in {split_data.__name__} is not a dictionary. Returning a tuple.")
         return X_training, X_testing, y_training, y_testing
 
 
@@ -73,54 +79,58 @@ It can be seen as a preprocessing step to an estimator. There are three options.
    strategy. This allows to select the best univariate selection strategy with hyper-parameter
    search estimator.
 """
-def select_KBest(dataset_dict, k=100, northstar_cutoff=0.5):
+def select_KBest(data_dict, score_func=f_classif, k=100):
     """
     Does KBest feature selection on given test data.
     
-    This method selects the best features based on univariate statistical tests. It can be seen as a preprocessing step to an estimator.
+    This method selects the best features based on univariate statistical tests. It can be seen as a preprocessing step
+    to an estimator.
     
-    :param dataset_dict: A dictionary containing the dataset, its type and other metadata.
+    :param data_dict: A dictionary containing the dataset, its type and other metadata.
+    :param score_func: Function taking two arrays X and y, and returning a pair of arrays (scores, p-values).
     :param k: Number of features to select.
-    :param northstar_cutoff: The y-variable (the Northstar score) will be made binary. A Northstar
-        score below the cutoff is converted into 1, a score above the cutoff is converted into 0.
     :return: dataset_dict
     """
-    from sklearn.feature_selection import SelectKBest, f_classif
+    from sklearn.feature_selection import SelectKBest
     
-    if dataset_dict['type'] == 'no_imputation':
-        return dataset_dict
-    x_train = dataset_dict['X_training']
-    x_test = dataset_dict['X_testing']
-    y_train = dataset_dict['y_training']
-     
-    # Make the Northstar score binary
-    if northstar_cutoff:
-        from utils import make_binary
-        y_train = make_binary(y_train, column='FT5', cutoff=northstar_cutoff)
+    if data_dict['type'] == 'no_imputation':
+        return data_dict
+    X_train = data_dict['X_training']
+    X_test = data_dict['X_testing']
+    y_train = data_dict['y_training']
     
     # Configure the SelectKBest selector (default: f_classif ANOVA F-test)
-    k_best_selector = SelectKBest(score_func=f_classif, k=k)
+    k_best_selector = SelectKBest(score_func=score_func, k=k)
     
     # Apply score function to data and store results in k_best_selector SelectKBest class instance
-    k_best_selector.fit(x_train, y_train)
+    k_best_selector.fit(X_train, y_train)
     
     # Use evaluated scores to select the best k features
-    x_train_selected_features = k_best_selector.transform(x_train)
-    x_test_selected_features = k_best_selector.transform(x_test)
+    # BUG: HERE WE HAD THE BUG WHERE THE transform METHOD DIDN'T RETURN
+    #      A NEW DATAFRAME, BUT INSTEAD RETURNED A NUMPY ARRAY WITHOUT LABELS
+    #
+    #   x_train_selected_features = k_best_selector.transform(x_train)
+    #   x_test_selected_features = k_best_selector.transform(x_test)
+    #
+    # FIX: SELECT THE COLUMNS FROM ORIGINAL DF BASED ON THE INDICES OF
+    #      THE SELECTED COLUMNS INSTEAD OF USING THE TRANSFORM METHOD:
+    cols_idxs = k_best_selector.get_support(indices=True)
+    X_train_selected_features = X_train.iloc[:, cols_idxs]
+    X_test_selected_features = X_test.iloc[:, cols_idxs]
     
     # Assert that the number of selected features is equal to k
-    if x_train_selected_features.shape[1] != k:
-        raise ValueError(f"Selected Features Shape {x_train_selected_features.shape[1]} "
+    if X_train_selected_features.shape[1] != k:
+        raise ValueError(f"Selected Features Shape {X_train_selected_features.shape[1]} "
                          f"is not equal to k ({k})!")
     
     # Update the dataset dictionary with the selected features
-    dataset_dict['feature_scores'] = k_best_selector
-    del dataset_dict['X_training']
-    del dataset_dict['X_testing']
-    dataset_dict['X_training'] = x_train_selected_features
-    dataset_dict['X_testing'] = x_test_selected_features
+    data_dict['feature_scores'] = k_best_selector
+    del data_dict['X_training']
+    del data_dict['X_testing']
+    data_dict['X_training'] = X_train_selected_features
+    data_dict['X_testing'] = X_test_selected_features
     
-    return dataset_dict
+    return data_dict
 
 
 # %% Main
