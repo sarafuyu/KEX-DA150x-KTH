@@ -51,6 +51,11 @@ from sklearn.feature_selection import f_classif
 from sklearn.linear_model import BayesianRidge
 
 
+# %% Start Time
+
+start_time = datetime.now()
+
+
 # %% Configuration
 
 ## Verbosity
@@ -66,7 +71,7 @@ verbose: int = 1
 # Set to True to log the output to a file.
 log: bool = True
 # Set the name of the log file.
-logfile: str = 'pipline-nattlog-' + datetime.now().strftime("%Y-%m-%d-%H%M%S") + '.log'
+logfile: str = 'pipline-nattlog-' + start_time.strftime("%Y-%m-%d-%H%M%S") + '.log'
 
 ## Randomness seed
 seed: int = 42
@@ -155,25 +160,25 @@ k_features: int = 100
 
 ## Model training & fitting
 # SVM Classifier
-try_SVC = True
-C_params_SVC: Sequence[float] = [0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0]
+try_SVC = False
+C_params_SVC: Sequence[float] = [0.001, 0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 50.0, 75.0, 100.0]
 kernels_SVC: Sequence[str] = ['poly']
-degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5]
+degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8]
 gamma_params_SVC: Sequence[str] = ['scale', 'auto']
-coef0_params_SVC: Sequence[float] = [-1.0, 0.0, 1.0]
+coef0_params_SVC: Sequence[float] = [-1.0, -0.5, -0.1, -0.001, 0.0, 0.001, 0.1, 0.5, 1.0]
 shrinking_SVC: Sequence[bool] = [True]
 probability_SVC: Sequence[bool] = [False]
-tol_params_SVC: Sequence[float] = [0.01, 0.001]
+tol_params_SVC: Sequence[float] = [0.01, 0.05, 0.001, 0.0005]
 cache_size_params_SVC: Sequence[int] = [200]
 class_weight_SVC: dict | None = None
 verb_SVC: int = verbose
-max_iter_params_SVC: Sequence[int] = [10_000]  # [-1,]
+max_iter_params_SVC: Sequence[int] = [50_000]  # [-1,]
 decision_function_shape_params_SVC: Sequence[str] = ['ovr',]
 break_ties_params_SVC: Sequence[bool] = [False]
 # Include scores in `cv_results_`. Computing training scores is used to get insights on how different parameter settings
 # impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
 # computationally expensive and is not strictly required to select the parameters that yield the best generalization performance.
-return_train_score_SVC = True
+return_train_score_SVC = False
 
 # SVR Classifier
 try_SVR = False
@@ -188,7 +193,7 @@ shrinking_params_SVR: Sequence[bool] = [True,]
 cache_size_params_SVR: Sequence[int] = [200,]
 verb_SVR: int = verbose
 max_iter_params_SVR: Sequence[int] = [-1,]
-return_train_score_SVR: bool = True
+return_train_score_SVR: bool = False
 
 
 
@@ -221,7 +226,7 @@ handlers.append(stdout_handler)
 logging.basicConfig(level=logging.DEBUG,
                     format=('[%(asctime)s] '
                             '{%(filename)s:%(lineno)d} : '
-                            '%(levelname)-8s | '
+                            '%(levelname)s | '
                             '%(message)s'),
                     handlers=handlers)
 
@@ -447,4 +452,6 @@ if try_SVR:
 
 # %% Breakpoint
 
-breakpoint()
+logger.info(f"Pipeline finished {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} which took {datetime.now() - start_time}")
+
+# breakpoint()
