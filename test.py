@@ -1,10 +1,14 @@
 """
 Testing the pipeline on the KEX dataset.
 
-Authors:
+:Date: 2024-05-01
+:Authors: Sara Rydell, Noah Hopkins
+
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
+from datetime import datetime
+
 # %% Configuration
 
 ## Verbosity
@@ -51,7 +55,7 @@ start_column = 11  # Column index to start from. Will split the data [cols:] int
 ## Logging
 # Set to True to log the output to a file.
 log = True
-logfile = 'tmp.log'
+logfile: str = 'test-log-' + datetime.now().strftime("%Y-%m-%d-%H%M%S") + '.log'
 
 
 # %% Imports
@@ -63,12 +67,10 @@ import logging
 import sys
 
 ## Local imports
-import utils
-
-utils.verbosity_level = verbose  # Set verbosity level for all modules
-utils.random_seed = seed  # Set random seed for all modules
-
 import cleaning
+import utils
+utils.verbosity_level = verbose  # Set verbosity level for all modules
+utils.random_seed = seed         # Set random seed for all modules
 
 
 # %% Logging
@@ -126,22 +128,29 @@ if data_imputation:
     from sklearn.impute import SimpleImputer
     
     imputer = SimpleImputer(
-        missing_values=np.nan, strategy=strategy, copy=copy,
+        missing_values=np.nan,
+        strategy=strategy,
+        copy=copy,
         add_indicator=add_indicator,  # interesting for later, TODO: explore
-        keep_empty_features=False,
-        # no effect: we have removed empty features in cleanup alrdy
+        keep_empty_features=False,  # no effect: we have removed empty features in cleanup alrdy
     )
     
-    data_dict = {"type": "SimpleImputer", "imputer": imputer, "strategy": strategy,
-                    "add_indicator": add_indicator}
+    data_dict = {
+        "type": "SimpleImputer",
+        "imputer": imputer,
+        "strategy": strategy,
+        "add_indicator": add_indicator,
+    }
     
     # Isolate relevant data
     d_protein_intensities = dataset.iloc[:, start_column:]
     df_imputed = dataset.copy()
     df_imputed.iloc[:, start_column:] = pd.DataFrame(
-        data_dict['imputer'].fit_transform(d_protein_intensities), columns=d_protein_intensities.columns
+        data_dict['imputer'].fit_transform(d_protein_intensities),
+        columns=d_protein_intensities.columns
     )
     data_dict['dataset'] = df_imputed
+    data_dict['date'] = pd.Timestamp.now()
     
 else:
     df_imputed = dataset.copy().dropna(axis=1)
@@ -154,7 +163,7 @@ data_dict['date'] = pd.Timestamp.now()
 logger.info("|--- DATA IMPUTATION ---|")
 logger.info(
     f"Imputed protein intensity columns free from NaN values: "
-    f"{not bool(df_imputed.iloc[:,start_column:].isna().any(axis=None))}"
+    f"{not bool(df_imputed.iloc[:, start_column:].isna().any(axis=None))}"
 )
 logger.info("\n")
 
@@ -217,7 +226,6 @@ from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 d_protein_intensities = df_imputed.copy().iloc[:, start_column:]
 
-
 scaler.fit(d_protein_intensities)
 
 if verbose:
@@ -262,7 +270,7 @@ Temp test for bin classes
 from utils import make_binary
 
 # TODO: Fix bug in pipeline df_normalized['FT5'] = ... should be df_normalized = ...
-df_normalized = make_binary(df_normalized, column='FT5', cutoff=17, copy=False)
+df_normalized = make_binary(df_normalized, column_label='FT5', cutoffs=[17], copy=False)
 
 
 # %% Train-test Split & Feature selection
@@ -275,7 +283,8 @@ X_data = df_normalized.iloc[:, start_column:]  # Matrix with variable input
 # Splitting the dataset into training and testing sets (80% - 20%)
 X_training, X_testing, y_training, y_testing = train_test_split(
     X_data, y_data,
-    test_size=test_proportion, random_state=seed
+    test_size=test_proportion,
+    random_state=seed
 )
 
 data_dict['X_training'] = X_training
@@ -305,7 +314,6 @@ from sklearn.feature_selection import SelectKBest, f_classif
 
 # Configure the SelectKBest selector (default: f_classif ANOVA F-test)
 k_best_selector = SelectKBest(score_func=f_classif, k=k)
-
 
 # TODO: FIX IN PIPELINE!!! (Convert back to DataFrame)
 # Apply score function to data and store results in k_best_selector SelectKBest class instance
@@ -377,16 +385,30 @@ X_testing = data_dict['X_testing']
 y_training = data_dict['y_training']
 y_testing = data_dict['y_testing']
 
-
+if verbose:
+    logger.info("#--- MODEL TRAINING & FITTING (SVC) ---#")
+    logger.info("\n")
+    
 # Create the SVM model
 models = []
 i = 0
 for c in [0.1, 1.0, 10.0]:
     svm_model = SVC(
         C=c,  # default, Regularization parameter
-        kernel=kernel_type, degree=3, gamma='scale', coef0=0.0, shrinking=True, probability=False,
-        tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1,
-        decision_function_shape='ovr', break_ties=False, random_state=seed,
+        kernel=kernel_type,
+        degree=3,
+        gamma='scale',
+        coef0=0.0,
+        shrinking=True,
+        probability=False,
+        tol=0.001,
+        cache_size=200,
+        class_weight=None,
+        verbose=False,
+        max_iter=-1,
+        decision_function_shape='ovr',
+        break_ties=False,
+        random_state=seed,
     )
     
     # C & kernel
