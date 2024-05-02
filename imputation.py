@@ -1,40 +1,48 @@
 """
 Data imputation
 
-Authors:
+:Date: 2024-05-01
+:Authors: Sara Rydell, Noah Hopkins
+
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 # %% Imports
 
+## Standard library imports
+import copy
+
 ## External imports
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import BayesianRidge
 
 # Local imports
 import utils
+
 verbose = utils.verbosity_level  # get verbosity level
 seed = utils.random_seed  # get random seed
 
 
 # %% Option 1: Simple Imputer
 
-def create_simple_imputers():
+def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
     """
     Impute missing values (e.g., with simple statistical values of each column) using SimpleImputer.
-    
-    Required imports:
-    from sklearn.impute import SimpleImputer
-    import numpy as np
-    
+
+    Required Imports
+
+    - ``numpy``
+    - ``sklearn.impute.SimpleImputer``
+
+    Parameters
+    ==========
+    :param add_indicator: Whether to add a missing indicator column to the dataset.
+    :param copy: Whether to create a copy of the dataset (`True`) or modify it in place (`False`).
+    :param strategy: The imputation strategies to use.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
     from sklearn.impute import SimpleImputer
-    
-    # Configuration
-    add_indicator = False  # interesting for later, TODO: explore
-    copy = True            # so we can reuse dataframe with other imputers
-    strategy = ["mean"]  # ["mean", "median", "most_frequent"]
     
     simple_imputers = []
     for strat in strategy:
@@ -52,21 +60,34 @@ def create_simple_imputers():
             "add_indicator": add_indicator,
         }
         simple_imputers.append(imputer_dict)
-        
+    
     return simple_imputers
 
 
 # %% Option 2: Iterative Imputer
 
-def create_iterative_imputers(df):
+
+def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e-3,
+                              initial_strategy=("mean",), n_nearest_features=(500,),
+                              imputation_order=("ascending",), min_value=0,
+                              max_value='10% higher than max'):
     """
     Impute missing values using IterativeImputer (experimental feature).
-    
-    Required imports:
-    from sklearn.experimental import enable_iterative_imputer  # noqa
-    from sklearn.impute import IterativeImputer  # noqa
-    from sklearn.linear_model import BayesianRidge
-    
+
+    Required Imports
+
+    - ``sklearn.experimental.enable_iterative_imputer``
+    - ``sklearn.impute.IterativeImputer``
+    - ``sklearn.linear_model.BayesianRidge``
+
+    :param estimator: The estimator to use at each step of the round-robin imputation.
+    :param max_iter:
+    :param tol:
+    :param initial_strategy:
+    :param n_nearest_features:
+    :param imputation_order:
+    :param min_value:
+    :param max_value:
     :param df: The dataset to impute. Used to determine the min and max values for imputation.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
@@ -78,23 +99,10 @@ def create_iterative_imputers(df):
     from sklearn.impute import IterativeImputer  # noqa
     from sklearn.linear_model import BayesianRidge
     
-    
-    # Configuration
-    
-    estimator = BayesianRidge()  # can probably be customized, but leave default for now
-    max_iter = 100  # try low number of iterations first, see if converges, then try higher numbers
-    tol = 1e-3  # might need to adjust
-    initial_strategy = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
-    # Number of other features to use to estimate the missing values of each feature column.
-    # None means all features, which might be too many.
-    n_nearest_features = [500]  # [10, 100, 500, None]
-    imputation_order = ["ascending"]  # ["ascending", "descending" "random"]
-    # ascending: From the features with the fewest missing values to those with the most
-    min_value = 0  # no features have negative values, adjust tighter for prot intensities?
-    max_value = 1.1*utils.summary_statistics(df, range(11, df.shape[1]))[1].max()
-    # We set max_value to 1.1*max value of the dataset, to avoid imputing values significantly
-    # higher than the original data.
-    
+    if max_value == '10% higher than max':
+        # We set max_value to 1.1*max value of the dataset, to avoid imputing values significantly
+        # higher than the original data.
+        max_value = 1.1 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max()
     
     ## Create imputers with different configurations
     iterative_imputers = []
@@ -114,7 +122,7 @@ def create_iterative_imputers(df):
                 max_value=max_value,
                 verbose=verbose,
                 random_state=seed,
-                add_indicator=False,        # interesting for later, TODO: explore
+                add_indicator=False,  # interesting for later, TODO: explore
                 keep_empty_features=False,  # no effect: we have removed empty features in cleanup
             )
             imputer_dict = {
@@ -128,77 +136,126 @@ def create_iterative_imputers(df):
                 "random_state": seed,
             }
             iterative_imputers.append(imputer_dict)
-            
+    
     return iterative_imputers
 
 
 # %% Option 3: KNN Imputer
 
-def create_KNN_imputers():
+def create_KNN_imputers(missing_values=np.nan, n_neighbours=(5,), weights=('uniform',),
+                        metric=('nan_euclidean',), copy=True,
+                        add_indicator=False, keep_empty_features=False):
     """
     Impute missing values using K-Nearest Neighbour Imputer.
     
-    Required imports:
-    from sklearn.impute import KNNImputer
-    
+    Required Imports:
+
+    - ``sklearn.impute.KNNImputer``
+
+    :param missing_values: The placeholder for missing values.
+    :param n_neighbours: List of number of neighbours to use.
+    :param weights: List of weighting schemes.
+    :param metric: List of distance metrics.
+    :param copy: Whether to create a copy of the dataset (`True`) or modify it in place (`False`).
+    :param add_indicator: Whether to add a missing indicator column to the dataset.
+    :param keep_empty_features: Whether to keep empty features in the dataset.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
     from sklearn.impute import KNNImputer
-    
-    # Configuration
-    n_neighbours = [5, 10, 20, 30, 40, 50]  # initial span of neighbours considering dataset size
-    weights = ['uniform', 'distance']  # default='uniform', callable has potential for later fitting
- 
+
     knn_imputers = []
     for num in n_neighbours:
         for weight in weights:
-            imputer = KNNImputer(
-                missing_values=np.nan,  # default
-                n_neighbors=num,  # default = 5
-                weights=weight,
-                metric='nan_euclidean',  # default, callable has potential for later fitting
-                copy=True,  # default, best option for reuse of dataframe dataset
-                add_indicator=False,  # default, interesting for later, TODO: explore
-                keep_empty_features=False  # default, we have removed empty features in cleanup
-            )
-            imputer_dict = {
-                'type': 'KNNImputer',
-                'imputer': imputer,
-                'n_neighbors': num,
-                'weights': weight,
-            }
-            knn_imputers.append(imputer_dict)
-            
+            for met in metric:
+                imputer = KNNImputer(
+                    missing_values=missing_values,  # default
+                    n_neighbors=num,  # default = 5
+                    weights=weight,
+                    metric=met,  # default, callable has potential for later fitting
+                    copy=copy,  # default, best option for reuse of dataframe dataset
+                    add_indicator=add_indicator,  # default, interesting for later, TODO: explore
+                    keep_empty_features=keep_empty_features  # default, we have removed empty
+                                                             # features in cleanup
+                )
+                imputer_dict = {
+                    'type': 'KNNImputer',
+                    'imputer': imputer,
+                    'missing_values': missing_values,
+                    'n_neighbors': num,
+                    'weights': weight,
+                    'metric': met,
+                    'add_indicator': add_indicator,
+                }
+                knn_imputers.append(imputer_dict)
+    
     return knn_imputers
 
 
 # %% Option 4: NaN Elimination
 
-def eliminate_nan(df):
+def eliminate_nan(df, drop_cols=True):
     """
-    Drop rows with any NaN values in the dataset.
-    
-    :return: A list of dictionaries, each containing the type of imputation, the imputed dataset, and the date of imputation.
+    Drop columns with any NaN values in the dataset.
+
+    :param df: The dataset to remove NaN values from.
+    :param drop_cols: Whether to drop columns with NaN values (True) or rows (False).
+    :return: A dictionary containing the NaN-eliminated dataset and the date of elimination.
     """
-    df_dropped = df.copy().dropna()
+    df_dropped = df.copy().dropna(axis=(1 if drop_cols else 0))
     
     return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
 
 
 # %% Option 5: No Imputation
 
-def no_imputer(df):
+def no_imputer(df, copy=True):
     """
     Drop rows with any NaN values in the dataset.
+
+    :param df: The dataset to remove NaN values from.
+    :param copy: Whether to drop columns with NaN values (True) or rows (False).
     """
-    df = df.copy()  # TODO: copy or not? Probably not necessary, but we do it in other imputers.
+    if copy:
+        df = df.copy()  # TODO: copy or not? Probably not necessary, but we do it in other imputers.
     return [{'type': 'no_imputation', 'dataset': df, 'date': pd.Timestamp.now()}]
+
+
+def sparse_no_impute(data_dict: dict):
+    """
+    Convert the data to a sparse format and return it as a dictionary with type `sparse`.
+
+    :param data_dict: (dict) Dictionary of no imputation copy.
+    :return datadict_sparse: (list) Altered dictionary in list f
+    """
+
+    data_dict_sparse = copy.deepcopy(data_dict)
+
+    dataset, dataset_col_names = utils.dataframe_to_sparse(data_dict_sparse['dataset'])
+    X_train, X_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_training'])
+    X_test, X_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_testing'])
+    y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'])
+    y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'])
+
+    data_dict_sparse['type'] = 'sparse'
+    data_dict_sparse['dataset'] = dataset
+    data_dict_sparse['dataset_col_names'] = dataset_col_names
+    data_dict_sparse['X_training'] = X_train
+    data_dict_sparse['X_train_col_names'] = X_train_col_names
+    data_dict_sparse['X_testing'] = X_test
+    data_dict_sparse['X_test_col_names'] = X_test_col_names
+    data_dict_sparse['y_training'] = y_train
+    data_dict_sparse['y_train_col_names'] = y_train_col_names
+    data_dict_sparse['y_testing'] = y_test
+    data_dict_sparse['y_test_col_names'] = y_test_col_names
+    data_dict_sparse['date'] = pd.Timestamp.now()
+
+    return [data_dict_sparse]
 
 
 def impute_data(imp_dict, df, start_col=11):
     """
     Impute missing values in the dataset using the specified imputer.
-    
+
     :param imp_dict: A dictionary containing the imputer object and its configuration.
     :param df: The dataset to impute.
     :param start_col: The start index of the columns to impute.
@@ -206,10 +263,12 @@ def impute_data(imp_dict, df, start_col=11):
     of imputation.
     """
     # Isolate relevant data
-    d = df.iloc[:, start_col:]
+    d_protein_intensities = df.iloc[:, start_col:]
     df_imputed = df.copy()
-    df_imputed.iloc[:, start_col:] = pd.DataFrame(imp_dict['imputer'].fit_transform(d),
-                                                  columns=d.columns)
+    df_imputed.iloc[:, start_col:] = pd.DataFrame(
+        imp_dict['imputer'].fit_transform(d_protein_intensities),
+        columns=d_protein_intensities.columns
+    )
     
     # Add imputed dataset and date to dictionary
     imp_dict['dataset'] = df_imputed
@@ -218,64 +277,12 @@ def impute_data(imp_dict, df, start_col=11):
     return imp_dict
 
 
-# %% Export Imputed Data
-
-def export_imputed_data(imputer_dict, filename=None):
-    """
-    Export imputed data to a CSV file.
-    
-    :param imputer_dict: A dictionary containing the imputer object, the imputed dataset, 
-                         and the date of imputation.
-    :param filename: The name of the file to which the imputed data will be saved.
-    """
-    if filename is None:
-        imputer_string = ''
-        if imputer_dict['type'] == 'SimpleImputer':
-            imputer_string = (
-                imputer_dict['type'] + '_' +
-                imputer_dict['strategy'] + '_' +
-                imputer_dict['add_indicator'] + '_' +
-                imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
-            )
-        elif imputer_dict['type'] == 'IterativeImputer':
-            imputer_string = (
-                imputer_dict['type'] + '_' +
-                imputer_dict['max_iter'] + '_' +
-                imputer_dict['tol'] + '_' +
-                imputer_dict['n_nearest_features'] + '_' +
-                imputer_dict['initial_strategy'] + '_' +
-                imputer_dict['imputation_order'] + '_' +
-                imputer_dict['random_state'] + '_' +
-                imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
-            )
-        elif imputer_dict['type'] == 'KNNImputer':
-            imputer_string = (
-                imputer_dict['type'] + '_' +
-                imputer_dict['n_neighbors'] + '_' +
-                imputer_dict['weights'] + '_' +
-                imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
-            )
-        elif imputer_dict['type'] == 'nan_elimination':
-            imputer_string = (
-                imputer_dict['type'] + '_' +
-                imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
-            )
-        elif imputer_dict['type'] == 'no_imputation':
-            imputer_string = (
-                imputer_dict['type'] + '_' +
-                imputer_dict['date'].strftime('%Y%m%d-%H%M%S')
-            )
-        imputer_dict['dataset'].to_csv(imputer_string, index=False)
-    else:
-        imputer_dict['dataset'].to_csv(filename, index=False)
-
-
 # %% Main
 
 def main():
     dataset = pd.read_csv('normalized_data.csv')
     dataset.head()
-    
-    
+
+
 if __name__ == '__main__':
     main()
