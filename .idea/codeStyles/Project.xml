@@ -1,5 +1,6 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <option name="SOFT_MARGINS" value="80,100" />
     <Python>
       <option name="DICT_ALIGNMENT" value="1" />
       <option name="DICT_NEW_LINE_AFTER_LEFT_BRACE" value="true" />
