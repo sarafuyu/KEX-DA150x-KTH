@@ -10,10 +10,9 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # %% Imports
 
 # External imports
+import joblib
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
-
-
 
 # Local imports
 import utils
@@ -24,7 +23,8 @@ seed = utils.random_seed         # get random seed
 # %% SVM Classifier Model
 # TODO: later, try probability=True
 
-def find_best_svm_model(dataset_dict,
+def find_best_svm_model(pipeline_config,
+                        dataset_dict,
                         C_params=(1.0,),
                         kernels=('poly',),
                         degree_params=(3,),
@@ -40,6 +40,7 @@ def find_best_svm_model(dataset_dict,
                         decision_function_shape_params=('ovr',),
                         break_ties=False,
                         random_state=seed,
+                        verbose_grid_search=0,
                         logger=print,
                         return_train_score=False):
     """
@@ -51,6 +52,7 @@ def find_best_svm_model(dataset_dict,
     - ``sklearn.svm.SVC``
     - ``sklearn.model_selection.GridSearchCV``
 
+    :param pipeline_config: A dictionary containing the pipeline configuration.
     :param dataset_dict: A dictionary containing the dataset and other relevant information.
     :param C_params: A list of regularization parameters.
     :param kernels: A list of kernel types.
@@ -114,17 +116,10 @@ def find_best_svm_model(dataset_dict,
         param_grid=param_grid,
         scoring='accuracy',
         cv=5,
-        verbose=verb,
+        verbose=verbose_grid_search,
         return_train_score=return_train_score
     )
     clf = clf.fit(X_training, y_training)
-
-    # Log best parameters
-    if verbose and hasattr(clf, 'best_params_'):
-        logger("Best parameters combination found:")
-        best_parameters = clf.best_params_
-        for param_name in sorted(best_parameters.keys()):
-            logger(f"{param_name}: {best_parameters[param_name]}")
 
     # Calculate and log best score (accuracy)
     if hasattr(clf, 'score'):
@@ -132,17 +127,20 @@ def find_best_svm_model(dataset_dict,
     else:
         Warning("The classifier does not have a 'score' attribute.")
         test_accuracy = None
-    if verbose:
-        logger(f"Test accuracy of best SVM classifier: {test_accuracy}")
+    if verb:
+        utils.log_grid_search_results(pipeline_config, dataset_dict, protein_start_col=11, clf=clf, accuracy=test_accuracy, logger=logger)
 
     dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}
+
+    joblib.dump(clf, utils.get_file_name(dataset_dict) + '.pkl')
     
     return dataset_dict
 
 
 # %% SVR Model
 
-def find_best_svr_model(dataset_dict,
+def find_best_svr_model(pipeline_config,
+                        dataset_dict,
                         kernels='rbf',
                         degree_params=3,
                         gamma_params='scale',
@@ -154,6 +152,7 @@ def find_best_svr_model(dataset_dict,
                         cache_size_params=200,
                         verb=verbose,
                         max_iter_params=-1,
+                        verbose_grid_search=0,
                         logger=print,
                         return_train_score=False):
     """
@@ -172,7 +171,7 @@ def find_best_svr_model(dataset_dict,
         return dataset_dict
     if dataset_dict['type'] == 'sparse':
 
-        # TODO(Sara): do we need to change any SVR/grid search params to make it work with sparse data?
+        # TODO: do we need to change any SVR/grid search params to make it work with sparse data?
         #             If so, we can do that here.
         pass
 
@@ -209,13 +208,14 @@ def find_best_svr_model(dataset_dict,
         param_grid=param_grid,
         scoring='neg_mean_squared_error',
         cv=5,
-        verbose=verb,
+        verbose=verbose_grid_search,
         return_train_score=return_train_score
     )
     clf = clf.fit(X_training, y_training)
 
+
     # Log best parameters
-    if verbose and hasattr(clf, 'best_params_'):
+    if verb and hasattr(clf, 'best_params_'):
         logger("Best parameters combination found:")
         best_parameters = clf.best_params_
         for param_name in sorted(best_parameters.keys()):
@@ -227,10 +227,12 @@ def find_best_svr_model(dataset_dict,
     else:
         Warning("The classifier does not have a 'score' attribute.")
         test_accuracy = None
-    if verbose:
+    if verb:
         logger(f"Test accuracy of best SVR classifier: {test_accuracy}")
 
     dataset_dict['svr'] = {'clf': clf, 'test_accuracy': test_accuracy}
+
+    joblib.dump(clf, utils.get_file_name(dataset_dict) + '.pkl')
 
     return dataset_dict
 
