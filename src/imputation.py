@@ -47,8 +47,9 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
     simple_imputers = []
     for strat in strategy:
         imputer = SimpleImputer(
-            missing_values=np.nan,
+            missing_values=pd.NA, # changed from np.nan
             strategy=strat,
+            fill_value=None,
             copy=copy,
             add_indicator=add_indicator,  # interesting for later, TODO: explore
             keep_empty_features=False,  # no effect: we have removed empty features in cleanup alrdy
@@ -110,8 +111,8 @@ def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e
         for order in imputation_order:
             imputer = IterativeImputer(
                 estimator=estimator,
-                missing_values=np.nan,
-                sample_posterior=False,
+                missing_values=pd.NA,
+                sample_posterior=False, # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
                 max_iter=max_iter,
                 tol=tol,
                 n_nearest_features=n_nearest_features,

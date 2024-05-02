@@ -9,11 +9,12 @@ Currently supported: Binary classification using SVM classifier.
 TODOs
 =====
 
+TODO: Add final accuracy to the cv_results csv file
+
 ------ MVP for today ------
 TODO(priority 1): Add filtering of dataset dicts in each find_best_Xmodel function
                   so that only compatible datasets are used during gridsearch
 TODO(priority 1): Add SVR classifier
-TODO(priority 2): Add logging to main pipeline
 ------ Nice to have for today ------
 TODO(priority 2): Implement SVM classifier with NaN
 TODO(priority 2): Validate that multiclass SVM still works in the pipeline
@@ -23,15 +24,12 @@ TODO(priority 3): Add Lasso Regression
 ------ Nice to have for tomorrow ------
 TODO(priority 4): Add Decision Tree classifier
 TODO(priority 4): Add Naive Bayes classifier
-TODO(priority 4): Clean up Configuration section in main.py
 TODO(priority 4): Refactor cleaning.py
-TODO(priority 5): Refactor main.py pipeline to make it more DRY (construct grid_param in main and pass to a function
-                  that calls the various grid search functions for the various models depending on the different
+TODO(priority 5): Refactor main.py pipeline to make it more DRY (construct grid_param in main and 
+                  pass to a function that calls the various grid search functions for the various 
+                  models depending on the different
                   dataset dict attributes)
-
-
 --------------------------------
-
 
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
@@ -47,6 +45,7 @@ from datetime import datetime
 ## External library imports
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from sklearn.feature_selection import f_classif
 from sklearn.linear_model import BayesianRidge
 
@@ -58,7 +57,14 @@ start_time = datetime.now()
 
 # %% Configuration
 
-## Verbosity
+# **********----------------------------------------------------------------------------********** #
+# |                                        ~~ General ~~                                         | #
+# **********----------------------------------------------------------------------------********** #
+
+# ----------
+# Verbosity
+# ----------
+
 # The higher, the more verbose. Can be 0, 1, 2, 3, or 4.
 verbose: int = 1
 # Level 0: No prints.
@@ -67,66 +73,114 @@ verbose: int = 1
 # Level 3: All prints. Maybe some previews of data.
 # Level 4: All prints and all previews of data.
 
-## Logging
+# --------
+# Logging
+# --------
+
 # Set to True to log the output to a file.
 log: bool = True
 # Set the name of the log file.
-logfile: str = 'pipline-nattlog-' + start_time.strftime("%Y-%m-%d-%H%M%S") + '.log'
+logfile: str = 'pipline-log-' + start_time.strftime("%Y-%m-%d-%H%M%S") + '.log'
 
-## Randomness seed
+# -----------
+# Randomness
+# -----------
+
+# Randomness seed for all methods that take a seed in all files of the project
 seed: int = 42
 
-## Data extraction
+# ----------------
+# Data Extraction
+# ----------------
+
+# Path to dataset
 path: str = 'normalised_data_all_w_clinical_kex_20240321.csv'
 
-## Data imputation
-# For detailed configuration for each imputation mode, see imputation.py
-# Pick imputers to use:
+
+# **********----------------------------------------------------------------------------********** #
+# |                                     ~~ Data imputation ~~                                    | #
+# **********----------------------------------------------------------------------------********** #
+
+# Pick imputation modes to use:
 simple_imputer: bool = True
 iterative_imputer: bool = False
 KNN_imputer: bool = False
 nan_elimination: bool = True
 no_imputation: bool = False
-sparse_no_imputation: bool = False  # OBS: if True, no_imputation must be True
+sparse_no_imputation: bool = False  # Note: if `True`, `no_imputation` must be set to `True`.
 
+# -----------------------------
 # Simple imputer configuration
-add_indicator: bool = False  # interesting for later, TODO: explore
-copy: bool = True  # so we can reuse dataframe with other imputers
-strategy: Sequence[str] = ['mean']  # ["mean", "median", "most_frequent"]
+# -----------------------------
 
+# Strategy for imputing missing values
+strategy_simple_imp: Sequence[str] = ['mean']  # ["mean", "median", "most_frequent"]
+# Add indicator for missing values
+add_indicator_simple_imp: bool = False
+
+# Should always be True, since the implementation expects a copy of the data
+copy_simple_imp: bool = True
+
+# --------------------------------
 # Iterative imputer configuration
+# --------------------------------
+
 # Estimator, e.g. a BayesianRidge() object or an estimator object from scikit-learn.
 # Can probably be customized, but leave default for now.
 # For future type hints, see: https://stackoverflow.com/a/60542986/6292000
-estimator = BayesianRidge()
-max_iter: int = 100  # try low number of iterations first, see if converges, then try higher numbers
-tol: float = 1e-3  # might need to adjust
-initial_strategy: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
+estimator_iter_imp = BayesianRidge()
+# Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
+max_iter_iter_imp: int = 100  # try low number of iterations first, see if converges, then try higher numbers
+tol_iter_imp: float = 1e-3  # might need to adjust
+initial_strategy_iter_imp: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
-n_nearest_features: Sequence[int] = [500]  # [10, 100, 500, None]
-imputation_order: Sequence[str] = ["ascending"]  # ["ascending", "descending" "random"]
+n_nearest_features_iter_imp: Sequence[int] = [5, 20, 50, None]  # [10, 100, 500, None]
+imputation_order_iter_imp: Sequence[str] = ["ascending"]  # ["ascending", "descending" "random"]
 # ascending: From the features with the fewest missing values to those with the most
-min_value: int = 0  # no features have negative values, adjust tighter for prot intensities?
-max_value: str | int = '10% higher than max'
+min_value_iter_imp: int = 0  # no features have negative values, adjust tighter for prot intensities?
+max_value_iter_imp: str | int = '10% higher than max'
 
+# --------------------------
 # KNN imputer configuration
-n_neighbours: Sequence[int] = [5, 10, 20, 30, 40, 50]  # initial span of neighbours considering dataset size
-KNN_weights: Sequence[str] = ['uniform', 'distance']  # default='uniform', callable has potential for later
-# fitting
-metric: Sequence[str] = ['nan_euclidean']
+# --------------------------
 
+# Missing values to impute
+missing_values_KNN_imp = pd.NA
+# Initial span of neighbours considering dataset size
+n_neighbours_KNN_imp: Sequence[int] = [5, 20, 50]
+# default='uniform', callable has potential for later fitting
+weights_KNN_imp: Sequence[str] = ['uniform', 'distance']
+metric_KNN_imp: Sequence[str] = ['nan_euclidean']
+add_indicator_KNN_imp = False
+keep_empty_features_KNN_imp = False
+
+# Should always be True, since the implementation expects a copy of the data
+copy_KNN_imp = True
+
+# ------------------------------
 # NaN elimination configuration
-drop_cols = True  # If True, drop all columns with NaN values. If False, drop rows with NaN values.
+# ------------------------------
 
-## Data normalization
+# If True, drop all columns with NaN values. If False, drop rows with NaN values.
+drop_cols_nan_elim = True
+
+
+# **********----------------------------------------------------------------------------********** #
+# |                                   ~~ Data normalization ~~                                   | #
+# **********----------------------------------------------------------------------------********** #
+
 # First column to normalize. Will normalize all columns from this index and onwards.
 first_column_to_normalize: int = 11
 # TODO: check if this is the correct index. Should it be 10 instead?
 # Note: we only normalize the antibody/protein intensity columns (cols 11 and up).
 #       Age, disease, FTs not normalized.
 
-## Re-categorization of Northstar score (y) [0,34]
+
+# **********----------------------------------------------------------------------------********** #
+# |                        ~~ Re-categorization of Northstar score (y) ~~                        | #
+# **********----------------------------------------------------------------------------********** #
+# Northstar score (y) is originally a discrete variable on [0,34]
 #
 # Bin Northstar score into a categorical variable.
 # For N cutoffs, the data is divided into N+1 classes.
@@ -141,7 +195,11 @@ first_column_to_normalize: int = 11
 cutoffs: Sequence[int] | bool = [17]  # False  # [17]  # break into classes at 17
 column_to_categorize: str = 'FT5'
 
-## Train-test split & Feature selection
+
+# **********----------------------------------------------------------------------------********** #
+# |                                   ~~ Train-test split ~~                                     | #
+# **********----------------------------------------------------------------------------********** #
+
 # For detailed configuration for each feature selection mode, see features.py
 test_proportion: float = 0.2
 
@@ -152,49 +210,77 @@ test_proportion: float = 0.2
 X_start_column_idx: int = 11  # X columns are from this column index and onwards TODO: check if 11 is the correct index.
 y_column_label: str = 'FT5'   # y column label
 
-## Feature selection
+
+# **********----------------------------------------------------------------------------********** #
+# |                                   ~~ Feature selection ~~                                     | #
+# **********----------------------------------------------------------------------------********** #
+
 # score_func is a function taking in X, an array of columns (features), and y, a target column,
 # and returning a pair of arrays (scores, p-values).
 score_func: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = f_classif
-k_features: int = 100
+k_features: int = 60  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
 
-## Model training & fitting
+
+# **********----------------------------------------------------------------------------********** #
+# |                              ~~ Model training & fitting ~~                                  | #
+# **********----------------------------------------------------------------------------********** #
+
+verbose_grid_search: int = 0
+
+# ---------------
 # SVM Classifier
-try_SVC = False
-C_params_SVC: Sequence[float] = [0.001, 0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 50.0, 75.0, 100.0]
-kernels_SVC: Sequence[str] = ['poly']
-degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8]
-gamma_params_SVC: Sequence[str] = ['scale', 'auto']
-coef0_params_SVC: Sequence[float] = [-1.0, -0.5, -0.1, -0.001, 0.0, 0.001, 0.1, 0.5, 1.0]
+# ---------------
+
+# Enable SVC
+try_SVC = True
+
+# Hyperparameters:            # np.logspace(start, stop, num=50)
+C_params_SVC: Sequence[float] = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+kernels_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear','rbf', 'precomputed'
+degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+gamma_params_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
+coef0_params_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, 0.0, 0.1, 1.0, 10.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 shrinking_SVC: Sequence[bool] = [True]
 probability_SVC: Sequence[bool] = [False]
-tol_params_SVC: Sequence[float] = [0.01, 0.05, 0.001, 0.0005]
-cache_size_params_SVC: Sequence[int] = [200]
+tol_params_SVC: Sequence[float] = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+cache_size_params_SVC: Sequence[int] = [500]
 class_weight_SVC: dict | None = None
 verb_SVC: int = verbose
-max_iter_params_SVC: Sequence[int] = [50_000]  # [-1,]
-decision_function_shape_params_SVC: Sequence[str] = ['ovr',]
+max_iter_params_SVC: Sequence[int] = [1_000_000]  # [-1]
+decision_function_shape_params_SVC: Sequence[str] = ['ovr'] # onli ovo if multi class
 break_ties_params_SVC: Sequence[bool] = [False]
+
+# return_train_score_SVC:
 # Include scores in `cv_results_`. Computing training scores is used to get insights on how different parameter settings
 # impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
-# computationally expensive and is not strictly required to select the parameters that yield the best generalization performance.
+# computationally expensive and is not strictly required to select the parameters that yield the best generalization
+# performance.
 return_train_score_SVC = False
 
 # SVR Classifier
-try_SVR = False
-kernels_SVR: Sequence[str] = ['rbf',]
-degree_params_SVR: Sequence[int] = [3,]
-gamma_params_SVR: Sequence[str] = ['scale',]
-coef0_params_SVR: Sequence[float] = [0.0,]
-tol_params_SVR: Sequence[float] = [0.001,]
-C_params_SVR: Sequence[float] = [1.0, 10.0]
-epsilon_params_SVR: Sequence[float] = [0.1,]
-shrinking_params_SVR: Sequence[bool] = [True,]
-cache_size_params_SVR: Sequence[int] = [200,]
-verb_SVR: int = verbose
-max_iter_params_SVR: Sequence[int] = [-1,]
-return_train_score_SVR: bool = False
+# --------------
 
+# Enable SVR
+try_SVR = False
+
+kernels_SVR: Sequence[str] = ['rbf']
+degree_params_SVR: Sequence[int] = [3]
+gamma_params_SVR: Sequence[str] = ['scale']
+coef0_params_SVR: Sequence[float] = [0.0]
+tol_params_SVR: Sequence[float] = [0.001]
+C_params_SVR: Sequence[float] = [1.0, 10.0]
+epsilon_params_SVR: Sequence[float] = [0.1]
+shrinking_params_SVR: Sequence[bool] = [True]
+cache_size_params_SVR: Sequence[int] = [200]
+verb_SVR: int = verbose
+max_iter_params_SVR: Sequence[int] = [-1]
+
+# return_train_score_SVC:
+# Include scores in `cv_results_`. Computing training scores is used to get insights on how different parameter settings
+# impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
+# computationally expensive and is not strictly required to select the parameters that yield the best generalization
+# performance.
+return_train_score_SVR: bool = False
 
 
 # %% Local imports
@@ -231,19 +317,44 @@ logging.basicConfig(level=logging.DEBUG,
                     handlers=handlers)
 
 logger = logging.getLogger('LOGGER_NAME')
-
-if verbose:
-    logger.info("#------ # SVM CLASSIFICATION # ------#")
-    logger.info("|--- HYPERPARAMETERS ---|")
-    logger.info(f"Dataset: {path}")
-    # logger.info(f"Impute: {data_imputation}")
-    logger.info(f"add_indicator: {add_indicator}")
-    logger.info(f"Random seed: {seed}")
-    logger.info(f"Strategy: {strategy}")
-    logger.info(f"Test proportion: {test_proportion}")
-    logger.info(f"Number of features (k): {k_features}")
-    # logger.info(f"Start column: {start_column}")
     
+pipeline_config = {
+    'seed':                        seed,
+    'verbose':                     verbose,
+    'path':                        path,
+    'simple_imputer':              simple_imputer,
+    'iterative_imputer':           iterative_imputer,
+    'KNN_imputer':                 KNN_imputer,
+    'nan_elimination':             nan_elimination,
+    'no_imputation':               no_imputation,
+    'sparse_no_imputation':        sparse_no_imputation,
+    'add_indicator_simple_imp':    add_indicator_simple_imp,
+    'copy_simple_imp':             copy_simple_imp,
+    'strategy_simple_imp':         strategy_simple_imp,
+    'estimator_iter_imp':          estimator_iter_imp,
+    'max_iter_iter_imp':           max_iter_iter_imp,
+    'tol_iter_imp':                tol_iter_imp,
+    'initial_strategy_iter_imp':   initial_strategy_iter_imp,
+    'n_nearest_features_iter_imp': n_nearest_features_iter_imp,
+    'imputation_order_iter_imp':   imputation_order_iter_imp,
+    'min_value_iter_imp':          min_value_iter_imp,
+    'max_value_iter_imp':          max_value_iter_imp,
+    'n_neighbours_KNN_imp':        n_neighbours_KNN_imp,
+    'weights_KNN_imp':             weights_KNN_imp,
+    'metric_KNN_imp':              metric_KNN_imp,
+    'drop_cols_nan_elim':          drop_cols_nan_elim,
+    'first_column_to_normalize':   first_column_to_normalize,
+    'cutoffs':                     cutoffs,
+    'column_to_categorize':        column_to_categorize,
+    'test_proportion':             test_proportion,
+    'X_start_column_idx':          X_start_column_idx,
+    'y_column_label':              y_column_label,
+    'score_func':                  score_func,
+    'k_features':                  k_features,
+    'try_SVC':                     try_SVC,
+    'try_SVR':                     try_SVR,
+}
+
 
 # %% Load Data
 
@@ -268,31 +379,31 @@ dataset = cleaning.clean_data(dataset, logger=logger.info)
 dataset_dicts = []
 if simple_imputer:
     dataset_dicts = dataset_dicts + imputation.create_simple_imputers(
-        add_indicator=add_indicator,
-        copy=True,
-        strategy=strategy
+        add_indicator=add_indicator_simple_imp,
+        copy=copy_simple_imp,
+        strategy=strategy_simple_imp,
     )
 if iterative_imputer:
     dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
         df=dataset,
-        estimator=estimator,
-        max_iter=max_iter,
-        tol=tol,
-        initial_strategy=initial_strategy,
-        n_nearest_features=n_nearest_features,
-        imputation_order=imputation_order,
-        min_value=min_value,
-        max_value=max_value
+        estimator=estimator_iter_imp,
+        max_iter=max_iter_iter_imp,
+        tol=tol_iter_imp,
+        initial_strategy=initial_strategy_iter_imp,
+        n_nearest_features=n_nearest_features_iter_imp,
+        imputation_order=imputation_order_iter_imp,
+        min_value=min_value_iter_imp,
+        max_value=max_value_iter_imp,
     )
 if KNN_imputer:
     dataset_dicts = dataset_dicts + imputation.create_KNN_imputers(
-        missing_values=np.nan,
-        n_neighbours=n_neighbours,
-        weights=KNN_weights,
-        metric=metric,
-        copy=True,
-        add_indicator=False,
-        keep_empty_features=False
+        missing_values=missing_values_KNN_imp,
+        n_neighbours=n_neighbours_KNN_imp,
+        weights=weights_KNN_imp,
+        metric=metric_KNN_imp,
+        copy=copy_KNN_imp,
+        add_indicator=add_indicator_KNN_imp,
+        keep_empty_features=keep_empty_features_KNN_imp,
     )
 
 # Impute data using generated imputers
@@ -301,7 +412,7 @@ dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11)
 
 # Add NaN-eliminated and un-imputed datasets
 if nan_elimination:
-    dataset_dicts = dataset_dicts + imputation.eliminate_nan(dataset, drop_cols=drop_cols)
+    dataset_dicts = dataset_dicts + imputation.eliminate_nan(dataset, drop_cols=drop_cols_nan_elim)
 if no_imputation:
     dataset_dicts = dataset_dicts + imputation.no_imputer(dataset, copy=True)
 
@@ -387,6 +498,17 @@ dataset_dicts = [
 # 2. Input and target variables for the feature-selected training and testing data.
 
 
+# %% Log results
+
+utils.log_results(
+    original_dataset=dataset,
+    config=pipeline_config,
+    original_protein_start_col=first_column_to_normalize,
+    dataset_dicts=dataset_dicts,
+    logger=logger.info
+)
+
+
 # %% Model Training & Fitting
 
 # Create Naive Bayes models
@@ -395,7 +517,8 @@ dataset_dicts = [
 # Find best SVM model
 if try_SVC:
     dataset_dicts = [
-        classifier.find_best_svm_model(
+        classifier.find_best_svr_model(
+            pipeline_config=pipeline_config,
             dataset_dict=dataset_dict,
             C_params=C_params_SVC,
             kernels=kernels_SVC,
@@ -412,6 +535,7 @@ if try_SVC:
             decision_function_shape_params=decision_function_shape_params_SVC,
             break_ties=break_ties_params_SVC,
             random_state=seed,
+            verbose_grid_search=verbose_grid_search,
             logger=logger.info,
             return_train_score=return_train_score_SVC,
         )
@@ -422,6 +546,7 @@ if try_SVC:
 if try_SVR:
     dataset_dicts = [
         classifier.find_best_svr_model(
+            pipeline_config=pipeline_config,
             dataset_dict=dataset_dict,
             kernels=kernels_SVR,
             degree_params=degree_params_SVR,
@@ -434,6 +559,7 @@ if try_SVR:
             cache_size_params=cache_size_params_SVR,
             verb=verb_SVR,
             max_iter_params=max_iter_params_SVR,
+            verbose_grid_search=verbose_grid_search,
             logger=logger.info,
             return_train_score=return_train_score_SVR,
         )

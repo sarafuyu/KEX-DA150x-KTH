@@ -112,6 +112,10 @@ def get_file_name(data_dict):
     :param data_dict: A dictionary containing the imputer type and configuration.
     :return: A string with the file name.
     """
+    # svr = data_dict['svr']
+    # cls = svr['clf']
+
+
     fn_string = ''
     if data_dict['type'] == 'SimpleImputer':
         fn_string = (
@@ -147,7 +151,9 @@ def get_file_name(data_dict):
                 'ty-' + data_dict['type'] + '_' +
                 'dt-' + data_dict['date'].strftime('%Y-%m-%d-%H%M%S'))
     # TODO: add sparse matrix type here later: elif data_dict['type'] == 's'
+
     return fn_string
+
 
 def export_imputed_data(data_dict, filename=None):
     """
@@ -272,3 +278,171 @@ def get_dict_from_list_of_dict(dict_list, dict_key, dict_value):
             return d
     raise ValueError(f"Dictionary with key '{dict_key}' and value '{dict_value}' not found. "
                      f"Maybe you didn't set `no_imputation = True`?")
+
+
+def process(token):
+    """Used by tqdm to process tokens.
+
+    Does not work at the moment. The function is not used in the current implementation.
+
+    :param token: A token to process.
+    """
+    return token['text']
+
+
+def log_results(original_dataset, original_protein_start_col, config, dataset_dicts, logger=print):
+    """
+    Log the results of the pipeline.
+
+    :param original_dataset: The original dataset.
+    :param original_protein_start_col: The index of the first protein column in the original dataset.
+    :param config: The configuration of the pipeline.
+    :param dataset_dicts: A list of dictionaries containing the imputer object, the imputed dataset,
+    :param logger: A logging and/or printing function.
+    :return: None
+    """
+    has_printed_header_info = False
+    dataset_number = 0
+    for dataset_dict in dataset_dicts:
+        if not has_printed_header_info:
+            logger("|--- RESULTS ---|")
+            logger(f"ORIGINAL DATASET")
+            logger(f"File: {config['path']}")
+            logger(f"shape: {original_dataset.shape}")
+            logger(f"mean FT5: {original_dataset['FT5'].mean().mean()}")
+            logger(f"median FT5: {original_dataset['FT5'].median().mean()}")
+            logger(f"variance FT5: {original_dataset['FT5'].var().mean()}")
+            logger(f"std deviation FT5: {original_dataset['FT5'].std().mean()}")
+            logger(f"max FT5: {original_dataset['FT5'].max().max()}")
+            logger(f"min FT5: {original_dataset['FT5'].min().min()}")
+            logger(f"mean protein intensities: {original_dataset.iloc[:, original_protein_start_col:].mean().mean()}")
+            logger(f"median protein intensities: {original_dataset.iloc[:, original_protein_start_col:].median().mean()}")
+            logger(f"variance protein intensities: {original_dataset.iloc[:, original_protein_start_col:].var().mean()}")
+            logger(f"std deviation protein intensities: {original_dataset.iloc[:, original_protein_start_col:].std().mean()}")
+            logger(f"max protein intensities: {original_dataset.iloc[:, original_protein_start_col:].max().max()}")
+            logger(f"min protein intensities: {original_dataset.iloc[:, original_protein_start_col:].min().min()}\n")
+
+            # Log imputation modes
+            logger(f"IMPUTATION MODES")
+            logger(f"SimpleImputer: {config['simple_imputer']}")
+            logger(f"IterativeImputer: {config['iterative_imputer']}")
+            logger(f"KNN_Imputer: {config['KNN_imputer']}")
+            logger(f"no_imputation: {config['no_imputation']}")
+            logger(f"nan_elimination: {config['nan_elimination']}")
+            logger(f"nan elimination drop: {'columns' if config['drop_cols_nan_elim'] else 'rows'}\n")
+
+            # Log data normalization
+            logger(f"DATA NORMALIZATION")
+            logger(f"first_column_to_normalize: {config['first_column_to_normalize']}\n")
+
+            # Log categorization
+            logger(f"CATEGORIZATION")
+            if not len(config['cutoffs']):
+                logger(f"No categorization (continuous variable)")
+            else:
+                logger(f"Number of classes: {len(config['cutoffs']) + 1}")
+                logger(f"Cut-offs: {config['cutoffs']}")
+
+            # Log training split
+            logger(f"Test_proportion: {config['test_proportion']}")
+            logger(f"Training proportion: {1 - config['test_proportion']}")
+            logger(f"X_start_column_idx: {config['X_start_column_idx']}")
+            logger(f"y_column_label: {config['y_column_label']}")
+
+            # Log feature selection
+            logger(f"FEATURE SELECTION")
+            logger(f"score_func: {repr(config['score_func'])}")
+            logger(f"k: {config['k_features']}\n")
+
+            # Log classifier
+            logger(f"CLASSIFIERS")
+            logger(f"SVR: {config['try_SVR']}")
+            logger(f"SVC: {config['try_SVC']}\n")
+
+            has_printed_header_info = True
+
+
+
+    return None
+
+
+def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, clf, accuracy, logger=print):
+    """
+    Log the results of the grid search.
+
+    :return: None
+    """
+    logger(f"|--- PROCESSED DATASET ---|")
+    dataset = dataset_dict['dataset']
+    # Print imputation information
+    logger(f"IMPUTATION")
+    logger(f"Dataset: {get_file_name(dataset_dict)}")
+    logger(f"Date: {dataset_dict['date']}")
+
+    logger(f"Imputer type: {dataset_dict['type']}")
+
+    logger(f"add_indicator_simple_imp: {pipeline_config['add_indicator_simple_imp']}")
+    logger(f"copy_simple_imp: {pipeline_config['copy_simple_imp']}")
+    logger(f"strategy_simple_imp: {pipeline_config['strategy_simple_imp']}")
+    logger(f"estimator_iter_imp: {pipeline_config['estimator_iter_imp']}")
+    logger(f"max_iter_iter_imp: {pipeline_config['max_iter_iter_imp']}")
+    logger(f"tol_iter_imp: {pipeline_config['tol_iter_imp']}")
+    logger(f"initial_strategy_iter_imp: {pipeline_config['initial_strategy_iter_imp']}")
+    logger(f"n_nearest_features_iter_imp: {pipeline_config['n_nearest_features_iter_imp']}")
+    logger(f"imputation_order_iter_imp: {pipeline_config['imputation_order_iter_imp']}")
+    logger(f"min_value_iter_imp: {pipeline_config['min_value_iter_imp']}")
+    logger(f"max_value_iter_imp: {pipeline_config['max_value_iter_imp']}")
+
+    logger(f"shape: {dataset.shape}\n")
+
+    # TODO: print feature scores from dataset_dict
+
+    # Print summary statistics
+    logger(f"SUMMARY STATISTICS")
+    logger(f"mean FT5: {dataset['FT5'].mean().mean()}")
+    logger(f"median FT5: {dataset['FT5'].median().mean()}")
+    logger(f"variance FT5: {dataset['FT5'].var().mean()}")
+    logger(f"std deviation FT5: {dataset['FT5'].std().mean()}")
+    logger(f"max FT5: {dataset['FT5'].max().max()}")
+    logger(f"min FT5: {dataset['FT5'].min().min()}")
+    logger(f"mean protein intensities: {dataset.iloc[:, protein_start_col:].mean().mean()}")
+    logger(
+        f"median protein intensities: {dataset.iloc[:, protein_start_col:].median().mean()}"
+        )
+    logger(f"variance protein intensities: {dataset.iloc[:, protein_start_col:].var().mean()}")
+    logger(
+        f"std deviation protein intensities: {dataset.iloc[:, protein_start_col:].std().mean()}"
+        )
+    logger(f"max protein intensities: {dataset.iloc[:, protein_start_col:].max().max()}")
+    logger(f"min protein intensities: {dataset.iloc[:, protein_start_col:].min().min()}\n")
+
+    # Print classifier information
+    logger(f"CLASSIFIER")
+    logger(f"Classifier: {repr(clf.best_estimator_)}")
+    logger(f"Test accuracy: {accuracy}")
+
+    # Log best parameters
+    if hasattr(clf, 'best_params_'):
+        logger("Best parameters combination found:")
+        best_parameters = clf.best_params_
+        for param_name in sorted(best_parameters.keys()):
+            logger(f"{param_name}: {best_parameters[param_name]}")
+
+    if hasattr(clf, 'cv_results_'):
+        cv_results = pd.DataFrame(clf.cv_results_)
+        # Save cross-validation results to a CSV file
+        grid_search_file_name = get_file_name(dataset_dict) + '_grid_search_results.csv'
+        cv_results.to_csv(grid_search_file_name, index=False)
+
+        # Log cross-validation results
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            logger(f"Cross-validation results:")
+            for col in cv_results.columns:
+                if col == 'params':
+                    for param in cv_results[col]:
+                        logger(f"params: {param}")
+                else:
+                    logger(f"{col}: {cv_results[col]}")
+        logger(f"Grid search completed. Grid search results saved to {grid_search_file_name}!\n")
+
+    return
