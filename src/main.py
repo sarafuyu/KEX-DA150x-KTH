@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 This is the main file for the project. It will be used to run the project.
 
@@ -44,8 +46,6 @@ from datetime import datetime
 
 ## External library imports
 import pandas as pd
-import numpy as np
-from tqdm import tqdm
 from sklearn.feature_selection import f_classif
 from sklearn.linear_model import BayesianRidge
 
@@ -135,7 +135,8 @@ tol_iter_imp: float = 1e-3  # might need to adjust
 initial_strategy_iter_imp: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
-n_nearest_features_iter_imp: Sequence[int] = [5, 20, 50, None]  # [10, 100, 500, None]
+n_nearest_features_iter_imp: Sequence[int] = [5, 10, 20, 50, None]  # [10, 100, 500, None]
+
 imputation_order_iter_imp: Sequence[str] = ["ascending"]  # ["ascending", "descending" "random"]
 # ascending: From the features with the fewest missing values to those with the most
 min_value_iter_imp: int = 0  # no features have negative values, adjust tighter for prot intensities?
@@ -148,7 +149,7 @@ max_value_iter_imp: str | int = '10% higher than max'
 # Missing values to impute
 missing_values_KNN_imp = pd.NA
 # Initial span of neighbours considering dataset size
-n_neighbours_KNN_imp: Sequence[int] = [5, 20, 50]
+n_neighbours_KNN_imp: Sequence[int] = [5, 10, 20, 50]
 # default='uniform', callable has potential for later fitting
 weights_KNN_imp: Sequence[str] = ['uniform', 'distance']
 metric_KNN_imp: Sequence[str] = ['nan_euclidean']
@@ -172,9 +173,11 @@ drop_cols_nan_elim = True
 
 # First column to normalize. Will normalize all columns from this index and onwards.
 first_column_to_normalize: int = 11
+# We only normalize the antibody/protein intensity columns (cols 11 and up). Age, disease, FTs not normalized.
+
 # TODO: check if this is the correct index. Should it be 10 instead?
-# Note: we only normalize the antibody/protein intensity columns (cols 11 and up).
-#       Age, disease, FTs not normalized.
+# TODO: instead iterate over the column labels until we reach the first protein intensity column
+#       then normalize all columns from there and onwards instead of hardcoding the index.
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -212,7 +215,7 @@ y_column_label: str = 'FT5'   # y column label
 
 
 # **********----------------------------------------------------------------------------********** #
-# |                                   ~~ Feature selection ~~                                     | #
+# |                                   ~~ Feature selection ~~                                    | #
 # **********----------------------------------------------------------------------------********** #
 
 # score_func is a function taking in X, an array of columns (features), and y, a target column,
@@ -225,29 +228,36 @@ k_features: int = 60  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # |                              ~~ Model training & fitting ~~                                  | #
 # **********----------------------------------------------------------------------------********** #
 
-verbose_grid_search: int = 0
+# ------------
+# Grid Search
+# ------------
+
+# Set the verbosity level for the grid search printouts that are not logged.
+grid_search_verbosity: int = -1
+# Number of cross-validation folds
+k_cv_folds: int = 5
 
 # ---------------
 # SVM Classifier
 # ---------------
 
 # Enable SVC
-try_SVC = True
+SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_params_SVC: Sequence[float] = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-kernels_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear','rbf', 'precomputed'
-degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+C_params_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+kernels_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+degree_params_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
 gamma_params_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-coef0_params_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, 0.0, 0.1, 1.0, 10.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+coef0_params_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 shrinking_SVC: Sequence[bool] = [True]
 probability_SVC: Sequence[bool] = [False]
-tol_params_SVC: Sequence[float] = [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+tol_params_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 cache_size_params_SVC: Sequence[int] = [500]
 class_weight_SVC: dict | None = None
 verb_SVC: int = verbose
 max_iter_params_SVC: Sequence[int] = [1_000_000]  # [-1]
-decision_function_shape_params_SVC: Sequence[str] = ['ovr'] # onli ovo if multi class
+decision_function_params_SVC: Sequence[str] = ['ovr']  # onli ovo if multi class
 break_ties_params_SVC: Sequence[bool] = [False]
 
 # return_train_score_SVC:
@@ -255,13 +265,15 @@ break_ties_params_SVC: Sequence[bool] = [False]
 # impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
 # computationally expensive and is not strictly required to select the parameters that yield the best generalization
 # performance.
-return_train_score_SVC = False
+return_train_score_SVC: bool = False
+grid_search_scoring_SVC: str = 'accuracy'
 
+# --------------
 # SVR Classifier
 # --------------
 
 # Enable SVR
-try_SVR = False
+SVR = False
 
 kernels_SVR: Sequence[str] = ['rbf']
 degree_params_SVR: Sequence[int] = [3]
@@ -281,6 +293,7 @@ max_iter_params_SVR: Sequence[int] = [-1]
 # computationally expensive and is not strictly required to select the parameters that yield the best generalization
 # performance.
 return_train_score_SVR: bool = False
+grid_search_scoring_SVR: str = 'neg_mean_squared_error'
 
 
 # %% Local imports
@@ -304,7 +317,7 @@ import classifier
 
 handlers = []
 if log:
-    file_handler = logging.FileHandler(filename=logfile)  # TODO: generate unique filename
+    file_handler = logging.FileHandler(filename=logfile, encoding="utf-8")  # TODO: generate unique filename
     handlers.append(file_handler)
 stdout_handler = logging.StreamHandler(stream=sys.stdout)
 handlers.append(stdout_handler)
@@ -317,43 +330,6 @@ logging.basicConfig(level=logging.DEBUG,
                     handlers=handlers)
 
 logger = logging.getLogger('LOGGER_NAME')
-    
-pipeline_config = {
-    'seed':                        seed,
-    'verbose':                     verbose,
-    'path':                        path,
-    'simple_imputer':              simple_imputer,
-    'iterative_imputer':           iterative_imputer,
-    'KNN_imputer':                 KNN_imputer,
-    'nan_elimination':             nan_elimination,
-    'no_imputation':               no_imputation,
-    'sparse_no_imputation':        sparse_no_imputation,
-    'add_indicator_simple_imp':    add_indicator_simple_imp,
-    'copy_simple_imp':             copy_simple_imp,
-    'strategy_simple_imp':         strategy_simple_imp,
-    'estimator_iter_imp':          estimator_iter_imp,
-    'max_iter_iter_imp':           max_iter_iter_imp,
-    'tol_iter_imp':                tol_iter_imp,
-    'initial_strategy_iter_imp':   initial_strategy_iter_imp,
-    'n_nearest_features_iter_imp': n_nearest_features_iter_imp,
-    'imputation_order_iter_imp':   imputation_order_iter_imp,
-    'min_value_iter_imp':          min_value_iter_imp,
-    'max_value_iter_imp':          max_value_iter_imp,
-    'n_neighbours_KNN_imp':        n_neighbours_KNN_imp,
-    'weights_KNN_imp':             weights_KNN_imp,
-    'metric_KNN_imp':              metric_KNN_imp,
-    'drop_cols_nan_elim':          drop_cols_nan_elim,
-    'first_column_to_normalize':   first_column_to_normalize,
-    'cutoffs':                     cutoffs,
-    'column_to_categorize':        column_to_categorize,
-    'test_proportion':             test_proportion,
-    'X_start_column_idx':          X_start_column_idx,
-    'y_column_label':              y_column_label,
-    'score_func':                  score_func,
-    'k_features':                  k_features,
-    'try_SVC':                     try_SVC,
-    'try_SVR':                     try_SVR,
-}
 
 
 # %% Load Data
@@ -427,13 +403,6 @@ if verbose:
 
 # %% Data Normalization
 
-# Columns to normalize
-# Note: we only normalize the antibody/protein intensity columns (cols 11 or 10 and up)
-# age, disease, FTs not normalized
-# TODO: instead iterate over the column labels until we reach the first protein intensity column
-#       then normalize all columns from there and onwards instead of hardcoding the index.
-# TODO: Right now, during
-
 # Normalize the datasets
 dataset_dicts = [
     normalization.std_normalization(
@@ -492,19 +461,64 @@ dataset_dicts = [
     for data_dict in dataset_dicts
 ]
 
-# dataset_dicts is now a list that contains dict with the following:
-# 1. Imputed and normalized data sets, date of imputation, type of imputation, imputer objects,
-#    summary statistics, ANOVA P-values and feature selection scores (F-values).
-# 2. Input and target variables for the feature-selected training and testing data.
-
 
 # %% Log results
+
+pipeline_config = {
+    'seed':                         seed,
+    'verbose':                      verbose,
+    'path':                         path,
+    'simple_imputer':               simple_imputer,
+    'iterative_imputer':            iterative_imputer,
+    'KNN_imputer':                  KNN_imputer,
+    'nan_elimination':              nan_elimination,
+    'no_imputation':                no_imputation,
+    'sparse_no_imputation':         sparse_no_imputation,
+    'add_indicator_simple_imp':     add_indicator_simple_imp,
+    'copy_simple_imp':              copy_simple_imp,
+    'strategy_simple_imp':          strategy_simple_imp,
+    'estimator_iter_imp':           estimator_iter_imp,
+    'max_iter_iter_imp':            max_iter_iter_imp,
+    'tol_iter_imp':                 tol_iter_imp,
+    'initial_strategy_iter_imp':    initial_strategy_iter_imp,
+    'n_nearest_features_iter_imp':  n_nearest_features_iter_imp,
+    'imputation_order_iter_imp':    imputation_order_iter_imp,
+    'min_value_iter_imp':           min_value_iter_imp,
+    'max_value_iter_imp':           max_value_iter_imp,
+    'n_neighbours_KNN_imp':         n_neighbours_KNN_imp,
+    'weights_KNN_imp':              weights_KNN_imp,
+    'metric_KNN_imp':               metric_KNN_imp,
+    'drop_cols_nan_elim':           drop_cols_nan_elim,
+    'first_column_to_normalize':    first_column_to_normalize,
+    'cutoffs':                      cutoffs,
+    'column_to_categorize':         column_to_categorize,
+    'test_proportion':              test_proportion,
+    'X_start_column_idx':           X_start_column_idx,
+    'y_column_label':               y_column_label,
+    'score_func':                   score_func,
+    'k_features':                   k_features,
+    'SVC':                          SVC,
+    # 'C_params_SVC':                 C_params_SVC,
+    # 'kernels_SVC':                  kernels_SVC,
+    # 'degree_params_SVC':            degree_params_SVC,
+    # 'gamma_params_SVC':             gamma_params_SVC,
+    # 'coef0_params_SVC':             coef0_params_SVC,
+    # 'tol_params_SVC':               tol_params_SVC,
+    # 'decision_function_params_SVC': decision_function_params_SVC,
+    'SVR':                          SVR,
+    # 'kernels_SVR':                  kernels_SVR,
+    # 'degree_params_SVR':            degree_params_SVR,
+    # 'gamma_params_SVR':             gamma_params_SVR,
+    # 'coef0_params_SVR':             coef0_params_SVR,
+    # 'tol_params_SVR':               tol_params_SVR,
+    # 'C_params_SVR':                 C_params_SVR,
+    # 'epsilon_params_SVR':           epsilon_params_SVR,
+}
 
 utils.log_results(
     original_dataset=dataset,
     config=pipeline_config,
     original_protein_start_col=first_column_to_normalize,
-    dataset_dicts=dataset_dicts,
     logger=logger.info
 )
 
@@ -515,9 +529,9 @@ utils.log_results(
 # dataset_dicts = [classifier.add_naive_bayes_models(dataset_dict) for dataset_dict in dataset_dicts]
 
 # Find best SVM model
-if try_SVC:
+if SVC:
     dataset_dicts = [
-        classifier.find_best_svr_model(
+        classifier.find_best_svm_model(
             pipeline_config=pipeline_config,
             dataset_dict=dataset_dict,
             C_params=C_params_SVC,
@@ -532,18 +546,20 @@ if try_SVC:
             class_weight=class_weight_SVC,
             verb=verb_SVC,
             max_iter_params=max_iter_params_SVC,
-            decision_function_shape_params=decision_function_shape_params_SVC,
+            decision_function_params=decision_function_params_SVC,
             break_ties=break_ties_params_SVC,
             random_state=seed,
-            verbose_grid_search=verbose_grid_search,
             logger=logger.info,
+            grid_search_verbosity=grid_search_verbosity,
             return_train_score=return_train_score_SVC,
+            grid_search_scoring=grid_search_scoring_SVC,
+            k_cv_folds=k_cv_folds,
         )
         for dataset_dict in dataset_dicts
     ]
 
 # Find best SVR model
-if try_SVR:
+if SVR:
     dataset_dicts = [
         classifier.find_best_svr_model(
             pipeline_config=pipeline_config,
@@ -559,9 +575,11 @@ if try_SVR:
             cache_size_params=cache_size_params_SVR,
             verb=verb_SVR,
             max_iter_params=max_iter_params_SVR,
-            verbose_grid_search=verbose_grid_search,
             logger=logger.info,
+            grid_search_verbosity=grid_search_verbosity,
             return_train_score=return_train_score_SVR,
+            grid_search_scoring=grid_search_scoring_SVR,
+            k_cv_folds=k_cv_folds,
         )
         for dataset_dict in dataset_dicts
     ]
@@ -576,8 +594,11 @@ if try_SVR:
 # TODO
 
 
-# %% Breakpoint
+# %% End Time
 
-logger.info(f"Pipeline finished {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} which took {datetime.now() - start_time}")
+utils.log_time(start_time=start_time, end_time=datetime.now(), logger=print)
+
+
+# %% Breakpoint
 
 # breakpoint()

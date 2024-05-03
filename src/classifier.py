@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Northstar Prediction Estimation
 
@@ -37,12 +39,15 @@ def find_best_svm_model(pipeline_config,
                         class_weight=None,
                         verb=verbose,
                         max_iter_params=(-1,),
-                        decision_function_shape_params=('ovr',),
+                        decision_function_params=('ovr',),
                         break_ties=False,
                         random_state=seed,
                         verbose_grid_search=0,
                         logger=print,
-                        return_train_score=False):
+                        grid_search_verbosity=0,
+                        return_train_score=False,
+                        grid_search_scoring=0,
+                        k_cv_folds=5):
     """
     Create a list of Support Vector Machine models for classification and regression with
     different configurations.
@@ -52,26 +57,6 @@ def find_best_svm_model(pipeline_config,
     - ``sklearn.svm.SVC``
     - ``sklearn.model_selection.GridSearchCV``
 
-    :param pipeline_config: A dictionary containing the pipeline configuration.
-    :param dataset_dict: A dictionary containing the dataset and other relevant information.
-    :param C_params: A list of regularization parameters.
-    :param kernels: A list of kernel types.
-    :param degree_params: A list of polynomial degrees.
-    :param gamma_params: A list of gamma values.
-    :param coef0_params: A list of coef0 values.
-    :param shrinking: Whether to use the shrinking heuristic.
-    :param probability: Whether to enable probability estimates.
-    :param tol_params: A list of tolerance values.
-    :param cache_size_params: A list of cache sizes.
-    :param class_weight: A dictionary with class weights.
-    :param verb: Whether to print verbose output.
-    :param max_iter_params: A list of maximum iterations.
-    :param decision_function_shape_params: A list of decision function shapes.
-    :param break_ties: Whether to break ties.
-    :param random_state: The seed used by the random number generator.
-    :param logger: A logging function.
-    :param return_train_score: Whether to return the training score.
-    :return: dataset_dict with the SVM models added to dataset_dict['svm'].
     """
     # If no imputation has been done, return the dataset_dict as is
     if dataset_dict['type'] == 'no_imputation':
@@ -102,7 +87,7 @@ def find_best_svm_model(pipeline_config,
             'cache_size': cache_size_params,
             'verbose': [verb],
             'max_iter': max_iter_params,
-            'decision_function_shape': decision_function_shape_params,
+            'decision_function_shape': decision_function_params,
             'break_ties': break_ties,
             'random_state': [random_state],
         }
@@ -112,10 +97,10 @@ def find_best_svm_model(pipeline_config,
 
     # Perform grid search
     clf = GridSearchCV(
-        estimator=svm.SVC(),
+        estimator=svm.SVC(verbose=grid_search_verbosity),
         param_grid=param_grid,
-        scoring='accuracy',
-        cv=5,
+        scoring=grid_search_scoring,
+        cv=k_cv_folds,
         verbose=verbose_grid_search,
         return_train_score=return_train_score
     )
@@ -132,7 +117,7 @@ def find_best_svm_model(pipeline_config,
 
     dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}
 
-    joblib.dump(clf, utils.get_file_name(dataset_dict) + '.pkl')
+    joblib.dump(clf, utils.get_file_name(dataset_dict, pipeline_config) + '.pkl')
     
     return dataset_dict
 
@@ -152,9 +137,11 @@ def find_best_svr_model(pipeline_config,
                         cache_size_params=200,
                         verb=verbose,
                         max_iter_params=-1,
-                        verbose_grid_search=0,
                         logger=print,
-                        return_train_score=False):
+                        grid_search_verbosity=0,
+                        return_train_score=False,
+                        grid_search_scoring=0,
+                        k_cv_folds=5):
     """
     Create a list of Support Vector Machine models for classification and regression with
     different configurations.
@@ -170,7 +157,6 @@ def find_best_svr_model(pipeline_config,
         # TODO: Test run to see if SVR can handle NaN values. Probably we need to convert into a sparse matrix first.
         return dataset_dict
     if dataset_dict['type'] == 'sparse':
-
         # TODO: do we need to change any SVR/grid search params to make it work with sparse data?
         #             If so, we can do that here.
         pass
@@ -204,11 +190,11 @@ def find_best_svr_model(pipeline_config,
 
     # Perform grid search
     clf = GridSearchCV(
-        estimator=svm.SVR(),
+        estimator=svm.SVR(verbose=grid_search_verbosity),
         param_grid=param_grid,
-        scoring='neg_mean_squared_error',
-        cv=5,
-        verbose=verbose_grid_search,
+        scoring=grid_search_scoring,
+        cv=k_cv_folds,
+        verbose=grid_search_verbosity,
         return_train_score=return_train_score
     )
     clf = clf.fit(X_training, y_training)
@@ -232,7 +218,7 @@ def find_best_svr_model(pipeline_config,
 
     dataset_dict['svr'] = {'clf': clf, 'test_accuracy': test_accuracy}
 
-    joblib.dump(clf, utils.get_file_name(dataset_dict) + '.pkl')
+    joblib.dump(clf, utils.get_file_name(dataset_dict, pipeline_config) + '.pkl')
 
     return dataset_dict
 
