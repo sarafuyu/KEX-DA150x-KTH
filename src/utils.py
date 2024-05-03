@@ -192,7 +192,7 @@ def get_file_name(data_dict, pipeline_config=None):
                 )
 
     if pipeline_config:
-        fn_string += 'DT꞉' + str(data_dict['start_time'].strftime('%Y-%m-%d-%H%M%S'))
+        fn_string += 'DT꞉' + str(pipeline_config['start_time'].strftime('%Y-%m-%d-%H%M%S'))
     else:
         fn_string += 'DT꞉' + str(data_dict['date'].strftime('%Y-%m-%d-%H%M%S'))
     return fn_string
@@ -444,7 +444,7 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
     # Save cross-validation results
     if clf and hasattr(clf, 'cv_results_'):
         cv_results = pd.DataFrame(clf.cv_results_)
-        cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with indivdual accuracy scores from custom model
+        # cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with indivdual accuracy scores from custom model
         # Save cross-validation results as CSV file
         grid_search_file_name = get_file_name(dataset_dict, pipeline_config) + '.csv'
         cv_results.to_csv(grid_search_file_name, index=False)
