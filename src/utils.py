@@ -114,13 +114,15 @@ def summary_statistics(data, cols):
 def get_file_name(data_dict, pipeline_config=None):
     """
     Generate a file name based on the imputer type and configuration.
-    :param data_dict: A dictionary containing the imputer type and configuration.
+
+    If a pipeline configuration is provided, the file name will also include the pipeline
+    configuration and the date will be the start time of the pipeline. Otherwise, the date
+    will be the date of the imputation.
+
+    :param data_dict: A dictionary containing the dataset, imputer type and configuration.
     :param pipeline_config: A dictionary containing the pipeline configuration.
     :return: A string with the file name.
     """
-    # svr = data_dict['svr']
-    # cls = svr['clf']
-
     fn_string = ''
     if data_dict['type'] == 'SimpleImputer':
         fn_string = (
@@ -165,7 +167,7 @@ def get_file_name(data_dict, pipeline_config=None):
              'RS꞉' + str(pipeline_config['seed']) + '_'
         )
         if pipeline_config['SVC']:
-            fn_string += 'CL꞉SVC' + '_'
+            fn_string += 'CF꞉SVC' + '_'
             if 'clr' in pipeline_config:
                 fn_string += (
                     'CP꞉' + str(pipeline_config['C']) + '_' +
@@ -177,7 +179,7 @@ def get_file_name(data_dict, pipeline_config=None):
                     'DF꞉' + str(pipeline_config['decision_function']) + '_'
                 )
         elif pipeline_config['SVR']:
-            fn_string += 'CL꞉SVR' + '_'
+            fn_string += 'CF꞉SVR' + '_'
             if 'clr' in pipeline_config:
                 fn_string += (
                     'CP꞉' + str(pipeline_config['C']) + '_' +
