@@ -268,7 +268,6 @@ misc.xml
 ## Plugin-specific files:
 
 # IntelliJ
-/out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
@@ -302,3 +301,12 @@ fabric.properties
 hs_err_pid*
 
 !.idea
+
+
+## DMD Project
+
+# Output files
+out/*
+
+# Saved data
+!data/*
