@@ -444,6 +444,7 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
     # Save cross-validation results
     if clf and hasattr(clf, 'cv_results_'):
         cv_results = pd.DataFrame(clf.cv_results_)
+        cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with indivdual accuracy scores from custom model
         # Save cross-validation results as CSV file
         grid_search_file_name = get_file_name(dataset_dict, pipeline_config) + '.csv'
         cv_results.to_csv(grid_search_file_name, index=False)
@@ -476,3 +477,4 @@ def log_time(start_time, end_time, logger=print):
         f"Pipeline finished {end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
         f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.\n"
     )
+
