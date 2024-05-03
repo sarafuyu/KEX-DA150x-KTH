@@ -11,10 +11,11 @@
 # Imported by our .py files
 numpy==1.26.4
 pandas==2.2.2  # TODO: can be updated to 2.2.2. Do after pipeline is working.
-scikit_learn>=1.4.1.post1
 scipy>=1.6.0
+scikit-learn~=1.4.1.post1
 tqdm==4.66.2
 seaborn==0.13.2
+joblib~=1.4.2
 
 # Needed for the Jupyter Notebooks
 matplotlib==3.8.3
@@ -48,3 +49,4 @@ sphinxcontrib-serializinghtml==1.1.10
 
 # Virtualenv
 virtualenv==20.26.0
+

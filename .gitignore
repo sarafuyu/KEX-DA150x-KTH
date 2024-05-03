@@ -307,6 +307,9 @@ hs_err_pid*
 
 # Output files
 out/*
+out/*/*
 
 # Saved data
 !data/*
+!data/*.log
+!data/*/*

@@ -11,6 +11,9 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 # %% Imports
 
+# Standard library imports
+from pathlib import Path
+
 # External imports
 import pandas as pd
 import scipy
@@ -18,8 +21,13 @@ from sklearn.feature_selection import f_classif
 
 # Local imports
 import utils
-verbose = utils.verbosity_level  # get verbosity level
-seed = utils.random_seed  # get random seed
+
+
+# %% Setup
+
+VERBOSE = utils.VERBOSITY_LEVEL  # get verbosity level
+SEED = utils.RANDOM_SEED         # get random seed
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 # %% Data Splitting
@@ -32,6 +40,7 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     :param test_size: The proportion of the dataset to include in the test split.
     :param random_state: The seed used by the random number generator.
     :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
+    :param y_col_label: The label of the target variable column.
     :return: A tuple of input and target variables.
     """
     from sklearn.model_selection import train_test_split
@@ -67,20 +76,20 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
 
 # %% 1. Filter Methods for Feature Selection
 ## 1.1 Univariate Feature Selection
-"""
-Univariate feature selection works by selecting the best features based on univariate statistical tests.
-It can be seen as a preprocessing step to an estimator. There are three options.
+#
+# Univariate feature selection works by selecting the best features based on univariate statistical tests.
+# It can be seen as a preprocessing step to an estimator. There are three options.
+#
+#  - SelectKBest removes all but the highest scoring features.
+#
+#  - SelectPercentile removes all but a user-specified highest scoring percentage of features using
+#    common univariate statistical tests for each feature: false positive rate SelectFpr,
+#    false discovery rate SelectFdr, or family wise error SelectFwe.
+#
+#  - GenericUnivariateSelect allows to perform univariate feature selection with a configurable
+#    strategy. This allows to select the best univariate selection strategy with hyper-parameter
+#    search estimator.
 
- - SelectKBest removes all but the highest scoring features.
-
- - SelectPercentile removes all but a user-specified highest scoring percentage of features using
-   common univariate statistical tests for each feature: false positive rate SelectFpr,
-   false discovery rate SelectFdr, or family wise error SelectFwe.
-
- - GenericUnivariateSelect allows to perform univariate feature selection with a configurable
-   strategy. This allows to select the best univariate selection strategy with hyper-parameter
-   search estimator.
-"""
 def select_KBest(data_dict, score_func=f_classif, k=100):
     """
     Does KBest feature selection on given test data.
@@ -95,7 +104,7 @@ def select_KBest(data_dict, score_func=f_classif, k=100):
     """
     from sklearn.feature_selection import SelectKBest
     
-    if data_dict['type'] == 'no_imputation':
+    if data_dict['type'] == 'NO_IMPUTATION':
         return data_dict
     X_train = data_dict['X_training']
     X_test = data_dict['X_testing']
@@ -140,18 +149,18 @@ def main():
     
     # %% Load Data
     
-    df_imputed = pd.read_csv('imputed_data.csv')
-    if verbose:
+    df_imputed = pd.read_csv(PROJECT_ROOT/'out'/'imputed_data.csv')
+    if VERBOSE:
         print("Data loaded successfully.")
-    if verbose > 1:
+    if VERBOSE > 1:
         df_imputed.head()
-    global seed
+    global SEED
     
     
     # %% Split Data
     
     # Splitting the dataset into training and testing sets (80% - 20%)
-    X_train, X_test, y_train, y_test = split_data(df_imputed, test_size=0.2, random_state=seed)
+    X_train, X_test, y_train, y_test = split_data(df_imputed, test_size=0.2, random_state=SEED)
     
     
     # %% 2. Feature Selection Using Model
@@ -169,7 +178,7 @@ def main():
     X_train_model = model_select.transform(X_train)
     X_test_model = model_select.transform(X_test)  # noqa
     
-    if verbose:
+    if VERBOSE:
         print("Model Selected Features Shape:", X_train_model.shape)
     
     
@@ -188,7 +197,7 @@ def main():
     X_train_rfe = rfe.fit_transform(X_train, y_train)
     X_test_rfe = rfe.transform(X_test)  # noqa
     
-    if verbose:
+    if VERBOSE:
         print("RFE Selected Features Shape:", X_train_rfe.shape)
     
     
@@ -201,7 +210,7 @@ def main():
     X_train_selected = select_k_best.fit_transform(X_train, y_train)
     X_test_selected = select_k_best.transform(X_test)  # noqa
     
-    if verbose:
+    if VERBOSE:
         print("Selected Features Shape:", X_train_selected.shape)
     
     
@@ -218,12 +227,12 @@ def main():
     X_train_model = model_select.transform(X_train)
     X_test_model = model_select.transform(X_test)  # noqa
     
-    if verbose:
+    if VERBOSE:
         print("Model Selected Features Shape:", X_train_model.shape)
     
     
     # %% Feature Selection using Recursive Feature Elimination (RFE)
-    
+
     from sklearn.feature_selection import RFE
     from sklearn.linear_model import LogisticRegression
     
@@ -235,7 +244,7 @@ def main():
     X_train_rfe = rfe.fit_transform(X_train, y_train)
     X_test_rfe = rfe.transform(X_test)  # noqa
     
-    if verbose:
+    if VERBOSE:
         print("RFE Selected Features Shape:", X_train_rfe.shape)
 
 
