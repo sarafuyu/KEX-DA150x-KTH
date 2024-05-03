@@ -11,19 +11,28 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 # %% Imports
 
-# External imports
+## Standard library imports
+from pathlib import Path
+from datetime import datetime
+
+# External library imports
 import pandas as pd
 import numpy as np
 
 # Local imports
 import utils
-verbose = utils.verbosity_level  # get verbosity level
-seed = utils.random_seed  # get random seed
+
+
+# %% Setup
+
+VERBOSE = utils.VERBOSITY_LEVEL  # get verbosity level
+SEED = utils.RANDOM_SEED         # get random seed
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 # %% Data Cleaning
 
-def clean_data(dataset=None, logger=print):
+def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     """
     Data Cleaning
     
@@ -34,7 +43,7 @@ def clean_data(dataset=None, logger=print):
     * Remove rows if:
       * Sample.ID's value is "BLANK", "POOL 1" or "POOL 2"
       * Disease or Sample.ID value for row is missing
-    * If there are multiple rows with same Sample.ID, drop the duplicate rows with fewer value entires
+    * If there are multiple rows with same Sample.ID, drop the duplicate rows with fewer value entries
       * Might need to evaluate manually or reevaluate the heuristics (which proteins to prioritize over others)
     * Remove columns of antibody concentrations if there are no data entries or low percentage content
     
@@ -44,11 +53,11 @@ def clean_data(dataset=None, logger=print):
     
     # Load CSV file through pandas dataframe if not already loaded
     if 'dataset' not in locals() or dataset is None:
-        dataset = pd.read_csv('normalised_data_all_w_clinical_kex_20240321.csv')
+        dataset = pd.read_csv(PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_kex_20240321.csv')
 
-    if verbose:
-        logger(f"The original dataset shape: {dataset.shape}")
-    if verbose > 1:
+    if VERBOSE:
+        log(f"The original dataset shape: {dataset.shape}")
+    if VERBOSE > 1:
         dataset.head()  # Pre-view first five rows
     
     
@@ -71,9 +80,9 @@ def clean_data(dataset=None, logger=print):
         )
     
     # Verify the change
-    if verbose:
-        logger(f"Original column labels: {dataset.columns}")
-    if verbose > 1:
+    if VERBOSE:
+        log(f"Original column labels: {dataset.columns}")
+    if VERBOSE > 1:
         dataset.head()
     
     
@@ -87,7 +96,7 @@ def clean_data(dataset=None, logger=print):
     dataset.loc[control_index, 'FT5'] = 34  # TODO: check why max value for FT5 in dataset is 37.4
 
     # Verify change
-    if verbose > 1:
+    if VERBOSE > 1:
         print(dataset.iloc[:15, 7:12])
 
 
@@ -101,62 +110,62 @@ def clean_data(dataset=None, logger=print):
     # Visualize status
     num = 0
     for column, percentage in low_percentage_columns.items():
-        if verbose:
-            logger(f"Column {column} has {percentage:.2f}% non-NA values")
+        if VERBOSE:
+            log(f"Column {column} has {percentage:.2f}% non-NA values")
         num += 1
-    if verbose:
-        logger(f"We have {num} proteins with less than {limit}% datapoints")
+    if VERBOSE:
+        log(f"We have {num} proteins with less than {limit}% datapoints")
     
     ## Drop columns with low content
     # Select columns
     columns_to_drop = low_percentage_columns.index
     
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Column to drop:", columns_to_drop)
         print("Before drop:", dataset.shape)
 
     # Drop selected columns
     dataset.drop(labels=columns_to_drop, axis="columns", inplace=True)
  
-    if verbose:
-        logger(f"Dataset after low % column drop: {dataset.shape}")
+    if VERBOSE:
+        log(f"Dataset after low % column drop: {dataset.shape}")
     
     
     # %% Remove Irrelevant Data and Machine Control/Calibration Columns
 
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Before drop:", dataset.shape)
 
     cols_drop = ['TREAT', 'Plate', 'Location', 'Empty_SBA1_rep1', 'Rabbit.IgG_SBA1_rep1']
     dataset.drop(labels=cols_drop, axis='columns', inplace=True)
     
-    if verbose:
-        logger(f"Dropped calibration columns: {cols_drop}")
-        logger(f"Dataset after calibration column drop: {dataset.shape}")
+    if VERBOSE:
+        log(f"Dropped calibration columns: {cols_drop}")
+        log(f"Dataset after calibration column drop: {dataset.shape}")
 
     
     # %% Drop Rows with Invalid Sample Data
     
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Before drop:", dataset.shape)
 
     wrong_id = ['BLANK', 'POOL 1', 'POOL 2']
     dataset = remove_wrong_value_rows(dataset, 'Sample_ID', wrong_id)
     
-    if verbose:
-        logger(f"Dropped wrong ID rows: {wrong_id}")
-        logger(f"After wrong ID drop: {dataset.shape}")
+    if VERBOSE:
+        log(f"Dropped wrong ID rows: {wrong_id}")
+        log(f"After wrong ID drop: {dataset.shape}")
     
     
     # %% Drop Rows with Missing Data
 
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Before drop:", dataset.shape)
 
     dataset.dropna(subset=['Sample_ID', 'Disease'], inplace=True)
 
-    if verbose:
-        logger(f"After na ID/Disease drop: {dataset.shape}")
+    if VERBOSE:
+        log(f"After na ID/Disease drop: {dataset.shape}")
 
 
     # Remove duplicate rows for same Sample_ID
@@ -164,19 +173,19 @@ def clean_data(dataset=None, logger=print):
     row_val_percentages = calculate_row_value_percentage(dataset, start_column=15)
     
     # Check changes
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Before drop:", dataset.shape)
 
     remove_duplicate_rows(dataset, duplicate_indexes, row_val_percentages)
     
-    if verbose:
-        logger(f"After sample duplicate drop: {dataset.shape}")
+    if VERBOSE:
+        log(f"After sample duplicate drop: {dataset.shape}")
     
     
     # %% Row Handling Based on FT5
     
     # Drop rows with NaN values in the FT5 column
-    if verbose > 1:
+    if VERBOSE > 1:
         print("Before drop:", dataset.shape)
 
     not_na = dataset['FT5'].notna()
@@ -188,21 +197,21 @@ def clean_data(dataset=None, logger=print):
     dataset['FT5'] = dataset['FT5'].astype('int64')
 
     # Check changes
-    if verbose:
-        logger(f"After FT5 na drop: {dataset.shape}")
-    if verbose > 1:
+    if VERBOSE:
+        log(f"After FT5 na drop: {dataset.shape}")
+    if VERBOSE > 1:
         dataset.head(15)
     
     
     # %% Export Cleaned Dataset
     
     # Export cleaned data to a new CSV file
-    dataset.to_csv('cleaned_data.csv', index=False)
+    dataset.to_csv(PROJECT_ROOT/'out'/f"cleaned_data_{date.strftime('%Y-%m-%d-%H%M%S')}.csv", index=False)
     dataset.head()
     
-    if verbose:
-        logger(f"Post-cleaning columns: {dataset.columns}")
-        logger(f"Cleaned dataset shape: {dataset.shape}")
+    if VERBOSE:
+        log(f"Post-cleaning columns: {dataset.columns}")
+        log(f"Cleaned dataset shape: {dataset.shape}")
 
 
     # %% Return Cleaned Dataset
@@ -333,8 +342,8 @@ def main():
     cleaned_dataset = clean_data()
     
     # Export cleaned data to a new CSV file
-    cleaned_dataset.to_csv('cleaned_data.csv', index=False)
-    if verbose > 1:
+    cleaned_dataset.to_csv(PROJECT_ROOT/'out'/'cleaned_data.csv', index=False)
+    if VERBOSE > 1:
         cleaned_dataset.head()
     
     

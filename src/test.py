@@ -71,8 +71,8 @@ import sys
 ## Local imports
 import cleaning
 import utils
-utils.verbosity_level = verbose  # Set verbosity level for all modules
-utils.random_seed = seed         # Set random seed for all modules
+utils.VERBOSITY_LEVEL = verbose  # Set verbosity level for all modules
+utils.RANDOM_SEED = seed         # Set random seed for all modules
 
 
 # %% Logging
@@ -156,7 +156,7 @@ if data_imputation:
     
 else:
     df_imputed = dataset.copy().dropna(axis=1)
-    data_dict = {'type': 'nan_elimination', 'dataset': df_imputed, 'date': pd.Timestamp.now()}
+    data_dict = {'type': 'NAN_ELIMINATION', 'dataset': df_imputed, 'date': pd.Timestamp.now()}
     
 # Add imputed dataset and date to dictionary
 data_dict['date'] = pd.Timestamp.now()
@@ -378,7 +378,7 @@ from sklearn.metrics import accuracy_score
 kernel_type = 'poly'  # 'linear', 'poly', 'sigmoid', 'precomputed'
 
 # If no imputation has been done, return the dataset_dict as is
-if data_dict['type'] == 'no_imputation':
+if data_dict['type'] == 'NO_IMPUTATION':
     # TODO: Look into if SVC can handle NaN values.
     exit()
 

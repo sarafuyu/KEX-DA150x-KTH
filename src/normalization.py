@@ -11,14 +11,21 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 # %% Imports
 
-# External imports
+# Standard library imports
+from pathlib import Path
+
+# External library imports
 import numpy as np
 import pandas as pd
 
 # Local imports
 import utils
-verbose = utils.verbosity_level  # get verbosity level
-seed = utils.random_seed  # get random seed
+
+
+# %% Setup
+
+VERBOSE = utils.VERBOSITY_LEVEL  # get verbosity level
+SEED = utils.RANDOM_SEED         # get random seed
 
 
 # %% Dataset Normalization

@@ -12,7 +12,8 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # %% Imports
 
 ## Standard library imports
-import copy
+from copy import deepcopy
+from pathlib import Path
 
 ## External imports
 import pandas as pd
@@ -22,8 +23,12 @@ from sklearn.linear_model import BayesianRidge
 # Local imports
 import utils
 
-verbose = utils.verbosity_level  # get verbosity level
-seed = utils.random_seed  # get random seed
+
+# %% Setup
+
+VERBOSE = utils.VERBOSITY_LEVEL  # get verbosity level
+SEED = utils.RANDOM_SEED         # get random seed
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 # %% Option 1: Simple Imputer
@@ -114,7 +119,7 @@ def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e
             imputer = IterativeImputer(
                 estimator=estimator,
                 missing_values=pd.NA,
-                sample_posterior=False, # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
+                sample_posterior=False,  # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
                 max_iter=max_iter,
                 tol=tol,
                 n_nearest_features=n_nearest_features,
@@ -123,8 +128,8 @@ def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e
                 skip_complete=False,
                 min_value=min_value,
                 max_value=max_value,
-                verbose=verbose,
-                random_state=seed,
+                verbose=VERBOSE,
+                random_state=SEED,
                 add_indicator=False,  # interesting for later, TODO: explore
                 keep_empty_features=False,  # no effect: we have removed empty features in cleanup
             )
@@ -136,7 +141,7 @@ def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e
                 "n_nearest_features": n_nearest_features[1],
                 "initial_strategy": strat,
                 "imputation_order": order,
-                "random_state": seed,
+                "random_state": SEED,
             }
             iterative_imputers.append(imputer_dict)
     
@@ -206,7 +211,7 @@ def eliminate_nan(df, drop_cols=True):
     """
     df_dropped = df.copy().dropna(axis=(1 if drop_cols else 0))
     
-    return [{'type': 'nan_elimination', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
+    return [{'type': 'NAN_ELIMINATION', 'dataset': df_dropped, 'date': pd.Timestamp.now()}]
 
 
 # %% Option 5: No Imputation
@@ -220,7 +225,7 @@ def no_imputer(df, copy=True):
     """
     if copy:
         df = df.copy()  # TODO: copy or not? Probably not necessary, but we do it in other imputers.
-    return [{'type': 'no_imputation', 'dataset': df, 'date': pd.Timestamp.now()}]
+    return [{'type': 'NO_IMPUTATION', 'dataset': df, 'date': pd.Timestamp.now()}]
 
 
 def sparse_no_impute(data_dict: dict):
@@ -231,7 +236,7 @@ def sparse_no_impute(data_dict: dict):
     :return datadict_sparse: (list) Altered dictionary in list f
     """
 
-    data_dict_sparse = copy.deepcopy(data_dict)
+    data_dict_sparse = deepcopy(data_dict)
 
     dataset, dataset_col_names = utils.dataframe_to_sparse(data_dict_sparse['dataset'])
     X_train, X_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_training'])
@@ -283,7 +288,7 @@ def impute_data(imp_dict, df, start_col=11):
 # %% Main
 
 def main():
-    dataset = pd.read_csv('normalized_data.csv')
+    dataset = pd.read_csv(PROJECT_ROOT/'out'/'normalized_data.csv')
     dataset.head()
 
 

@@ -2,8 +2,11 @@
   <dictionary name="Alwis">
     <words>
       <w>coef</w>
+      <w>coolwarm</w>
       <w>elim</w>
       <w>iloc</w>
+      <w>linspace</w>
+      <w>strat</w>
     </words>
   </dictionary>
 </component>
