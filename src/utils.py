@@ -189,7 +189,10 @@ def get_file_name(data_dict, pipeline_config=None):
                     'ES꞉' + str(pipeline_config['epsilon']) + '_'
                 )
 
-    fn_string += 'DT꞉' + str(data_dict['date'].strftime('%Y-%m-%d-%H%M%S'))
+    if pipeline_config:
+        fn_string += 'DT꞉' + str(data_dict['start_time'].strftime('%Y-%m-%d-%H%M%S'))
+    else:
+        fn_string += 'DT꞉' + str(data_dict['date'].strftime('%Y-%m-%d-%H%M%S'))
     return fn_string
 
 

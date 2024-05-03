@@ -80,7 +80,7 @@ verbose: int = 1
 # Set to True to log the output to a file.
 log: bool = True
 # Set the name of the log file.
-logfile: str = 'pipline-log-' + start_time.strftime("%Y-%m-%d-%H%M%S") + '.log'
+logfile: str = 'pipline-log-DT꞉' + start_time.strftime("%Y-%m-%d-%H%M%S") + '.log'
 
 # -----------
 # Randomness
@@ -513,6 +513,7 @@ pipeline_config = {
     # 'tol_params_SVR':               tol_params_SVR,
     # 'C_params_SVR':                 C_params_SVR,
     # 'epsilon_params_SVR':           epsilon_params_SVR,
+    'start_time':                    start_time,
 }
 
 utils.log_results(
