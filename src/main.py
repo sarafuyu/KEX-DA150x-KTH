@@ -226,7 +226,7 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 # SCORE_FUNC_FEATURES is a function taking in X, an array of columns (features), and y, a target column,
 # and returning a pair of arrays (scores, p-values).
 SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = f_classif
-K_FEATURES: int = 60  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
+K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -238,7 +238,7 @@ K_FEATURES: int = 60  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # ------------
 
 # Set the verbosity level for the grid search printouts that are not logged.
-GRID_SEARCH_VERBOSITY: int = -1
+GRID_SEARCH_VERBOSITY: int = 0
 # Number of cross-validation folds
 K_CV_FOLDS: int = 5
 # Calculate final accuracy for all models
@@ -347,7 +347,8 @@ dataset = pd.read_csv(DATA_FILE)
 if VERBOSE:
     log("|--- PIPELINE ---|")
     log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
-    log("Data loaded successfully.")
+    log(f"Debug mode: {DEBUG}")
+    log("Data loaded successfully.\n")
 if DEBUG:
     # Import and unpack pipeline debug config from debug_config.py
     from debug_config import pipeline_debug_config
@@ -358,7 +359,7 @@ if DEBUG:
 # %% Data Cleaning
 
 # Clean and preprocess the data
-dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME)
+dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME, dataset_path=DATA_FILE)
 
 
 # %% Data Imputation
@@ -475,6 +476,7 @@ dataset_dicts = [
 # %% Log results
 
 pipeline_config = {
+    'DEBUG':                       DEBUG,
     'SEED':                        SEED,
     'VERBOSE':                     VERBOSE,
     'DATA_FILE':                   DATA_FILE,
