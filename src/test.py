@@ -29,9 +29,8 @@ path = 'normalised_data_all_w_clinical_kex_20240321.csv'
 
 ## Data imputation (SimpleImputer)
 data_imputation = False  # If false, we skip imputation and remove rows with NaNs
-# TODO: Need to implement smart NaN-elimination where we drop rows in valuable columns but
-#  otherwise drop columns. Ask Cristina for valuable columns (biomarkers/promising biomarker
-#  candidates)
+# TODO: Smart NaN-elimination where we drop rows in valuable columns but otherwise drop columns.
+#  Ask Cristina for valuable columns (biomarkers/promising biomarker candidates)
 
 # Vi har endast lagt in SimpleImputer här än så länge:
 add_indicator = False  # interesting for later, TODO: explore
@@ -81,7 +80,7 @@ utils.RANDOM_SEED = seed         # Set random seed for all modules
 
 handlers = []
 if log:
-    file_handler = logging.FileHandler(filename=logfile)  # TODO: generate unique filename
+    file_handler = logging.FileHandler(filename=logfile)  # TODO: Generate unique filename
     handlers.append(file_handler)
 stdout_handler = logging.StreamHandler(stream=sys.stdout)
 handlers.append(stdout_handler)
@@ -133,7 +132,7 @@ if data_imputation:
         missing_values=np.nan,
         strategy=strategy,
         copy=copy,
-        add_indicator=add_indicator,  # interesting for later, TODO: explore
+        add_indicator=add_indicator,  # interesting for later, TODO: Explore
         keep_empty_features=False,  # no effect: we have removed empty features in cleanup alrdy
     )
     

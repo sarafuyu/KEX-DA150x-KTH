@@ -17,6 +17,34 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\data\results_test\cleaned_data_2024-05-04-110044.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-105525.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-110044.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="cleaned_data_2024-05-04-110044.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

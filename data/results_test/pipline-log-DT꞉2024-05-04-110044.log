@@ -1,0 +1,53 @@
+[2024-05-04 11:00:45,032] {main.py:344} : INFO | Data loaded successfully.
+[2024-05-04 11:00:45,033] {cleaning.py:59} : INFO | The original dataset shape: (384, 1039)
+[2024-05-04 11:00:45,038] {cleaning.py:84} : INFO | Original column labels: Index(['ID', 'Sample_ID', 'Participant_ID', 'Dataset', 'Disease', 'Age',
+       'TREAT', 'FT1', 'FT2', 'FT3',
+       ...
+       'HPA049320_SBA4_rep1', 'HPA051620_SBA4_rep1', 'HPA054862_SBA4_rep1',
+       'HPA003901_SBA4_rep1', 'HPA035863_SBA4_rep1', 'HPA040052_SBA4_rep1',
+       'HPA041542_SBA4_rep1', 'HPA044582_SBA4_rep1', 'HPA045702_SBA4_rep1',
+       'HPA048982_SBA4_rep1'],
+      dtype='object', length=1039)
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA003948_SBA1_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA057437_SBA3_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA003948_SBA3_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA034960_SBA3_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA058513_SBA3_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA074922_SBA3_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA000837_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA001482_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,045] {cleaning.py:114} : INFO | Column HPA000293_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA031466_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA040972_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA010558_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA020610_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA030651_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA000226_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA041991_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA000564_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA035222_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA041943_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA001833_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA003927_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA011918_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA023314_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA031335_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:114} : INFO | Column HPA031717_SBA4_rep1 has 0.00% non-NA values
+[2024-05-04 11:00:45,046] {cleaning.py:117} : INFO | We have 25 proteins with less than 1% datapoints
+[2024-05-04 11:00:45,048] {cleaning.py:131} : INFO | Dataset after low % column drop: (384, 1014)
+[2024-05-04 11:00:45,050] {cleaning.py:143} : INFO | Dropped calibration columns: ['TREAT', 'Plate', 'Location', 'Empty_SBA1_rep1', 'Rabbit.IgG_SBA1_rep1']
+[2024-05-04 11:00:45,050] {cleaning.py:144} : INFO | Dataset after calibration column drop: (384, 1009)
+[2024-05-04 11:00:45,056] {cleaning.py:156} : INFO | Dropped wrong ID rows: ['BLANK', 'POOL 1', 'POOL 2']
+[2024-05-04 11:00:45,056] {cleaning.py:157} : INFO | After wrong ID drop: (372, 1009)
+[2024-05-04 11:00:45,058] {cleaning.py:168} : INFO | After na ID/Disease drop: (363, 1009)
+[2024-05-04 11:00:45,109] {cleaning.py:182} : INFO | After sample duplicate drop: (348, 1009)
+[2024-05-04 11:00:45,112] {cleaning.py:201} : INFO | After FT5 na drop: (301, 1009)
+[2024-05-04 11:00:45,524] {cleaning.py:213} : INFO | Post-cleaning columns: Index(['ID', 'Sample_ID', 'Participant_ID', 'Dataset', 'Disease', 'Age', 'FT1',
+       'FT2', 'FT3', 'FT4',
+       ...
+       'HPA049320_SBA4_rep1', 'HPA051620_SBA4_rep1', 'HPA054862_SBA4_rep1',
+       'HPA003901_SBA4_rep1', 'HPA035863_SBA4_rep1', 'HPA040052_SBA4_rep1',
+       'HPA041542_SBA4_rep1', 'HPA044582_SBA4_rep1', 'HPA045702_SBA4_rep1',
+       'HPA048982_SBA4_rep1'],
+      dtype='object', length=1009)
+[2024-05-04 11:00:45,524] {cleaning.py:214} : INFO | Cleaned dataset shape: (301, 1009)
