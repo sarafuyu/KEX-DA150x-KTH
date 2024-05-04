@@ -52,11 +52,14 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     # %% Load Data
     
     # Load CSV file through pandas dataframe if not already loaded
+    dataset_path = ''
     if 'dataset' not in locals() or dataset is None:
-        dataset = pd.read_csv(PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_kex_20240321.csv')
-
+        dataset_path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_kex_20240321.csv'
+        dataset = pd.read_csv(dataset_path)
     if VERBOSE:
-        log(f"The original dataset shape: {dataset.shape}")
+        log("|--- Data Cleaning ---|")
+        log(f"Cleaning dataset: {dataset_path}")
+        log(f"Original dataset shape: {dataset.shape}")
     if VERBOSE > 1:
         dataset.head()  # Pre-view first five rows
     
@@ -78,11 +81,11 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
         dataset['Disease'] = dataset['Disease'].astype(str).replace(token_to_val).infer_objects(
             copy=False
         )
-    
+
     # Verify the change
-    if VERBOSE:
-        log(f"Original column labels: {dataset.columns}")
     if VERBOSE > 1:
+        log(f"Original column labels: {dataset.columns}")
+    if VERBOSE > 2:
         dataset.head()
     
     
@@ -96,8 +99,8 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     dataset.loc[control_index, 'FT5'] = 34  # TODO: check why max value for FT5 in dataset is 37.4
 
     # Verify change
-    if VERBOSE > 1:
-        print(dataset.iloc[:15, 7:12])
+    if VERBOSE > 2:
+        log(dataset.iloc[:15, 7:12])
 
 
     # %% Handle Low Content Columns
@@ -107,10 +110,10 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     limit = 1
     low_percentage_columns = value_percentage[value_percentage < limit]
     
-    # Visualize status
+    # Log status
     num = 0
     for column, percentage in low_percentage_columns.items():
-        if VERBOSE:
+        if VERBOSE > 1:
             log(f"Column {column} has {percentage:.2f}% non-NA values")
         num += 1
     if VERBOSE:
@@ -208,9 +211,10 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     # Export cleaned data to a new CSV file
     dataset.to_csv(PROJECT_ROOT/'out'/f"cleaned_data_{date.strftime('%Y-%m-%d-%H%M%S')}.csv", index=False)
     dataset.head()
-    
-    if VERBOSE:
+
+    if VERBOSE > 1:
         log(f"Post-cleaning columns: {dataset.columns}")
+    if VERBOSE:
         log(f"Cleaned dataset shape: {dataset.shape}")
 
 

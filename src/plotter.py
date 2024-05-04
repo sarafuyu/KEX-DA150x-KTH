@@ -30,18 +30,18 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'
+CV_RESULTS_DIR = PROJECT_ROOT/'out'  # PROJECT_ROOT/'data'/'results'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-005303.csv'
+CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-153038.csv'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
 
-# Specify the column name for the test score
+# Specify the column name for the test score (either 'mean_test_score' or 'final_accuracy')
 TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
 
 # Specify parameters of interest
@@ -150,7 +150,7 @@ def get_fig_filename(param: str, source_data_filename: Path):
     :param source_data_filename: Path to the source data file.
     :return: Path to the figure file.
     """
-    return Path(source_data_filename.stem + 'PLT꞉' + param + '.png')
+    return Path(source_data_filename.stem + '_PLT꞉' + param + '.png')
 
 
 # %% Generate plots
