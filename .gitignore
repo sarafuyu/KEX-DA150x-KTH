@@ -305,6 +305,9 @@ hs_err_pid*
 
 ## DMD Project
 
+# Additional .idea/ files
+.idea/file.template.settings.xml
+
 # Output files
 out/*
 out/*/*

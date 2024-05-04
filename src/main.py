@@ -44,8 +44,9 @@ from datetime import datetime
 from pathlib import Path
 
 ## External library imports
-import pandas as pd
+# noinspection PyUnresolvedReferences
 import numpy as np  # needed for np.linspace/logspace in config
+import pandas as pd
 from sklearn.feature_selection import f_classif
 from sklearn.linear_model import BayesianRidge
 
@@ -61,6 +62,9 @@ PROJECT_ROOT = Path(__file__).parents[1]
 # **********----------------------------------------------------------------------------********** #
 # |                                        ~~ General ~~                                         | #
 # **********----------------------------------------------------------------------------********** #
+
+# Set to True to use the debug configuration from the debug_config.py file.
+DEBUG: bool = False
 
 # ----------
 # Verbosity
@@ -222,7 +226,7 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 # SCORE_FUNC_FEATURES is a function taking in X, an array of columns (features), and y, a target column,
 # and returning a pair of arrays (scores, p-values).
 SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = f_classif
-K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
+K_FEATURES: int = 60  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -249,13 +253,13 @@ SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
 C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-KERNELS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
 DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = np.linspace(0.00001, 3, num=2)  # [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
-SHRINKING_SVC: Sequence[bool] = [True]
+COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = np.linspace(0.00001, 3, num=2)  # [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
@@ -278,7 +282,7 @@ GRID_SEARCH_SCORING_SVC: str = 'accuracy'
 # Enable SVR
 SVR = False
 
-KERNELS_SVR: Sequence[str] = ['rbf']
+KERNEL_PARAMS_SVR: Sequence[str] = ['rbf']
 DEGREE_PARAMS_SVR: Sequence[int] = [3]
 GAMMA_PARAMS_SVR: Sequence[str] = ['scale']
 COEF0_PARAMS_SVR: Sequence[float] = [0.0]
@@ -341,9 +345,14 @@ log = logging.getLogger('LOGGER_NAME').info
 dataset = pd.read_csv(DATA_FILE)
 
 if VERBOSE:
+    log("|--- PIPELINE ---|")
+    log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
     log("Data loaded successfully.")
-if VERBOSE == 2:
-    dataset.head()  # Pre-view first five rows
+if DEBUG:
+    # Import and unpack pipeline debug config from debug_config.py
+    from debug_config import pipeline_debug_config
+    for varname, value in pipeline_debug_config.items():
+        globals()[varname] = value  # Overwrite variables in this script with those from the debug config
 
 
 # %% Data Cleaning
@@ -499,27 +508,13 @@ pipeline_config = {
     'SCORE_FUNC_FEATURES':         SCORE_FUNC_FEATURES,
     'K_FEATURES':                  K_FEATURES,
     'SVC':                         SVC,
-    # 'C_PARAMS_SVC':                 C_params_SVC,
-    # 'KERNELS_SVC':                  kernels_SVC,
-    # 'DEGREE_PARAMS_SVC':            degree_params_SVC,
-    # 'GAMMA_PARAMS_SVC':             gamma_params_SVC,
-    # 'COEF0_PARAMS_SVC':             coef0_params_SVC,
-    # 'TOL_PARAMS_SVC':               tol_params_SVC,
-    # 'DECISION_FUNCTION_PARAMS_SVC': decision_function_params_SVC,
     'SVR':                         SVR,
-    # 'KERNELS_SVR':                  kernels_SVR,
-    # 'DEGREE_PARAMS_SVR':            degree_params_SVR,
-    # 'GAMMA_PARAMS_SVR':             gamma_paramS_SVR,
-    # 'COEF0_PARAMS_SVR':             coef0_paramS_SVR,
-    # 'TOL_PARAMS_SVR':               tol_params_SVR,
-    # 'C_PARAMS_SVR':                 C_params_SVR,
-    # 'EPSILON_PARAMS_SVR':           epsilon_params_SVR,
     'START_TIME':                  START_TIME,
 }
 
 utils.log_results(
-    original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config
-    )
+    original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
+)
 
 
 # %% Model Training & Fitting
@@ -534,11 +529,11 @@ if SVC:
             pipeline_config=pipeline_config,
             dataset_dict=dataset_dict,
             C_params=C_PARAMS_SVC,
-            kernels=KERNELS_SVC,
+            kernels=KERNEL_PARAMS_SVC,
             degree_params=DEGREE_PARAMS_SVC,
             gamma_params=GAMMA_PARAMS_SVC,
             coef0_params=COEF0_PARAMS_SVC,
-            shrinking=SHRINKING_SVC,
+            shrinking=SHRINKING_PARAMS_SVC,
             probability=PROBABILITY_SVC,
             tol_params=TOL_PARAMS_SVC,
             cache_size_params=CACHE_SIZE_PARAMS_SVC,
@@ -552,7 +547,8 @@ if SVC:
             return_train_score=RETURN_TRAIN_SCORE_SVC,
             grid_search_scoring=GRID_SEARCH_SCORING_SVC,
             k_cv_folds=K_CV_FOLDS,
-            calc_final_scores=CALC_FINAL_SCORES
+            calc_final_scores=CALC_FINAL_SCORES,
+            log=log,
         )
         for dataset_dict in dataset_dicts
     ]
@@ -563,7 +559,7 @@ if SVR:
         classifier.find_best_svr_model(
             pipeline_config=pipeline_config,
             dataset_dict=dataset_dict,
-            kernels=KERNELS_SVR,
+            kernels=KERNEL_PARAMS_SVR,
             degree_params=DEGREE_PARAMS_SVR,
             gamma_params=GAMMA_PARAMS_SVR,
             coef0_params=COEF0_PARAMS_SVR,
@@ -578,7 +574,8 @@ if SVR:
             return_train_score=RETURN_TRAIN_SCORE_SVR,
             grid_search_scoring=GRID_SEARCH_SCORING_SVR,
             k_cv_folds=K_CV_FOLDS,
-            calc_final_scores=CALC_FINAL_SCORES
+            calc_final_scores=CALC_FINAL_SCORES,
+            log=log,
             )
         for dataset_dict in dataset_dicts
     ]
@@ -595,7 +592,7 @@ if SVR:
 
 # %% End Time
 
-utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=print)
+utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
 
 
 # %% Breakpoint

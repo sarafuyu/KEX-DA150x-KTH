@@ -17,7 +17,10 @@ from pathlib import Path
 
 ## External library imports
 import pandas as pd
-from scipy.sparse import csr_matrix # Needed for dataframe_to_sparse
+from scipy.sparse import csr_matrix  # Needed for dataframe_to_sparse
+from sklearn.feature_selection import f_classif
+from sklearn.linear_model import BayesianRidge
+from datetime import datetime
 
 
 # %% Module-Global Variables
@@ -34,6 +37,8 @@ RANDOM_SEED = 42  # Default is 42.
 # %% Setup
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
 
 
 # %% Utility Functions
@@ -461,14 +466,16 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
                     else:
                         log(f"{col}: {cv_results[col]}\n")
 
-        log(f"Grid search completed. Grid search results saved to {grid_search_file_name}!\n")
+        log(f"Grid search completed!")
+        log(f"Results saved to: {grid_search_file_name}\n")
     return
 
 
-def log_time(start_time, end_time, log=print):
+def log_time(start_time, end_time, log=print, logfile: Path = None):
     """
     Log the time taken for the pipeline to run.
 
+    :param logfile:
     :param start_time: The start time of the pipeline.
     :param end_time: The end time of the pipeline.
     :param log: A logging and/or printing function.
@@ -477,6 +484,7 @@ def log_time(start_time, end_time, log=print):
     hms = timedelta[0].split(':')
     log(
         f"Pipeline finished {end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
-        f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.\n"
+        f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run."
     )
-
+    if logfile:
+        log(f"Logs saved to: {logfile}\n")
