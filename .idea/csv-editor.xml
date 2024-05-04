@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="\data\results\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-005303.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\data\results\ty-SimpleImputer_st-mean_ai-False_dt-2024-05-03-005231_grid_search_results.csv">
           <value>
             <Attribute>
@@ -11,6 +18,216 @@
           </value>
         </entry>
         <entry key="\data\results\ty-nan_elimination_dt-2024-05-03-005231_grid_search_results.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010328.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-120659.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-120914.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-03-230947.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010328.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-001517.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-001950.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-005303.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010328.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010654.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-013229.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-013649.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010328.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-010654.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-013229.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\bad_logs\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-013649.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\cleaned_data_2024-05-03-230947.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\cleaned_data_2024-05-03-231717.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\out\cleaned_data_2024-05-04-010328.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\TP꞉SimpleImputer_ST꞉mean_CL꞉17_KF꞉60_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-001517.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\mt19937-testset-1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\mt19937-testset-2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\pcg64-testset-1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\pcg64-testset-2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\pcg64dxsm-testset-1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\pcg64dxsm-testset-2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\philox-testset-1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\philox-testset-2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\sfc64-testset-1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\venv\Lib\site-packages\numpy\random\tests\data\sfc64-testset-2.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
