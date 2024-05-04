@@ -57,7 +57,6 @@ def find_best_svm_model(pipeline_config,
                         decision_function_params=('ovr',),
                         break_ties=False,
                         random_state=SEED,
-                        verbose_grid_search=0,
                         log=print,
                         grid_search_verbosity=0,
                         return_train_score=False,
@@ -101,7 +100,7 @@ def find_best_svm_model(pipeline_config,
             'probability': probability,
             'tol': tol_params,
             'cache_size': cache_size_params,
-            'verbose': [verb],
+            'verbose': [grid_search_verbosity],
             'max_iter': max_iter_params,
             'decision_function_shape': decision_function_params,
             'break_ties': break_ties,
@@ -113,11 +112,11 @@ def find_best_svm_model(pipeline_config,
 
     # Perform grid search
     clf = CustomCvGridSearch(
-        estimator=svm.SVC(verbose=grid_search_verbosity),
+        estimator=svm.SVC(),
         param_grid=param_grid,
         scoring=grid_search_scoring,
         cv=k_cv_folds,
-        verbose=verbose_grid_search,
+        verbose=grid_search_verbosity,
         return_train_score=return_train_score,
     )
     if calc_final_scores:
@@ -205,14 +204,14 @@ def find_best_svr_model(pipeline_config,
             'epsilon': epsilon_params,
             'shrinking': shrinking_params,
             'cache_size': cache_size_params,
-            'verbose': [verb],
+            'verbose': [grid_search_verbosity],
             'max_iter': max_iter_params,
         }
     ]
 
     # Perform grid search
     clf = CustomCvGridSearch(
-        estimator=svm.SVR(verbose=grid_search_verbosity),
+        estimator=svm.SVR(),
         param_grid=param_grid,
         scoring=grid_search_scoring,
         cv=k_cv_folds,
@@ -220,9 +219,9 @@ def find_best_svr_model(pipeline_config,
         return_train_score=return_train_score,
     )
     if calc_final_scores:
-        clf = clf.fit_calc_final_scores(X_training, y_training, X_testing, y_testing, verbose=grid_search_verbosity)
+        clf = clf.fit_calc_final_scores(X_training, y_training, X_testing, y_testing)
     else:
-        clf = clf.fit(X_training, y_training, verbose=grid_search_verbosity)
+        clf = clf.fit(X_training, y_training)
 
     # Log best parameters
     if verb and hasattr(clf, 'best_params_'):

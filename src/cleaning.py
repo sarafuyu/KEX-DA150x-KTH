@@ -32,7 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Data Cleaning
 
-def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
+def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now(), dataset_path=''):
     """
     Data Cleaning
     
@@ -50,14 +50,14 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     * TODO: debug, continue with later points
     """
     # %% Load Data
-    
+
+    if VERBOSE:
+        log("|--- Data Cleaning ---|")
     # Load CSV file through pandas dataframe if not already loaded
-    dataset_path = ''
     if 'dataset' not in locals() or dataset is None:
         dataset_path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_kex_20240321.csv'
         dataset = pd.read_csv(dataset_path)
     if VERBOSE:
-        log("|--- Data Cleaning ---|")
         log(f"Cleaning dataset: {dataset_path}")
         log(f"Original dataset shape: {dataset.shape}")
     if VERBOSE > 1:
@@ -215,7 +215,7 @@ def clean_data(dataset=None, log=print, verbose=VERBOSE, date=datetime.now()):
     if VERBOSE > 1:
         log(f"Post-cleaning columns: {dataset.columns}")
     if VERBOSE:
-        log(f"Cleaned dataset shape: {dataset.shape}")
+        log(f"Cleaned dataset shape: {dataset.shape}\n")
 
 
     # %% Return Cleaned Dataset
