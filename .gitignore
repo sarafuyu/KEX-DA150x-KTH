@@ -308,6 +308,10 @@ hs_err_pid*
 # Additional .idea/ files
 .idea/file.template.settings.xml
 
+# For compiling the project into a windowless .exe using auto-py-to-exe
+output
+_internal
+
 # Output files
 out/*
 out/*/*
