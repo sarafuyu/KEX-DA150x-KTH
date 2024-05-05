@@ -17,7 +17,8 @@ from pathlib import Path
 # External imports
 import pandas as pd
 import scipy
-from sklearn.feature_selection import f_classif
+from sklearn import svm
+from sklearn.feature_selection import f_classif, f_regression, SelectFromModel
 
 # Local imports
 import utils
@@ -62,6 +63,11 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
         test_size=test_size,
         random_state=random_state
     )
+
+    if type(y_testing) is pd.Series:
+        y_testing = y_testing.to_frame()
+    if type(y_training) is pd.Series:
+        y_training = y_training.to_frame()
     
     if type(data) is dict:
         data['X_training'] = X_training

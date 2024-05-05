@@ -128,7 +128,7 @@ def find_best_svm_model(pipeline_config,
     if hasattr(clf, 'score'):
         test_accuracy = clf.score(X_testing, y_testing)
     else:
-        Warning("The classifier does not have a 'score' attribute.")
+        Warning("The classifier does not have a 'score' attribute. Was it fitted?")
         test_accuracy = None
     if verb:
         utils.log_grid_search_results(

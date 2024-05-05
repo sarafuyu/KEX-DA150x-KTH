@@ -225,8 +225,25 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 
 # SCORE_FUNC_FEATURES is a function taking in X, an array of columns (features), and y, a target column,
 # and returning a pair of arrays (scores, p-values).
-SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = f_classif
+#
+# f_classif: is a function that computes the ANOVA F-value between the label/feature for classification tasks and
+# should be used on dense data.
+#
+# mutual_info_classif: is a function that computes the mutual information between the label/feature for classification
+# tasks and should be used on sparse data.
+#
+SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = chi2  # mutual_info_classif  # f_classif
 K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
+#
+# For N=301 samples try with N*3^x features:
+# ---------------------------
+# number of features selected (k):
+# 1009 (no feature selection)
+# 903 (3 feat/sample)
+# 301 (1 feat/sample)
+# 100 (1/3 feat/sample)
+# 33 (1/9 feat/sample)
+# 11 (1/27 feat/sample)
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -329,6 +346,7 @@ if LOGGER:
 stdout_handler = logging.StreamHandler(stream=sys.stdout)
 handlers.append(stdout_handler)
 
+# Configure logging level and format
 logging.basicConfig(level=logging.DEBUG,
                     format=('[%(asctime)s] '
                             '{%(filename)s:%(lineno)d} : '
@@ -336,6 +354,10 @@ logging.basicConfig(level=logging.DEBUG,
                             '%(message)s'),
                     handlers=handlers)
 
+# Suppress matplotlib logs
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
+# Get the logger
 log = logging.getLogger('LOGGER_NAME').info
 
 
@@ -435,6 +457,16 @@ if CUTOFFS:
         )
         for data_dict in dataset_dicts
     ]
+else:
+    # Make the y column continuous
+    dataset_dicts = [
+        utils.make_continuous(
+            data_dict,
+            column_label=COLUMN_TO_CATEGORIZE,
+            copy=False
+        )
+        for data_dict in dataset_dicts
+    ]
 
 
 # %% Train-test Split
@@ -456,21 +488,35 @@ dataset_dicts = [
 
 if SPARSE_NO_IMPUTATION:
     dataset_dicts = dataset_dicts + imputation.sparse_no_impute(
-        utils.get_dict_from_list_of_dict(dataset_dicts, dict_key='type', dict_value='NO_IMPUTATION')
+        utils.get_dict_from_list_of_dict(
+            dataset_dicts, dict_key='type',
+            dict_value='NO_IMPUTATION',
+        ),
+        protein_start_col=X_START_COLUMN_IDX,
     )
 
 
 # %% Feature selection
 
 # Feature selection
-dataset_dicts = [
-    features.select_KBest(
-        data_dict=data_dict,
-        score_func=SCORE_FUNC_FEATURES,
-        k=K_FEATURES
-    )
-    for data_dict in dataset_dicts
-]
+if SPARSE_NO_IMPUTATION:
+    dataset_dicts = [
+        features.select_XGB(
+            data_dict=data_dict,
+            k=K_FEATURES,
+            log=log,
+        )
+        for data_dict in dataset_dicts
+    ]
+else:
+    dataset_dicts = [
+        features.select_KBest(
+            data_dict=data_dict,
+            score_func=SCORE_FUNC_FEATURES,
+            k=K_FEATURES
+        )
+        for data_dict in dataset_dicts
+    ]
 
 
 # %% Log results

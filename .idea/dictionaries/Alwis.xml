@@ -1,12 +1,16 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Alwis">
     <words>
+      <w>alwis</w>
       <w>coef</w>
       <w>coolwarm</w>
       <w>elim</w>
+      <w>idxs</w>
       <w>iloc</w>
       <w>linspace</w>
+      <w>rfecv</w>
       <w>strat</w>
+      <w>xgbclf</w>
     </words>
   </dictionary>
 </component>
