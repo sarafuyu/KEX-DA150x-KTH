@@ -131,13 +131,13 @@ class CustomCvGridSearch(GridSearchCV):
         self.y_test = None
         self.calculate_final_accuracy = False
 
-
     def fit_calc_final_scores(self, X, y, X_testing=None, y_testing=None, groups=None, **params):
         """
         Fit the estimator using all sets of grid search parameters.
 
-        If X_testing and y_testing are provided, calculate final accuracy scores for each grid configuration.
-        Otherwise, only fit the estimator using the training data (equivalent to the parent class fit() method).
+        If X_testing and y_testing are provided, calculate final accuracy scores with training data
+        separate from the CV for each grid configuration. Otherwise, only fit the estimator using
+        the training data (equivalent to the parent class fit() method).
 
         Documentation below adapted mostly from the override method:
             sklearn.model_selection.BaseSearchCV.fit()
@@ -154,7 +154,7 @@ class CustomCvGridSearch(GridSearchCV):
             or (n_samples,), default=None
             Target relative to X_testing for classification or regression;
             None for unsupervised learning. Used to calculate final accuracy scores.
-        :param groups: Group labels for the samples used while splitting the dataset into train/test set.
+        :param groups: Group labels for samples used when splitting dataset into train/test set.
         :param params: Parameters to pass to the fit method of the estimator.
         :return: Instance of fitted estimator.
         """

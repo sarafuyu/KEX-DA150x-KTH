@@ -49,6 +49,9 @@ PARAMS_OF_INTEREST = ['C', 'kernel', 'degree', 'coef0', 'tol']
 FIXED_PARAM = 'kernel'
 VARYING_PARAMS = ['C', 'degree']
 
+# TODO: Add information about the optimal values set constant to figure legends
+# TODO: Add information to figure titles
+
 
 # %% Plot functions
 

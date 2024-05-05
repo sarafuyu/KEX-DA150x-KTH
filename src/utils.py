@@ -63,7 +63,9 @@ def make_binary(data, column_label, cutoffs, copy=True):
     """
     # TODO: Add support for multiple cutoffs, only one cutoff supported for now. -- #
     if len(cutoffs) != 1:                                                           #
-        raise ValueError("The CUTOFFS parameter must be a list with one element.")  #
+        raise ValueError("not implemented yet! "                                    #
+                         "For now the `CUTOFFS` parameter "                         #
+                         "must be a list with one element.")                        #
     else:                                                                           #
         cutoffs = cutoffs[0]                                                        #
     # TODO: ----------------------------------------------------------------------- #
@@ -92,6 +94,33 @@ def make_binary(data, column_label, cutoffs, copy=True):
         Warning(f"The data in {make_binary.__name__} is not a dictionary. Returning a tuple.")
         return df_copy
 
+
+def make_continuous(data, column_label, copy=True):
+    if type(data) is pd.DataFrame:
+        df = data
+    elif type(data) is dict:
+        df = data['dataset']
+    else:
+        raise ValueError(
+            "Argument data must be a pandas DataFrame or a dictionary "
+            "with a 'dataset' key."
+            )
+
+    # Copy the data to avoid modifying the original DataFrame
+    if copy:
+        df_copy = df.copy()
+    else:
+        df_copy = df
+
+    # Convert the values in the specified column float
+    df_copy[column_label] = df_copy[column_label].astype(float)
+
+    if type(data) is dict:
+        data['dataset'] = df_copy
+        return data
+    else:
+        Warning(f"The data in {make_binary.__name__} is not a dictionary. Returning a tuple.")
+        return df_copy
 
 def summary_statistics(data, cols):
     """
@@ -241,7 +270,7 @@ def print_summary_statistics(data_dict, log=print, start_column=11):
             f"{df['FT5'].median()}")
         log(f"Northstar Score (y) variance: "
             f"{df['FT5'].var()}")
-        log(f"Northstar Score (y) std devition: "
+        log(f"Northstar Score (y) std deviation: "
             f"{df['FT5'].std()}")
         log(f"Northstar Score (y) max: "
             f"{df['FT5'].max()}")
@@ -266,7 +295,7 @@ def print_summary_statistics(data_dict, log=print, start_column=11):
         log("\n")
 
 
-def dataframe_to_sparse(df):
+def dataframe_to_sparse(df, column_start=0):
     """
     Convert a Pandas DataFrame to a SciPy sparse matrix, preserving column names.
 
@@ -276,12 +305,13 @@ def dataframe_to_sparse(df):
     - ``scipy.sparse.csr_matrix``
 
     :param df: The DataFrame to convert.
+    :param column_start: The index of the first column to include in the sparse matrix.
     :return:
         sparse_matrix (scipy.sparse.csr_matrix): The converted sparse matrix.
         column_names (list): List of column names from the DataFrame.
     """
-    sparse_matrix = csr_matrix(df.iloc[:, 11:].values)  # Convert DataFrame to CSR sparse matrix
-    column_names = df.columns.tolist()  # Preserve the column names
+    sparse_matrix = csr_matrix(df.iloc[:, column_start:].values)  # Convert DataFrame to CSR sparse matrix
+    column_names = df.iloc[:, column_start:].columns.tolist()  # Preserve the column names
     return sparse_matrix, column_names
 
 
@@ -348,8 +378,11 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     log(f"IterativeImputer: {config['ITERATIVE_IMPUTER']}")
     log(f"KNN_Imputer: {config['KNN_IMPUTER']}")
     log(f"NO_IMPUTATION: {config['NO_IMPUTATION']}")
+    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}")
     log(f"NAN_ELIMINATION: {config['NAN_ELIMINATION']}")
-    log(f"nan elimination drop: {'columns' if config['DROP_COLS_NAN_ELIM'] else 'rows'}\n")
+    if config['NAN_ELIMINATION']:
+        log(f"nan elimination drop: {'columns' if config['DROP_COLS_NAN_ELIM'] else 'rows'}\n")
+
 
     # Log data normalization
     log(f"DATA NORMALIZATION")
@@ -360,24 +393,29 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     if not len(config['CUTOFFS']):
         log(f"No categorization (continuous variable)")
     else:
-        log(f"Number of classes: {len(config['CUTOFFS']) + 1}")
         log(f"Cut-offs: {config['CUTOFFS']}")
+        log(f"Number of classes: {len(config['CUTOFFS']) + 1}")
+
 
     # Log training split
-    log(f"Test_proportion: {config['TEST_PROPORTION']}")
+    log(f"Test proportion: {config['TEST_PROPORTION']}")
     log(f"Training proportion: {1 - config['TEST_PROPORTION']}")
-    log(f"X_START_COLUMN_IDX: {config['X_START_COLUMN_IDX']}")
-    log(f"Y_COLUMN_LABEL: {config['Y_COLUMN_LABEL']}")
+    log(f"X start column index: {config['X_START_COLUMN_IDX']}")
+    log(f"y column label: {repr(config['Y_COLUMN_LABEL'])}")
 
     # Log feature selection
     log(f"FEATURE SELECTION")
-    log(f"SCORE_FUNC_FEATURES: {repr(config['SCORE_FUNC_FEATURES'])}")
-    log(f"k: {config['K_FEATURES']}\n")
+    log(f"Feature selection score function for KBest: {repr(config['SCORE_FUNC_FEATURES'])} (not necessarily used)")
+    log(f"KBest k: {config['K_FEATURES']}\n")
+    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}")
+    if config['SPARSE_NO_IMPUTATION']:
+        log(f"Not performing feature selection with KBest on sparse data.")
+        log()
 
     # Log classifier
     log(f"CLASSIFIERS")
-    log(f"SVR: {config['SVR']}")
     log(f"SVC: {config['SVC']}\n")
+    log(f"SVR: {config['SVR']}")
 
     return None
 
@@ -423,18 +461,18 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
 
     # Print summary statistics
     log(f"SUMMARY STATISTICS")
-    log(f"mean FT5: {dataset['FT5'].mean().mean()}")
-    log(f"median FT5: {dataset['FT5'].median().mean()}")
-    log(f"variance FT5: {dataset['FT5'].var().mean()}")
-    log(f"std deviation FT5: {dataset['FT5'].std().mean()}")
-    log(f"max FT5: {dataset['FT5'].max().max()}")
-    log(f"min FT5: {dataset['FT5'].min().min()}")
-    log(f"mean protein intensities: {dataset.iloc[:, protein_start_col:].mean().mean()}")
-    log(f"median protein intensities: {dataset.iloc[:, protein_start_col:].median().mean()}")
-    log(f"variance protein intensities: {dataset.iloc[:, protein_start_col:].var().mean()}")
-    log(f"std deviation protein intensities: {dataset.iloc[:, protein_start_col:].std().mean()}")
-    log(f"max protein intensities: {dataset.iloc[:, protein_start_col:].max().max()}")
-    log(f"min protein intensities: {dataset.iloc[:, protein_start_col:].min().min()}\n")
+    log(f"Mean FT5: {dataset['FT5'].mean().mean()}")
+    log(f"Median FT5: {dataset['FT5'].median().mean()}")
+    log(f"Variance FT5: {dataset['FT5'].var().mean()}")
+    log(f"Std deviation FT5: {dataset['FT5'].std().mean()}")
+    log(f"Max FT5: {dataset['FT5'].max().max()}")
+    log(f"Min FT5: {dataset['FT5'].min().min()}")
+    log(f"Mean protein intensities: {dataset.iloc[:, protein_start_col:].mean().mean()}")
+    log(f"Median protein intensities: {dataset.iloc[:, protein_start_col:].median().mean()}")
+    log(f"Variance protein intensities: {dataset.iloc[:, protein_start_col:].var().mean()}")
+    log(f"Std deviation protein intensities: {dataset.iloc[:, protein_start_col:].std().mean()}")
+    log(f"Max protein intensities: {dataset.iloc[:, protein_start_col:].max().max()}")
+    log(f"Min protein intensities: {dataset.iloc[:, protein_start_col:].min().min()}\n")
 
     # Print classifier information
     log(f"CLASSIFIER")
@@ -451,7 +489,7 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
     # Save cross-validation results
     if clf and hasattr(clf, 'cv_results_'):
         cv_results = pd.DataFrame(clf.cv_results_)
-        # cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with indivdual accuracy scores from custom model
+        # cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with individual accuracy scores from custom model
         # Save cross-validation results as CSV file
         grid_search_file_name = get_file_name(dataset_dict, pipeline_config) + '.csv'
         cv_results.to_csv(PROJECT_ROOT/'out'/grid_search_file_name, index=False)

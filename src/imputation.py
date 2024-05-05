@@ -228,21 +228,28 @@ def no_imputer(df, copy=True):
     return [{'type': 'NO_IMPUTATION', 'dataset': df, 'date': pd.Timestamp.now()}]
 
 
-def sparse_no_impute(data_dict: dict):
+def sparse_no_impute(data_dict: dict, protein_start_col=11):
     """
     Convert the data to a sparse format and return it as a dictionary with type `sparse`.
 
     :param data_dict: (dict) Dictionary of no imputation copy.
+    :param protein_start_col: (int) Index of the first protein column.
     :return datadict_sparse: (list) Altered dictionary in list f
     """
 
     data_dict_sparse = deepcopy(data_dict)
 
-    dataset, dataset_col_names = utils.dataframe_to_sparse(data_dict_sparse['dataset'])
+    dataset, dataset_col_names = utils.dataframe_to_sparse(data_dict_sparse['dataset'], column_start=protein_start_col)
     X_train, X_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_training'])
     X_test, X_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_testing'])
-    y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'])
-    y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'])
+    if type(data_dict_sparse['y_training']) == pd.Series:
+        y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'].to_frame())
+    else:
+        y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'])
+    if type(data_dict_sparse['y_testing']) == pd.Series:
+        y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'].to_frame())
+    else:
+        y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'])
 
     data_dict_sparse['type'] = 'sparse'
     data_dict_sparse['dataset'] = dataset
