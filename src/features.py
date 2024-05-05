@@ -14,6 +14,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # Standard library imports
 from pathlib import Path
 
+import numpy as np
 # External imports
 import pandas as pd
 import scipy
@@ -150,6 +151,137 @@ def select_KBest(data_dict, score_func=f_classif, k=100):
     return data_dict
 
 
+# %% Feature Selection using Recursive Feature Elimination (RFE)
+def select_RFE(data_dict, score_func, k):
+    from sklearn.feature_selection import RFE
+    from sklearn.linear_model import LogisticRegression
+
+    # Initialize the model to be used
+    svc = svm.SVC(
+        kernel='poly', degree=3, gamma='scale', coef0=0.0, tol=1e-3, C=1.0, shrinking=True, cache_size=200,
+        verbose=False, max_iter=-1, decision_function_shape='ovr', break_ties=False, random_state=SEED,
+    )
+
+    # Initialize RFE and select the top 100 features
+    rfe = RFE(estimator=svc, n_features_to_select=k, step=1)
+    X_train_rfe = rfe.fit_transform(data_dict['X_training'], data_dict['y_training'])
+
+    if VERBOSE:
+        print("RFE Selected Features Shape:", X_train_rfe.shape)
+
+    # Use evaluated scores to select the best k features
+    cols_idxs = rfe.get_support(indices=True)
+    X_train_selected_features = data_dict['X_training'].iloc[:, cols_idxs]
+    X_test_selected_features = data_dict['X_testing'].iloc[:, cols_idxs]
+
+    # Assert that the number of selected features is equal to k
+    if X_train_selected_features.shape[1] != k:
+        raise ValueError(f"Selected Features Shape {X_train_selected_features.shape[1]} "
+                         f"is not equal to k ({k})!")
+
+    # Update the dataset dictionary with the selected features
+    data_dict['feature_scores'] = rfe
+    del data_dict['X_training']
+    del data_dict['X_testing']
+    data_dict['X_training'] = X_train_selected_features
+    data_dict['X_testing'] = X_test_selected_features
+
+    return data_dict
+
+
+def select_mutual_info_regression(data_dict, k):
+    # mutual_info_regression(X, y, *, discrete_features='auto', n_neighbors=3, copy=True, random_state=None)
+
+    # Estimate mutual information for a continuous target variable.
+    # Mutual information (MI) [1] between two random variables is a non-negative value, which measures the dependency between the variables.
+    # It is equal to zero if and only if two random variables are independent, and higher values mean higher dependency.
+
+    from sklearn.feature_selection import mutual_info_regression
+
+    if data_dict['type'] == 'NO_IMPUTATION':
+        return data_dict
+    X_train = data_dict['X_training']
+    X_test = data_dict['X_testing']
+    y_train = data_dict['y_training']
+
+    # Calculate the mutual information between each feature and the target variable
+    mi_list = []
+    for i in range(X_train.shape[1]):
+        # discrete_features{‘auto’, bool, array-like}, default='auto'
+        # If bool, then determines whether to consider all features discrete or continuous. If array, then it should be either a boolean mask with shape (n_features,) or array with indices of discrete features. If ‘auto’, it is assigned to False for dense X and to True for sparse X.
+        mi = mutual_info_regression(X_train, y_train, discrete_features=False, n_neighbors=3, copy=True, random_state=SEED)
+        print(f"Feature {i} has MI: {mi}")
+        mi_list.append(mi)
+
+    # Sort the features based on mutual information
+    mi_sorted = sorted(range(len(mi_list)), key=lambda i: mi_list[i], reverse=True)
+
+    # Select the top k features
+    X_train_selected_features = X_train.iloc[:, mi_sorted[:k]]
+    X_test_selected_features = X_test.iloc[:, mi_sorted[:k]]
+
+    # Update the dataset dictionary with the selected features
+    del data_dict['X_training']
+    del data_dict['X_testing']
+    data_dict['X_training'] = X_train_selected_features
+    data_dict['X_testing'] = X_test_selected_features
+
+    return data_dict
+
+
+def select_XGB(data_dict, k, log=print):
+    import xgboost as xgb
+    from sklearn.model_selection import train_test_split
+    import xgboost as xgb
+    from sklearn.metrics import f1_score, confusion_matrix
+    from sklearn.metrics import accuracy_score
+    import seaborn as sns
+    from sklearn.feature_selection import RFECV
+
+    X_train = data_dict['X_training']
+    X_test = data_dict['X_testing']
+    y_train = data_dict['y_training']
+    y_test = data_dict['y_testing']
+
+    xgbclf = xgb.XGBClassifier()
+    xgbclf.fit(X_train, y_train)
+
+    rfecv = RFECV(estimator=xgb.XGBClassifier(), step=1, cv=5, scoring='accuracy', n_jobs=-1)
+    rfecv.fit(X_train, y_train)
+
+    opt_features = rfecv.n_features_
+    best_features = X_train.columns[rfecv.support_]
+
+    log(f'Optimal features: {opt_features}')
+    log(f'Best features: {best_features}')
+
+    accuracy = accuracy_score(y_test, rfecv.predict(X_test))
+    log('Accuracy Score:', accuracy)
+
+    if hasattr(rfecv, 'grid_scores_'):
+        num_features = [i for i in range(1, len(rfecv.grid_scores_) + 1)]
+        cv_scores = rfecv.grid_scores_
+        ax = sns.lineplot(x=num_features, y=cv_scores)
+        ax.set(xlabel='No. of selected features', ylabel='CV_Scores')
+        ax.set_title('Optimal Number of Features')
+        ax.figure.savefig(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_XGB-RFECv:grid_scores_.png'))
+
+    if hasattr(rfecv, 'cv_results_'):
+        cv_results = rfecv.cv_results_
+        cv_results_df = pd.DataFrame(cv_results)
+        print('CV Results:', cv_results_df)
+        cv_results_df.to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_XGB-RFECv:cv_results_.csv'), index=False)
+
+    # Update the dataset dictionary with the selected features
+    del data_dict['X_training']
+    del data_dict['X_testing']
+    data_dict['X_training'] = X_train[best_features]
+    data_dict['X_testing'] = X_test[best_features]
+
+    return data_dict
+
+
+
 # %% Main
 def main():
     
@@ -186,27 +318,8 @@ def main():
     
     if VERBOSE:
         print("Model Selected Features Shape:", X_train_model.shape)
-    
-    
-    # %% 3. Recursive Feature Elimination (RFE)
-    
-    '''RFE works by recursively removing the least important feature and building a model on those features that remain.'''
-    
-    from sklearn.feature_selection import RFE
-    from sklearn.linear_model import LogisticRegression
-    
-    # Initialize the model to be used
-    model = LogisticRegression(max_iter=1000)
-    
-    # Initialize RFE and select the top 100 features
-    rfe = RFE(estimator=model, n_features_to_select=100, step=1)
-    X_train_rfe = rfe.fit_transform(X_train, y_train)
-    X_test_rfe = rfe.transform(X_test)  # noqa
-    
-    if VERBOSE:
-        print("RFE Selected Features Shape:", X_train_rfe.shape)
-    
-    
+
+
     # %% Feature Selection using SelectKBest
     
     from sklearn.feature_selection import SelectKBest, f_classif
@@ -237,24 +350,11 @@ def main():
         print("Model Selected Features Shape:", X_train_model.shape)
     
     
-    # %% Feature Selection using Recursive Feature Elimination (RFE)
 
-    from sklearn.feature_selection import RFE
-    from sklearn.linear_model import LogisticRegression
-    
-    # Initialize the model to be used
-    model = LogisticRegression(max_iter=1000)
-    
-    # Initialize RFE and select the top 100 features
-    rfe = RFE(estimator=model, n_features_to_select=100, step=1)
-    X_train_rfe = rfe.fit_transform(X_train, y_train)
-    X_test_rfe = rfe.transform(X_test)  # noqa
-    
-    if VERBOSE:
-        print("RFE Selected Features Shape:", X_train_rfe.shape)
 
 
 # %%
 if __name__ == '__main__':
     main()
-    
+
+

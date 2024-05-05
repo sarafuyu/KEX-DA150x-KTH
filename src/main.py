@@ -12,6 +12,10 @@ TODOs
 =====
 
 ------ MVP for today ------
+TODO(priority 1): Look into sparse (and possibly no) imputation
+TODO(priority 1): Add sparse compatible feature selection (mutual_info_classif instead of f_classif)
+
+
 TODO(priority 1): Add filtering of dataset dicts in each find_best_Xmodel function
                   so that only compatible datasets are used during gridsearch
 TODO(priority 1): Add SVR classifier
@@ -31,6 +35,36 @@ TODO(priority 5): Refactor main.py pipeline to make it more DRY (construct grid_
                   dataset dict attributes)
 --------------------------------
 
+Experiments
+
+Feature selection:
+samples: N=301
+N*3^x
+---------------------------
+number of features selected (k):
+1009 (no feature selection)
+903 (3 feat/sample)
+301 (1 feat/sample)
+100 (1/3 feat/sample)
+33 (1/9 feat/sample)
+11 (1/27 feat/sample)
+
+------------
+Write in thesis: we choose 17 since it represents av average score of 1 on each NSAA item.
+o Score of 2 = ‘Normal’ – no obvious modification of activity
+o Score of 1 = Modified method but achieves goal with no physical assistance
+o Score of 0 = Unable to achieve goal independently
+The class [0, 17) would be the class of patients who are unable to on average achieve the goals independently.
+The class [17, 34] would be the class of patients who are able to  on average achieve the goals independently.
+
+# pre-study:
+# see how iterative vs simple imputer affects the results (compare time and accuracy)
+# see how feature selection affects the results (try a few different values, pick and freeze the best one)
+# write in the report that we tried with different kernels and that the best one was poly
+# write in the report that we tried with different tols and that they were all the same under a certain threshold
+# Main study:
+# See how C and coeff0 affects the final accuracy (detailed heatmap etc)
+
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
@@ -47,7 +81,7 @@ from pathlib import Path
 # noinspection PyUnresolvedReferences
 import numpy as np  # needed for np.linspace/logspace in config
 import pandas as pd
-from sklearn.feature_selection import f_classif
+from sklearn.feature_selection import f_classif, mutual_info_classif, chi2
 from sklearn.linear_model import BayesianRidge
 
 
@@ -64,7 +98,7 @@ PROJECT_ROOT = Path(__file__).parents[1]
 # **********----------------------------------------------------------------------------********** #
 
 # Set to True to use the debug configuration from the debug_config.py file.
-DEBUG: bool = False
+DEBUG: bool = True
 
 # ----------
 # Verbosity
@@ -107,11 +141,11 @@ DATA_FILE: Path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_
 # **********----------------------------------------------------------------------------********** #
 
 # Pick imputation modes to use:
-SIMPLE_IMPUTER: bool = True
+SIMPLE_IMPUTER: bool = False
 ITERATIVE_IMPUTER: bool = False
 KNN_IMPUTER: bool = False
-NAN_ELIMINATION: bool = True
-NO_IMPUTATION: bool = False
+NAN_ELIMINATION: bool = False
+NO_IMPUTATION: bool = True
 SPARSE_NO_IMPUTATION: bool = False  # Note: if `True`, `NO_IMPUTATION` must be set to `True`.
 
 # -----------------------------
@@ -266,7 +300,7 @@ CALC_FINAL_SCORES: bool = True
 # ---------------
 
 # Enable SVC
-SVC = True
+SVC = False
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
 C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
@@ -297,9 +331,9 @@ GRID_SEARCH_SCORING_SVC: str = 'accuracy'
 # --------------
 
 # Enable SVR
-SVR = False
+SVR = True
 
-KERNEL_PARAMS_SVR: Sequence[str] = ['rbf']
+KERNEL_PARAMS_SVR: Sequence[str] = ['poly']
 DEGREE_PARAMS_SVR: Sequence[int] = [3]
 GAMMA_PARAMS_SVR: Sequence[str] = ['scale']
 COEF0_PARAMS_SVR: Sequence[float] = [0.0]
@@ -316,7 +350,7 @@ MAX_ITER_PARAMS_SVR: Sequence[int] = [-1]
 # impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
 # computationally expensive and is not strictly required to select the parameters that yield the best generalization
 # performance.
-RETURN_TRAIN_SCORE_SVR: bool = False
+RETURN_TRAIN_SCORE_SVR: bool = True
 GRID_SEARCH_SCORING_SVR: str = 'neg_mean_squared_error'
 
 
@@ -338,7 +372,6 @@ import classifier
 # %% Logging
 
 # Set up logging
-
 handlers = []
 if LOGGER:
     file_handler = logging.FileHandler(filename=LOG_FILE, encoding="utf-8")  # TODO: generate unique filename
