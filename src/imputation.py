@@ -123,7 +123,7 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
                 for order in imputation_order:
                     imputer = IterativeImputer(
                         estimator=estimator,
-                        missing_values=pd.NA,
+                        missing_values=np.nan, # pd.NA gives error do not do that!!
                         sample_posterior=False,  # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
                         max_iter=max_iter,
                         tol=tol,
@@ -288,14 +288,12 @@ def impute_data(imp_dict, df, start_col=11):
     :return: A dictionary containing the type of imputation, the imputed dataset, and the date
     of imputation.
     """
+    # TODO: only take the dict which will be a dataset, pre selected features that need imputation
     # Isolate relevant data
-    d_protein_intensities = df.iloc[:, start_col:]
-    df_imputed = df.copy()
-    df_imputed.iloc[:, start_col:] = pd.DataFrame(
-        imp_dict['imputer'].fit_transform(d_protein_intensities),
-        columns=d_protein_intensities.columns
-    )
-    
+    d_protein_intensities = df.iloc[:, start_col:start_col+30] # TODO: remove test end index
+    df_imputed = d_protein_intensities.copy # df.copy()
+    # df_imputed.iloc[:, start_col:start_col+30] = pd.DataFrame(imp_dict['imputer'].fit_transform(d_protein_intensities),columns=d_protein_intensities.columns)
+    df_imputed = imp_dict['imputer'].fit_transform(d_protein_intensities)
     # Add imputed dataset and date to dictionary
     imp_dict['dataset'] = df_imputed
     imp_dict['date'] = pd.Timestamp.now()

@@ -171,11 +171,11 @@ from sklearn.ensemble import RandomForestRegressor
 # For future type hints, see: https://stackoverflow.com/a/60542986/6292000
 ESTIMATOR_ITER_IMP = [BayesianRidge()] # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
 # Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
-MAX_ITER_ITER_IMP: int = 10  # try low number of iterations first, see if converges, then try higher numbers
-TOL_ITER_IMP: float = 0.001  # might need to adjust
+MAX_ITER_ITER_IMP: int = 500  # try low number of iterations first, see if converges, then try higher numbers
+TOL_ITER_IMP: float = 0.01 # might need to adjust
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
-N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5, 10, 20, 50, None]  # [10, 100, 500, None]
+N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5] # [5, 10, 20, 50, None]  # [10, 100, 500, None]
 INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # Default, alternatives: ["ascending", "descending" "random"]
 # ascending: From the features with the fewest missing values to those with the most
