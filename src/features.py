@@ -163,7 +163,7 @@ def select_RFE(data_dict, score_func, k):
     )
 
     # Initialize RFE and select the top 100 features
-    rfe = RFE(estimator=svc, n_features_to_select=k, step=1)
+    rfe = RFE(estimator=svc, n_features_to_select=k, step=1, verbose=0, importance_getter='auto')
     X_train_rfe = rfe.fit_transform(data_dict['X_training'], data_dict['y_training'])
 
     if VERBOSE:
@@ -176,7 +176,7 @@ def select_RFE(data_dict, score_func, k):
 
     # Assert that the number of selected features is equal to k
     if X_train_selected_features.shape[1] != k:
-        raise ValueError(f"Selected Features Shape {X_train_selected_features.shape[1]} "
+        raise ValueError(f"Selected Features Shape {X_train_selected_features.shape[1]} " # alt. attribute n_features_
                          f"is not equal to k ({k})!")
 
     # Update the dataset dictionary with the selected features
@@ -349,9 +349,6 @@ def main():
     if VERBOSE:
         print("Model Selected Features Shape:", X_train_model.shape)
     
-    
-
-
 
 # %%
 if __name__ == '__main__':

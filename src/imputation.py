@@ -75,10 +75,9 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
 # %% Option 2: Iterative Imputer
 
 
-def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e-3,
-                              initial_strategy=("mean",), n_nearest_features=(500,),
-                              imputation_order=("ascending",), min_value=0,
-                              max_value='10% higher than max'):
+def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol=0.001,
+                              initial_strategy=("mean",), n_nearest_features=[10],
+                              imputation_order=("ascending",), min_value='stat', max_value='stat'):
     """
     Impute missing values using IterativeImputer (experimental feature).
 
@@ -106,44 +105,56 @@ def create_iterative_imputers(df, estimator=BayesianRidge(), max_iter=10, tol=1e
     # Now we can import normally from sklearn.impute
     from sklearn.impute import IterativeImputer  # noqa
     from sklearn.linear_model import BayesianRidge
-    
-    if max_value == '10% higher than max':
+
+    if min_value == 'stat':
+        min_value = 0.9 * utils.summary_statistics(df, range(11, df.shape[1]))[1].min()
+
+    if max_value == 'stat':
         # We set max_value to 1.1*max value of the dataset, to avoid imputing values significantly
         # higher than the original data.
-        max_value = 1.1 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max()
-    
+        max_value = 1.1 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max() # Ask Cristina for exact values
+
+
     ## Create imputers with different configurations
     iterative_imputers = []
-    for strat in initial_strategy:
-        for order in imputation_order:
-            imputer = IterativeImputer(
-                estimator=estimator,
-                missing_values=pd.NA,
-                sample_posterior=False,  # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
-                max_iter=max_iter,
-                tol=tol,
-                n_nearest_features=n_nearest_features,
-                initial_strategy=strat,
-                imputation_order=order,
-                skip_complete=False,
-                min_value=min_value,
-                max_value=max_value,
-                verbose=VERBOSE,
-                random_state=SEED,
-                add_indicator=False,  # interesting for later, TODO: explore
-                keep_empty_features=False,  # no effect: we have removed empty features in cleanup
-            )
-            imputer_dict = {
-                "type": "IterativeImputer",
-                "imputer": imputer,
-                "max_iter": max_iter,
-                "tol": tol,
-                "n_nearest_features": n_nearest_features[1],
-                "initial_strategy": strat,
-                "imputation_order": order,
-                "random_state": SEED,
-            }
-            iterative_imputers.append(imputer_dict)
+    for estimator in estimators:
+        for n in n_nearest_features:
+            for strat in initial_strategy:
+                for order in imputation_order:
+                    imputer = IterativeImputer(
+                        estimator=estimator,
+                        missing_values=pd.NA,
+                        sample_posterior=False,  # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
+                        max_iter=max_iter,
+                        tol=tol,
+                        n_nearest_features=n,
+                        initial_strategy=strat, # Best: mean
+                        fill_value=None, # Default
+                        imputation_order=order, # Default
+                        skip_complete=False, # Default
+                        min_value=min_value, # TODO: use data stats to set limits
+                        max_value=max_value,
+                        verbose=VERBOSE,
+                        random_state=SEED,
+                        add_indicator=True,  # interesting for later, TODO: explore
+                        keep_empty_features=False,  # no effect: we have removed empty features in cleanup
+                    )
+                    imputer_dict = {
+                        "type": "IterativeImputer",
+                        "imputer": imputer,
+                        "estimator": estimator,
+                        "sample_posterior": False,
+                        "max_iter": max_iter,
+                        "tol": tol,
+                        "n_nearest_features": n,
+                        "initial_strategy": strat,
+                        "imputation_order": order,
+                        "min_value": min_value,
+                        "max_value": max_value,
+                        "random_state": SEED,
+                        "add_indicator": True
+                    }
+                    iterative_imputers.append(imputer_dict)
     
     return iterative_imputers
 
