@@ -142,10 +142,10 @@ DATA_FILE: Path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_
 
 # Pick imputation modes to use:
 SIMPLE_IMPUTER: bool = False
-ITERATIVE_IMPUTER: bool = False
+ITERATIVE_IMPUTER: bool = True
 KNN_IMPUTER: bool = False
 NAN_ELIMINATION: bool = False
-NO_IMPUTATION: bool = True
+NO_IMPUTATION: bool = False
 SPARSE_NO_IMPUTATION: bool = False  # Note: if `True`, `NO_IMPUTATION` must be set to `True`.
 
 # -----------------------------
@@ -163,23 +163,24 @@ COPY_SIMPLE_IMP: bool = True
 # --------------------------------
 # Iterative imputer configuration
 # --------------------------------
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 
 # Estimator, e.g. a BayesianRidge() object or an estimator object from scikit-learn.
 # Can probably be customized, but leave default for now.
 # For future type hints, see: https://stackoverflow.com/a/60542986/6292000
-ESTIMATOR_ITER_IMP = BayesianRidge()
+ESTIMATOR_ITER_IMP = [BayesianRidge()] # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
 # Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
-MAX_ITER_ITER_IMP: int = 100  # try low number of iterations first, see if converges, then try higher numbers
-TOL_ITER_IMP: float = 1e-3  # might need to adjust
-INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
+MAX_ITER_ITER_IMP: int = 10  # try low number of iterations first, see if converges, then try higher numbers
+TOL_ITER_IMP: float = 0.001  # might need to adjust
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
 N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5, 10, 20, 50, None]  # [10, 100, 500, None]
-
-IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # ["ascending", "descending" "random"]
+INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
+IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # Default, alternatives: ["ascending", "descending" "random"]
 # ascending: From the features with the fewest missing values to those with the most
-MIN_VALUE_ITER_IMP: int = 0  # no features have negative values, adjust tighter for prot intensities?
-MAX_VALUE_ITER_IMP: str | int = '10% higher than max'
+MIN_VALUE_ITER_IMP: str | int = 'stat'  # no features have negative values, adjust tighter for prot intensities?
+MAX_VALUE_ITER_IMP: str | int = 'stat'
 
 # --------------------------
 # KNN imputer configuration
@@ -243,7 +244,7 @@ COLUMN_TO_CATEGORIZE: str = 'FT5'
 # **********----------------------------------------------------------------------------********** #
 
 # For detailed configuration for each feature selection mode, see features.py
-TEST_PROPORTION: float = 0.2
+TEST_PROPORTION: float = 0.0 # TODO: full cross validation settings
 
 # Column index to start from. Will split the selected X and y data, into the two data subsets:
 #   X_train, y_train,
@@ -289,7 +290,7 @@ K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # ------------
 
 # Set the verbosity level for the grid search printouts that are not logged.
-GRID_SEARCH_VERBOSITY: int = 0
+GRID_SEARCH_VERBOSITY: int = 1
 # Number of cross-validation folds
 K_CV_FOLDS: int = 5
 # Calculate final accuracy for all models
@@ -300,17 +301,17 @@ CALC_FINAL_SCORES: bool = True
 # ---------------
 
 # Enable SVC
-SVC = False
+SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
+C_PARAMS_SVC: Sequence[float] = [0.001] #[0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly'] # ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+DEGREE_PARAMS_SVC: Sequence[int] = [3] # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+COEF0_PARAMS_SVC: Sequence[float] = [0.01] # [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.001] # [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
@@ -331,7 +332,7 @@ GRID_SEARCH_SCORING_SVC: str = 'accuracy'
 # --------------
 
 # Enable SVR
-SVR = True
+SVR = False
 
 KERNEL_PARAMS_SVR: Sequence[str] = ['poly']
 DEGREE_PARAMS_SVR: Sequence[int] = [3]
@@ -428,7 +429,7 @@ if SIMPLE_IMPUTER:
 if ITERATIVE_IMPUTER:
     dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
         df=dataset,
-        estimator=ESTIMATOR_ITER_IMP,
+        estimators=ESTIMATOR_ITER_IMP,
         max_iter=MAX_ITER_ITER_IMP,
         tol=TOL_ITER_IMP,
         initial_strategy=INITIAL_STRATEGY_ITER_IMP,
