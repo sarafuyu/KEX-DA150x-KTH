@@ -3,11 +3,13 @@
     <words>
       <w>alwis</w>
       <w>coef</w>
+      <w>coeff</w>
       <w>coolwarm</w>
       <w>elim</w>
       <w>idxs</w>
       <w>iloc</w>
       <w>linspace</w>
+      <w>nsaa</w>
       <w>rfecv</w>
       <w>strat</w>
       <w>xgbclf</w>
