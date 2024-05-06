@@ -170,13 +170,13 @@ from sklearn.ensemble import RandomForestRegressor
 # Estimator, e.g. a BayesianRidge() object or an estimator object from scikit-learn.
 # Can probably be customized, but leave default for now.
 # For future type hints, see: https://stackoverflow.com/a/60542986/6292000
-ESTIMATOR_ITER_IMP = [BayesianRidge()] # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
+ESTIMATOR_ITER_IMP = [BayesianRidge()]  # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
 # Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
 MAX_ITER_ITER_IMP: int = 500  # try low number of iterations first, see if converges, then try higher numbers
-TOL_ITER_IMP: float = 0.01 # might need to adjust
+TOL_ITER_IMP: float = 0.01  # might need to adjust
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
-N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5] # [5, 10, 20, 50, None]  # [10, 100, 500, None]
+N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5]  # [5, 10, 20, 50, None]  # [10, 100, 500, None]
 INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # Default, alternatives: ["ascending", "descending" "random"]
 ADD_INDICATOR_ITER_IMP: bool = True  # Add indicator for missing values
@@ -270,7 +270,7 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 # tasks and should be used on sparse data.
 #
 SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = chi2  # mutual_info_classif  # f_classif
-K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
+K_FEATURES: int = 23  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
 #
 # For N=301 samples try with N*3^x features:
 # ---------------------------
@@ -281,6 +281,9 @@ K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # 100 (1/3 feat/sample)
 # 33 (1/9 feat/sample)
 # 11 (1/27 feat/sample)
+
+# Select XGB features instead of KBest
+SELECT_XGB: bool = True
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -539,7 +542,7 @@ if SPARSE_NO_IMPUTATION:
 # %% Feature selection
 
 # Feature selection
-if SPARSE_NO_IMPUTATION:
+if SPARSE_NO_IMPUTATION or SELECT_XGB:
     dataset_dicts = [
         features.select_XGB(
             data_dict=data_dict,
@@ -553,7 +556,7 @@ else:
         features.select_KBest(
             data_dict=data_dict,
             score_func=SCORE_FUNC_FEATURES,
-            k=K_FEATURES
+            k=K_FEATURES,
         )
         for data_dict in dataset_dicts
     ]
