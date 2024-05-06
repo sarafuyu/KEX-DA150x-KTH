@@ -77,7 +77,8 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
 
 def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol=0.001,
                               initial_strategy=("mean",), n_nearest_features=[10],
-                              imputation_order=("ascending",), min_value='stat', max_value='stat'):
+                              imputation_order=("ascending",), add_indicator=True,
+                              min_value='stat', max_value='stat'):
     """
     Impute missing values using IterativeImputer (experimental feature).
 
@@ -87,14 +88,15 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
     - ``sklearn.impute.IterativeImputer``
     - ``sklearn.linear_model.BayesianRidge``
 
-    :param estimator: The estimator to use at each step of the round-robin imputation.
-    :param max_iter:
-    :param tol:
-    :param initial_strategy:
-    :param n_nearest_features:
-    :param imputation_order:
-    :param min_value:
-    :param max_value:
+    :param estimators: The estimators to use at each step of the round-robin imputation.
+    :param max_iter: The maximum number of imputation rounds to perform.
+    :param tol: The tolerance/stopping criterion for imputation.
+    :param initial_strategy: The imputation strategy to use for the initial imputation.
+    :param n_nearest_features: The number of nearest features to take into consideration for imputation.
+    :param imputation_order: The order in which to impute missing values.
+    :param add_indicator: Whether to add a missing indicator column to the dataset.
+    :param min_value: A cap on the minimum value to impute. If 'stat', the 10th percentile of the dataset is used.
+    :param max_value: A cap on the maximum value to impute. If 'stat', the 90th percentile of the dataset is used.
     :param df: The dataset to impute. Used to determine the min and max values for imputation.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
@@ -123,21 +125,21 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
                 for order in imputation_order:
                     imputer = IterativeImputer(
                         estimator=estimator,
-                        missing_values=np.nan, # pd.NA gives error do not do that!!
-                        sample_posterior=False,  # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
+                        missing_values=np.nan,        # pd.NA gives error do not do that!!
+                        sample_posterior=False,       # TODO: should likely be set to True since there are multiple imputations but we need testing to evaluate return_std support. should be false for early stopping in max_iter
                         max_iter=max_iter,
                         tol=tol,
                         n_nearest_features=n,
-                        initial_strategy=strat, # Best: mean
-                        fill_value=None, # Default
-                        imputation_order=order, # Default
-                        skip_complete=False, # Default
-                        min_value=min_value, # TODO: use data stats to set limits
+                        initial_strategy=strat,       # Best: mean
+                        fill_value=None,              # Default
+                        imputation_order=order,       # Default
+                        skip_complete=False,          # Default
+                        min_value=min_value,          # TODO: use data stats to set limits
                         max_value=max_value,
                         verbose=VERBOSE,
                         random_state=SEED,
-                        add_indicator=True,  # interesting for later, TODO: explore
-                        keep_empty_features=False,  # no effect: we have removed empty features in cleanup
+                        add_indicator=add_indicator,  # interesting for later, TODO: explore
+                        keep_empty_features=False,    # no effect: we have removed empty features in cleanup
                     )
                     imputer_dict = {
                         "type": "IterativeImputer",

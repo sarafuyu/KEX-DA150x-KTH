@@ -178,6 +178,7 @@ TOL_ITER_IMP: float = 0.01 # might need to adjust
 N_NEAREST_FEATURES_ITER_IMP: Sequence[int] = [5] # [5, 10, 20, 50, None]  # [10, 100, 500, None]
 INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # Default, alternatives: ["ascending", "descending" "random"]
+ADD_INDICATOR_ITER_IMP: bool = True  # Add indicator for missing values
 # ascending: From the features with the fewest missing values to those with the most
 MIN_VALUE_ITER_IMP: str | int = 'stat'  # no features have negative values, adjust tighter for prot intensities?
 MAX_VALUE_ITER_IMP: str | int = 'stat'
@@ -244,7 +245,7 @@ COLUMN_TO_CATEGORIZE: str = 'FT5'
 # **********----------------------------------------------------------------------------********** #
 
 # For detailed configuration for each feature selection mode, see features.py
-TEST_PROPORTION: float = 0.0 # TODO: full cross validation settings
+TEST_PROPORTION: float = 0.2  # TODO: full cross validation settings
 
 # Column index to start from. Will split the selected X and y data, into the two data subsets:
 #   X_train, y_train,
@@ -424,7 +425,9 @@ dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME
 dataset_dicts = []
 if SIMPLE_IMPUTER:
     dataset_dicts = dataset_dicts + imputation.create_simple_imputers(
-        add_indicator=ADD_INDICATOR_SIMPLE_IMP, copy=COPY_SIMPLE_IMP, strategy=STRATEGY_SIMPLE_IMP
+        add_indicator=ADD_INDICATOR_SIMPLE_IMP,
+        copy=COPY_SIMPLE_IMP,
+        strategy=STRATEGY_SIMPLE_IMP
         )
 if ITERATIVE_IMPUTER:
     dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
@@ -435,6 +438,7 @@ if ITERATIVE_IMPUTER:
         initial_strategy=INITIAL_STRATEGY_ITER_IMP,
         n_nearest_features=N_NEAREST_FEATURES_ITER_IMP,
         imputation_order=IMPUTATION_ORDER_ITER_IMP,
+        add_indicator=ADD_INDICATOR_ITER_IMP,
         min_value=MIN_VALUE_ITER_IMP,
         max_value=MAX_VALUE_ITER_IMP,
     )
