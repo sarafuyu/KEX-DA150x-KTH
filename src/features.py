@@ -34,7 +34,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Data Splitting
 
-def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
+def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5', size_X=False):
     """
     Split the data into input and target variables.
 
@@ -43,6 +43,7 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     :param random_state: The seed used by the random number generator.
     :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
     :param y_col_label: The label of the target variable column.
+    :param size_X: Size of the dataset.
     :return: A tuple of input and target variables.
     """
     from sklearn.model_selection import train_test_split
@@ -54,16 +55,22 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     else:
         raise ValueError("Argument data must be a pandas DataFrame or a dictionary "
                          "with a 'dataset' key.")
-    
-    y_data = df[y_col_label]         # Vector for the target variable
-    X_data = df.iloc[:, start_col:]  # Matrix with variable input
 
-    # Split the dataset into training and testing sets (default 80% - 20%)
-    X_training, X_testing, y_training, y_testing = train_test_split(
-        X_data, y_data,
-        test_size=test_size,
-        random_state=random_state
-    )
+    y_data = df[y_col_label]                           # Vector for the target variable
+    X_data = df.iloc[:, start_col:start_col + size_X]  # Matrix with variable input
+
+    if test_size:
+        # Split the dataset into training and testing sets (default 80% - 20%)
+        X_training, X_testing, y_training, y_testing = train_test_split(
+            X_data, y_data,
+            test_size=test_size,
+            random_state=random_state
+        )
+    else:
+        # Note: If test_size is 0, the data will not be split into training and testing sets
+        #       For compatibility with the rest of the code, we set the testing data to
+        #       be the same as the training data:
+        X_training, X_testing, y_training, y_testing = X_data, X_data, y_data, y_data
 
     if type(y_testing) is pd.Series:
         y_testing = y_testing.to_frame()
