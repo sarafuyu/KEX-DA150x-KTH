@@ -410,7 +410,9 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}")
     if config['SPARSE_NO_IMPUTATION']:
         log(f"Not performing feature selection with KBest on sparse data.")
-        log()
+        log("")  # TODO: log XGB in more detail, reformulate if statement since we wont use nan-sparse data anymore
+        #                We should prob to add boolean variables specific to our feature select methods and then filters in the
+        #                beginning of them that rejects incompatible datasets
 
     # Log classifier
     log(f"CLASSIFIERS")

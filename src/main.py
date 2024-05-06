@@ -279,6 +279,8 @@ K_FEATURES: int = 30  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # 33 (1/9 feat/sample)
 # 11 (1/27 feat/sample)
 
+# 23 specific features was found to be the best number of features using XGB feature selection.
+
 
 # **********----------------------------------------------------------------------------********** #
 # |                              ~~ Model training & fitting ~~                                  | #
@@ -531,6 +533,46 @@ if SPARSE_NO_IMPUTATION:
 
 # %% Feature selection
 
+# TODO: move pipeline_config up to here probably (select_XGB, and prob others in future, need it for logging)
+pipeline_config = {
+    'DEBUG':                       DEBUG,
+    'SEED':                        SEED,
+    'VERBOSE':                     VERBOSE,
+    'DATA_FILE':                   DATA_FILE,
+    'SIMPLE_IMPUTER':              SIMPLE_IMPUTER,
+    'ITERATIVE_IMPUTER':           ITERATIVE_IMPUTER,
+    'KNN_IMPUTER':                 KNN_IMPUTER,
+    'NAN_ELIMINATION':             NAN_ELIMINATION,
+    'NO_IMPUTATION':               NO_IMPUTATION,
+    'SPARSE_NO_IMPUTATION':        SPARSE_NO_IMPUTATION,
+    'ADD_INDICATOR_SIMPLE_IMP':    ADD_INDICATOR_SIMPLE_IMP,
+    'COPY_SIMPLE_IMP':             COPY_SIMPLE_IMP,
+    'STRATEGY_SIMPLE_IMP':         STRATEGY_SIMPLE_IMP,
+    'ESTIMATOR_ITER_IMP':          ESTIMATOR_ITER_IMP,
+    'MAX_ITER_ITER_IMP':           MAX_ITER_ITER_IMP,
+    'TOL_ITER_IMP':                TOL_ITER_IMP,
+    'INITIAL_STRATEGY_ITER_IMP':   INITIAL_STRATEGY_ITER_IMP,
+    'N_NEAREST_FEATURES_ITER_IMP': N_NEAREST_FEATURES_ITER_IMP,
+    'IMPUTATION_ORDER_ITER_IMP':   IMPUTATION_ORDER_ITER_IMP,
+    'MIN_VALUE_ITER_IMP':          MIN_VALUE_ITER_IMP,
+    'MAX_VALUE_ITER_IMP':          MAX_VALUE_ITER_IMP,
+    'N_NEIGHBOURS_KNN_IMP':        N_NEIGHBOURS_KNN_IMP,
+    'WEIGHTS_KNN_IMP':             WEIGHTS_KNN_IMP,
+    'METRIC_KNN_IMP':              METRIC_KNN_IMP,
+    'DROP_COLS_NAN_ELIM':          DROP_COLS_NAN_ELIM,
+    'FIRST_COLUMN_TO_NORMALIZE':   FIRST_COLUMN_TO_NORMALIZE,
+    'CUTOFFS':                     CUTOFFS,
+    'COLUMN_TO_CATEGORIZE':        COLUMN_TO_CATEGORIZE,
+    'TEST_PROPORTION':             TEST_PROPORTION,
+    'X_START_COLUMN_IDX':          X_START_COLUMN_IDX,
+    'Y_COLUMN_LABEL':              Y_COLUMN_LABEL,
+    'SCORE_FUNC_FEATURES':         SCORE_FUNC_FEATURES,
+    'K_FEATURES':                  K_FEATURES,
+    'SVC':                         SVC,
+    'SVR':                         SVR,
+    'START_TIME':                  START_TIME,
+}
+
 # Feature selection
 if SPARSE_NO_IMPUTATION:
     dataset_dicts = [
@@ -538,6 +580,8 @@ if SPARSE_NO_IMPUTATION:
             data_dict=data_dict,
             k=K_FEATURES,
             log=log,
+            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config,
+            start_time=START_TIME, logfile=LOG_FILE,
         )
         for data_dict in dataset_dicts
     ]
