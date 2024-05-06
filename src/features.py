@@ -58,12 +58,16 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     y_data = df[y_col_label]         # Vector for the target variable
     X_data = df.iloc[:, start_col:]  # Matrix with variable input
 
-    # Split the dataset into training and testing sets (default 80% - 20%)
-    X_training, X_testing, y_training, y_testing = train_test_split(
-        X_data, y_data,
-        test_size=test_size,
-        random_state=random_state
-    )
+    if test_size:
+        # Split the dataset into training and testing sets (default 80% - 20%)
+        X_training, X_testing, y_training, y_testing = train_test_split(
+            X_data, y_data,
+            test_size=test_size,
+            random_state=random_state
+        )
+    else:
+        # If no test data, e.g. for parameter study:
+        X_training, X_testing, y_training, y_testing = X_data, X_data, y_data, y_data
 
     if type(y_testing) is pd.Series:
         y_testing = y_testing.to_frame()
