@@ -84,18 +84,25 @@ def std_normalization(data, start_column):
         df = data['dataset']
     elif type(data) is pd.DataFrame:
         df = data
-    
+
+    # If missing indicator columns are present, seek the first one
+    end_col = len(df.columns)
+    for col in df.columns:
+        if 'missing' in col:
+            end_col = df.columns.get_loc(col)
+            break
+
     # Create a copy of the DataFrame
     df_normalized = df.copy()
     
     # Extract the protein intensities
-    d_protein_intensities = df.copy().iloc[:, start_column:]
+    d_protein_intensities = df.copy().iloc[:, start_column:end_col]
     
     # Create and fit StandardScaler
     scaler = StandardScaler(copy=False, with_mean=True, with_std=True)
     
-    # Normalize protein intensities
-    df_normalized.iloc[:, start_column:] = scaler.fit_transform(d_protein_intensities)
+    # Normalize protein intensities (Note: not the missing indicator columns!)
+    df_normalized.iloc[:, start_column:end_col] = scaler.fit_transform(d_protein_intensities)
     
     # Return normalized dataset
     if type(data) is dict:
@@ -159,9 +166,9 @@ def main():
     
     # Load the data
     dataset = pd.read_csv(cleaned_data_path)
-    if verbose:
+    if VERBOSE:
         print("Data loaded successfully.")
-    if verbose > 1:
+    if VERBOSE > 1:
         dataset.head()
         
     
@@ -172,7 +179,7 @@ def main():
     ## Run statistics part for normalization
     stats = utils.summary_statistics(dataset, start_col)
     min_values, max_values = stats
-    if verbose > 2:
+    if VERBOSE > 2:
         print(min_values)
         print(max_values)
     
@@ -184,7 +191,7 @@ def main():
     
     # Save the normalized data to a CSV file
     dataset_normalized.to_csv(output_data_path, index=False)
-    if verbose > 0:
+    if VERBOSE > 0:
         dataset_normalized  # noqa
 
 

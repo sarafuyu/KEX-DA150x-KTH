@@ -99,6 +99,7 @@ PROJECT_ROOT = Path(__file__).parents[1]
 
 # Set to True to use the debug configuration from the debug_config.py file.
 DEBUG: bool = True
+SIZE_X: int = 30  # Number of features to use, if zero, all features are used. Can be used for testing.
 
 # ----------
 # Verbosity
@@ -454,7 +455,7 @@ if KNN_IMPUTER:
     )
 
 # Impute data using generated imputers
-dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11)
+dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11, size_X=SIZE_X)
                  for imputer_dict in dataset_dicts]
 
 # Add NaN-eliminated and un-imputed datasets
@@ -517,6 +518,7 @@ dataset_dicts = [
         random_state=SEED,
         start_col=X_START_COLUMN_IDX,
         y_col_label=Y_COLUMN_LABEL,
+        size_X=SIZE_X,
     )
     for dataset_dict in dataset_dicts
 ]

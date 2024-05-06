@@ -280,24 +280,76 @@ def sparse_no_impute(data_dict: dict, protein_start_col=11):
     return [data_dict_sparse]
 
 
-def impute_data(imp_dict, df, start_col=11):
+def impute_data(imp_dict, df, start_col_X=11, size_X=False, add_indicator=True):
     """
     Impute missing values in the dataset using the specified imputer.
 
+    Normally, the imputer is applied, in place, to the protein intensities in the main dataframe
+    (under the 'dataset' key), the key which is used to pass the dataset to the next step
+    in the pipeline.
+
+    If add_indicator is `True`, the imputation is performed in place in the 'dataset' dataframe as
+    usual, but a missing indicator matrix is concatenated to the end of the whole dataframe.
+    The missing value indicator matrix df and imputed X df are also saved separately under the
+    dictionary keys 'X_missing_values' and 'X_imputed', respectively.
+
+    Feel free to use any of these 'dataset', 'X_missing_values', 'X_imputed' keys as needed in the
+    rest of the pipeline. We can also remove any of these keys if they are not needed. Keep in mind
+    that the 'dataset' key will always be present and is currently what is used to pass the dataset
+    to the next step in the pipeline. I therefore recommend keeping the 'dataset' key as the main
+    dataset to be passed forward.
+
     :param imp_dict: A dictionary containing the imputer object and its configuration.
     :param df: The dataset to impute.
-    :param start_col: The start index of the columns to impute.
+    :param start_col_X: The start index of the columns to impute.
+    :param size_X: The number of columns to impute counting from the start index.
+    :param add_indicator: Whether to add a missing indicator column to the dataset.
     :return: A dictionary containing the type of imputation, the imputed dataset, and the date
     of imputation.
     """
-    # TODO: only take the dict which will be a dataset, pre selected features that need imputation
+    if not size_X:
+        # If size_X is not provided, set it to the number of columns from start_col_X to the end
+        size_X = df.shape[1] - start_col_X
+
     # Isolate relevant data
-    d_protein_intensities = df.iloc[:, start_col:start_col+30] # TODO: remove test end index
-    df_imputed = d_protein_intensities.copy # df.copy()
-    # df_imputed.iloc[:, start_col:start_col+30] = pd.DataFrame(imp_dict['imputer'].fit_transform(d_protein_intensities),columns=d_protein_intensities.columns)
-    df_imputed = imp_dict['imputer'].fit_transform(d_protein_intensities)
-    # Add imputed dataset and date to dictionary
+    df_imputed = df.copy()
+
+    # Extract the protein intensities
+    X = df_imputed.iloc[:, start_col_X:start_col_X + size_X]
+
+    # Impute missing values
+    # A numpy ndarray is returned, not a dataframe, has no column names, need to convert back to dataframe
+    X_imputed_arr = imp_dict['imputer'].fit_transform(X)
+
+    # Convert the imputed values separately back to a dataframe
+    X_imputed = pd.DataFrame(X_imputed_arr[:, 0:size_X], columns=X.columns)
+
+    # Save the imputed values as a separate dataframe in the dictionary
+    imp_dict['X_imputed'] = X_imputed  # save the imputed values
+
+    # Insert and replace the original values with the imputed values in the original dataframe
+    df_imputed.iloc[:, start_col_X:start_col_X + size_X] = X_imputed
+
+    if add_indicator:
+        # Generate column names for the missing value indicator features
+        X_column_names = X.columns
+        X_indicator_column_names = [f"{col_name}_missing" for col_name in X_column_names]
+
+        # Convert the missing value indicators separately into a dataframe
+        X_indicators = pd.DataFrame(X_imputed_arr[:, size_X:], columns=X_indicator_column_names)
+        imp_dict['X_missing_values'] = X_indicators  # save the missing value indicators
+
+        # Drop rows outside the selection range
+        df_imputed = df_imputed.drop(df_imputed.columns[start_col_X + size_X:], axis=1)
+
+        # Concatenate missing value indicators with the rest of the dataset
+        X_indicators.index = df_imputed.index  # Ensure row indices match
+        df_imputed = pd.concat([df_imputed, X_indicators], axis=1)
+
+    # Return the imputed dataset
     imp_dict['dataset'] = df_imputed
+
+    # Save the date of imputation
     imp_dict['date'] = pd.Timestamp.now()
     
     return imp_dict
