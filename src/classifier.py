@@ -122,11 +122,11 @@ def find_best_svm_model(pipeline_config,
     if calc_final_scores:
         clf = clf.fit_calc_final_scores(X_training, y_training, X_testing, y_testing)
     else:
-        clf = clf.fit(X_training, y_training)
+        clf = clf.fit(X_training, y_training['FT5'])
 
     # Calculate and log best score (accuracy)
     if hasattr(clf, 'score'):
-        test_accuracy = clf.score(X_testing, y_testing)
+        test_accuracy = clf.score(X_testing, y_testing['FT5'])
     else:
         Warning("The classifier does not have a 'score' attribute. Was it fitted?")
         test_accuracy = None
