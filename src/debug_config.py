@@ -86,8 +86,8 @@ pipeline_debug_config = {
     # 'CALC_FINAL_SCORES':           True,
     # --- SVC ---------------------------------------------------------------- #
     'SVC':                          True,
-    'C_PARAMS_SVC':                 [0.1],
-    'KERNEL_PARAMS_SVC':            ['poly'],
+    'C_PARAMS_SVC':                 [0.1, 1.0],
+    'KERNEL_PARAMS_SVC':                  ['poly'],
     'DEGREE_PARAMS_SVC':            [3],
     'GAMMA_PARAMS_SVC':             ['auto'],
     'COEF0_PARAMS_SVC':             [1],

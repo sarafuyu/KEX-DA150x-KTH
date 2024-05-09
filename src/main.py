@@ -99,7 +99,6 @@ PROJECT_ROOT = Path(__file__).parents[1]
 
 # Set to True to use the debug configuration from the debug_config.py file.
 DEBUG: bool = True
-SIZE_X: int = 30  # Number of features to use, if zero, all features are used. Can be used for testing.
 
 # ----------
 # Verbosity
@@ -285,6 +284,8 @@ K_FEATURES: int = 23  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120
 # Select XGB features instead of KBest
 SELECT_XGB: bool = True
 
+# 23 specific features was found to be the best number of features using XGB feature selection.
+
 
 # **********----------------------------------------------------------------------------********** #
 # |                              ~~ Model training & fitting ~~                                  | #
@@ -309,14 +310,14 @@ CALC_FINAL_SCORES: bool = True
 SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = [0.001] #[0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly'] # ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [3] # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
+C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [0.01] # [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.001] # [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
@@ -458,7 +459,7 @@ if KNN_IMPUTER:
     )
 
 # Impute data using generated imputers
-dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11, size_X=SIZE_X)
+dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11)
                  for imputer_dict in dataset_dicts]
 
 # Add NaN-eliminated and un-imputed datasets
@@ -521,7 +522,6 @@ dataset_dicts = [
         random_state=SEED,
         start_col=X_START_COLUMN_IDX,
         y_col_label=Y_COLUMN_LABEL,
-        size_X=SIZE_X,
     )
     for dataset_dict in dataset_dicts
 ]
@@ -541,6 +541,46 @@ if SPARSE_NO_IMPUTATION:
 
 # %% Feature selection
 
+# TODO: move pipeline_config up to here probably (select_XGB, and prob others in future, need it for logging)
+pipeline_config = {
+    'DEBUG':                       DEBUG,
+    'SEED':                        SEED,
+    'VERBOSE':                     VERBOSE,
+    'DATA_FILE':                   DATA_FILE,
+    'SIMPLE_IMPUTER':              SIMPLE_IMPUTER,
+    'ITERATIVE_IMPUTER':           ITERATIVE_IMPUTER,
+    'KNN_IMPUTER':                 KNN_IMPUTER,
+    'NAN_ELIMINATION':             NAN_ELIMINATION,
+    'NO_IMPUTATION':               NO_IMPUTATION,
+    'SPARSE_NO_IMPUTATION':        SPARSE_NO_IMPUTATION,
+    'ADD_INDICATOR_SIMPLE_IMP':    ADD_INDICATOR_SIMPLE_IMP,
+    'COPY_SIMPLE_IMP':             COPY_SIMPLE_IMP,
+    'STRATEGY_SIMPLE_IMP':         STRATEGY_SIMPLE_IMP,
+    'ESTIMATOR_ITER_IMP':          ESTIMATOR_ITER_IMP,
+    'MAX_ITER_ITER_IMP':           MAX_ITER_ITER_IMP,
+    'TOL_ITER_IMP':                TOL_ITER_IMP,
+    'INITIAL_STRATEGY_ITER_IMP':   INITIAL_STRATEGY_ITER_IMP,
+    'N_NEAREST_FEATURES_ITER_IMP': N_NEAREST_FEATURES_ITER_IMP,
+    'IMPUTATION_ORDER_ITER_IMP':   IMPUTATION_ORDER_ITER_IMP,
+    'MIN_VALUE_ITER_IMP':          MIN_VALUE_ITER_IMP,
+    'MAX_VALUE_ITER_IMP':          MAX_VALUE_ITER_IMP,
+    'N_NEIGHBOURS_KNN_IMP':        N_NEIGHBOURS_KNN_IMP,
+    'WEIGHTS_KNN_IMP':             WEIGHTS_KNN_IMP,
+    'METRIC_KNN_IMP':              METRIC_KNN_IMP,
+    'DROP_COLS_NAN_ELIM':          DROP_COLS_NAN_ELIM,
+    'FIRST_COLUMN_TO_NORMALIZE':   FIRST_COLUMN_TO_NORMALIZE,
+    'CUTOFFS':                     CUTOFFS,
+    'COLUMN_TO_CATEGORIZE':        COLUMN_TO_CATEGORIZE,
+    'TEST_PROPORTION':             TEST_PROPORTION,
+    'X_START_COLUMN_IDX':          X_START_COLUMN_IDX,
+    'Y_COLUMN_LABEL':              Y_COLUMN_LABEL,
+    'SCORE_FUNC_FEATURES':         SCORE_FUNC_FEATURES,
+    'K_FEATURES':                  K_FEATURES,
+    'SVC':                         SVC,
+    'SVR':                         SVR,
+    'START_TIME':                  START_TIME,
+}
+
 # Feature selection
 if SPARSE_NO_IMPUTATION or SELECT_XGB:
     dataset_dicts = [
@@ -548,6 +588,8 @@ if SPARSE_NO_IMPUTATION or SELECT_XGB:
             data_dict=data_dict,
             k=K_FEATURES,
             log=log,
+            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config,
+            start_time=START_TIME, logfile=LOG_FILE,
         )
         for data_dict in dataset_dicts
     ]
