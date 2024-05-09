@@ -9,11 +9,13 @@
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
+from datetime import datetime
 # %% Imports
 
 # Standard library imports
 from pathlib import Path
 
+import joblib
 import numpy as np
 # External imports
 import pandas as pd
@@ -34,7 +36,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Data Splitting
 
-def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5', size_X=False):
+def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
     """
     Split the data into input and target variables.
 
@@ -43,7 +45,6 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     :param random_state: The seed used by the random number generator.
     :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
     :param y_col_label: The label of the target variable column.
-    :param size_X: Size of the dataset.
     :return: A tuple of input and target variables.
     """
     from sklearn.model_selection import train_test_split
@@ -55,9 +56,9 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     else:
         raise ValueError("Argument data must be a pandas DataFrame or a dictionary "
                          "with a 'dataset' key.")
-
-    y_data = df[y_col_label]                           # Vector for the target variable
-    X_data = df.iloc[:, start_col:start_col + size_X]  # Matrix with variable input
+    
+    y_data = df[y_col_label]         # Vector for the target variable
+    X_data = df.iloc[:, start_col:]  # Matrix with variable input
 
     if test_size:
         # Split the dataset into training and testing sets (default 80% - 20%)
@@ -236,7 +237,7 @@ def select_mutual_info_regression(data_dict, k):
     return data_dict
 
 
-def select_XGB(data_dict, k, log=print):
+def select_XGB(data_dict, k, log=print, original_dataset=None, original_protein_start_col=11, config=None, start_time=None, logfile=None):
     import xgboost as xgb
     from sklearn.model_selection import train_test_split
     import xgboost as xgb
@@ -250,6 +251,7 @@ def select_XGB(data_dict, k, log=print):
     y_train = data_dict['y_training']
     y_test = data_dict['y_testing']
 
+    log(f'Starting XGB Feature Selection ...')
     xgbclf = xgb.XGBClassifier()
     xgbclf.fit(X_train, y_train)
 
@@ -259,25 +261,54 @@ def select_XGB(data_dict, k, log=print):
     opt_features = rfecv.n_features_
     best_features = X_train.columns[rfecv.support_]
 
-    log(f'Optimal features: {opt_features}')
-    log(f'Best features: {best_features}')
+    log(f'Num optimal features: {opt_features}')
+    log(f'Optimal features: {best_features}')
 
     accuracy = accuracy_score(y_test, rfecv.predict(X_test))
     log('Accuracy Score:', accuracy)
 
-    if hasattr(rfecv, 'grid_scores_'):
-        num_features = [i for i in range(1, len(rfecv.grid_scores_) + 1)]
-        cv_scores = rfecv.grid_scores_
-        ax = sns.lineplot(x=num_features, y=cv_scores)
-        ax.set(xlabel='No. of selected features', ylabel='CV_Scores')
-        ax.set_title('Optimal Number of Features')
-        ax.figure.savefig(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_XGB-RFECv:grid_scores_.png'))
-
-    if hasattr(rfecv, 'cv_results_'):
-        cv_results = rfecv.cv_results_
-        cv_results_df = pd.DataFrame(cv_results)
-        print('CV Results:', cv_results_df)
-        cv_results_df.to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_XGB-RFECv:cv_results_.csv'), index=False)
+    # TODO: some of these try-except blocks can probably be removed after testing
+    try:
+        # Attempt to save CV results
+        if hasattr(rfecv, 'cv_results_'):
+            cv_results = rfecv.cv_results_
+            cv_results_df = pd.DataFrame(cv_results)
+            log('CV Results:', cv_results_df)
+            cv_results_df.to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'__FeatureSelect:XGB-RFE-CV:cv_results_.csv'), index=False)
+        # Try to generate plot of feature importances / number of features
+        if hasattr(rfecv, 'grid_scores_'):
+            num_features = [i for i in range(1, len(rfecv.grid_scores_) + 1)]
+            cv_scores = rfecv.grid_scores_
+            ax = sns.lineplot(x=num_features, y=cv_scores)
+            ax.set(xlabel='No. of selected features', ylabel='CV_Scores')
+            ax.set_title('Optimal Number of Features')
+            ax.figure.savefig(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect:XGB-RFE-CV:grid_scores_.png'))
+    except Exception as e:
+        # Handle error instead of crashing
+        log('Error:', e)
+    finally:
+        # whatever happens (crash or not), attempt to log and pickle results
+        try:
+            utils.log_results(
+                original_dataset=original_dataset, original_protein_start_col=11, config=config, log=log
+            )
+        except Exception as e:
+            log('Error:', e)
+        try:
+            joblib.dump(xgbclf, PROJECT_ROOT / 'out' / Path(utils.get_file_name(data_dict) + '_FeatureSelect:XGB.pkl'))
+        except Exception as e:
+            log('Error:', e)
+        try:
+            joblib.dump(rfecv, PROJECT_ROOT / 'out' / Path(utils.get_file_name(data_dict) + '_FeatureSelect:RFECV.pkl'))
+        except Exception as e:
+            log('Error:', e)
+        try:
+            if logfile:
+                utils.log_time(start_time=start_time, end_time=datetime.now(), log=log, logfile=logfile)
+            else:
+                utils.log_time(start_time=start_time, end_time=datetime.now(), log=log)
+        except Exception as e:
+            log('Error:', e)
 
     # Update the dataset dictionary with the selected features
     del data_dict['X_training']
@@ -355,7 +386,7 @@ def main():
     
     if VERBOSE:
         print("Model Selected Features Shape:", X_train_model.shape)
-    
+
 
 # %%
 if __name__ == '__main__':
