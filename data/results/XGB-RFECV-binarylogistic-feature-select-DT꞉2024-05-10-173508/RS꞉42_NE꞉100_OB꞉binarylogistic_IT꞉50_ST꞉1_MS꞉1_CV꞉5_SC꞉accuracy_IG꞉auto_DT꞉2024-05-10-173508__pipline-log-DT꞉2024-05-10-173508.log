@@ -1,0 +1,63 @@
+[2024-05-10 17:35:08,874] {main.py:460----} : INFO | |--- PIPELINE ---|
+[2024-05-10 17:35:08,874] {main.py:461----} : INFO | Date: 2024-05-10 17:35:08
+[2024-05-10 17:35:08,874] {main.py:462----} : INFO | Debug mode: False
+[2024-05-10 17:35:08,874] {main.py:463----} : INFO | Data loaded successfully.
+
+[2024-05-10 17:35:08,874] {cleaning.py:55-} : INFO | |--- Data Cleaning ---|
+[2024-05-10 17:35:08,874] {cleaning.py:61-} : INFO | Cleaning dataset: KEX-DA150x-KTH\data\dataset\normalised_data_all_w_clinical_kex_20240321.csv
+[2024-05-10 17:35:08,874] {cleaning.py:62-} : INFO | Original dataset shape: --------------------------------------------- (384, 1039)
+[2024-05-10 17:35:08,881] {cleaning.py:120} : INFO | Num features with >99% missingness: ---------------------------------  25
+[2024-05-10 17:35:08,883] {cleaning.py:134} : INFO | Shape after dropping features with high missingness (>99%): --------- (384, 1014)
+[2024-05-10 17:35:08,884] {cleaning.py:146} : INFO | Calibration columns: ------------------------------------------------ ['TREAT', 'Plate', 'Location', 'Empty_SBA1_rep1', 'Rabbit.IgG_SBA1_rep1']
+[2024-05-10 17:35:08,884] {cleaning.py:147} : INFO | Shape after dropping calibration columns: --------------------------- (384, 1009)
+[2024-05-10 17:35:08,888] {cleaning.py:159} : INFO | Calibration samples: ------------------------------------------------ ['BLANK', 'POOL 1', 'POOL 2']
+[2024-05-10 17:35:08,888] {cleaning.py:160} : INFO | Shape after dropping calibration samples: --------------------------- (372, 1009)
+[2024-05-10 17:35:08,890] {cleaning.py:171} : INFO | Shape after dropping samples with missing 'Sample_ID' or 'Disease': - (363, 1009)
+[2024-05-10 17:35:08,922] {cleaning.py:185} : INFO | Shape after dropping duplicate samples: ----------------------------- (348, 1009)
+[2024-05-10 17:35:08,924] {cleaning.py:204} : INFO | Shape after dropping samples with missing 'FT5': -------------------- (301, 1009)
+[2024-05-10 17:35:09,135] {cleaning.py:218} : INFO | Final cleaned dataset shape: ---------------------------------------- (301, 1009)
+[2024-05-10 17:35:09,135] {cleaning.py:218} : INFO | Sparse: False
+[2024-05-10 17:35:09,135] {cleaning.py:218} : INFO | Cleaned dataset saved to: cleaned_data_2024-05-10-173508.csv
+
+[2024-05-10 18:07:28,972] {utils.py:358---} : INFO | |--- DATASET ---|
+[2024-05-10 18:07:28,972] {utils.py:361---} : INFO | shape: ------------------------------ (301, 1009)
+[2024-05-10 18:07:28,972] {utils.py:362---} : INFO | mean FT5: ---------------------------  0.24916943521594684
+[2024-05-10 18:07:28,972] {utils.py:363---} : INFO | median FT5: -------------------------  0.0
+[2024-05-10 18:07:28,972] {utils.py:364---} : INFO | variance FT5: -----------------------  0.1877076411960133
+[2024-05-10 18:07:28,972] {utils.py:365---} : INFO | std deviation FT5: ------------------  0.43325239895009615
+[2024-05-10 18:07:28,972] {utils.py:366---} : INFO | max FT5: ----------------------------  1
+[2024-05-10 18:07:28,973] {utils.py:367---} : INFO | min FT5: ----------------------------  0
+[2024-05-10 18:07:28,975] {utils.py:368---} : INFO | mean protein intensities: ----------- 12.331256538045068
+[2024-05-10 18:07:28,990] {utils.py:369---} : INFO | median protein intensities: --------- 12.32640037713433
+[2024-05-10 18:07:28,994] {utils.py:370---} : INFO | variance protein intensities: -------  0.026574325939378692
+[2024-05-10 18:07:28,998] {utils.py:371---} : INFO | std deviation protein intensities: --  0.12609969268146295
+[2024-05-10 18:07:29,000] {utils.py:372---} : INFO | max protein intensities: ------------ 16.6934712065454
+[2024-05-10 18:07:29,003] {utils.py:373---} : INFO | min protein intensities: ------------  8.72125121808696
+
+[2024-05-10 18:07:29,003] {utils.py:395---} : INFO | |--- CATEGORIZATION ---|
+[2024-05-10 18:07:29,003] {utils.py:399---} : INFO | Cut-offs: -------------- [17]
+[2024-05-10 18:07:29,003] {utils.py:400---} : INFO | Number of classes: -----   2
+[2024-05-10 18:07:29,003] {utils.py:404---} : INFO | Test proportion: ------- 0.2
+[2024-05-10 18:07:29,003] {utils.py:405---} : INFO | Training proportion: --- 0.8
+[2024-05-10 18:07:29,003] {utils.py:406---} : INFO | X start column index: --  11
+[2024-05-10 18:07:29,003] {utils.py:407---} : INFO | y column label: -------- 'FT5'		
+
+[2024-05-10 17:35:11,337] {features.py:275} : INFO | |--- FEATURE SELECTION ---|
+[2024-05-10 17:35:11,337] {features.py:276} : INFO | Feature Selection Method: ----- XGB-RFECV
+[2024-05-10 17:35:11,337] {features.py:277} : INFO | Objective function: ----------- binary:logistic
+[2024-05-10 17:35:11,337] {features.py:278} : INFO | Minimum features to select: --- 1
+[2024-05-10 17:35:11,337] {features.py:279} : INFO | Num estimators/trees: --------- 100
+[2024-05-10 17:35:11,337] {features.py:280} : INFO | Num CV folds: ----------------- 5
+[2024-05-10 18:07:28,780] {features.py:292} : INFO | Finished: --------------------- 2024-05-10 18:07:28
+[2024-05-10 18:07:28,780] {features.py:292} : INFO | Run time: --------------------- 0h:32m:18s 0:32:18s 799.265ms
+[2024-05-10 18:07:28,791] {features.py:302} : INFO | Classes: ---------------------- [0|1]
+[2024-05-10 18:07:28,791] {features.py:303} : INFO | Accuracy score: --------------- 0.7049180327868853
+[2024-05-10 18:07:28,791] {features.py:304} : INFO | Num optimal features found: --- 23
+[2024-05-10 18:07:28,936] {features.py:332} : INFO | Plot of feature selection CV results saved to: ------------- RS꞉42_NE꞉100_OB꞉binarylogistic_IT꞉50_ST꞉1_MS꞉1_CV꞉5_SC꞉accuracy_IG꞉auto_DT꞉2024-05-10-173508__FeatureSelect-XGB-RFE-CV-cv_results.csv
+[2024-05-10 18:07:28,946] {features.py:339} : INFO | XGB feature selection classifier object saved to file at: -- RS꞉42_NE꞉100_OB꞉binarylogistic_IT꞉50_ST꞉1_MS꞉1_CV꞉5_SC꞉accuracy_IG꞉auto_DT꞉2024-05-10-173508__FeatureSelect-PickledObject-XGB.pkl
+[2024-05-10 18:07:28,971] {features.py:342} : INFO | XGB feature selection RFECV object saved to file at: ------- RS꞉42_NE꞉100_OB꞉binarylogistic_IT꞉50_ST꞉1_MS꞉1_CV꞉5_SC꞉accuracy_IG꞉auto_DT꞉2024-05-10-173508__FeatureSelect-PickledObject-RFECV.pkl
+
+[2024-05-10 18:07:29,004] {utils.py:531---} : INFO | Pickled dataset_dict saved to: ----------------------------- RS꞉42_NE꞉100_OB꞉binarylogistic_IT꞉50_ST꞉1_MS꞉1_CV꞉5_SC꞉accuracy_IG꞉auto_DT꞉2024-05-10-173508__FeatureSelect-XGB-RFE-CV-dataset_dict.pkl
+[2024-05-10 18:07:29,004] {utils.py:531---} : INFO | Logs saved to: --------------------------------------------- RS꞉42_NE꞉100_OB꞉binarylogistic_IT꞉50_ST꞉1_MS꞉1_CV꞉5_SC꞉accuracy_IG꞉auto_DT꞉2024-05-10-173508__pipline-log-DT꞉2024-05-10-173508.log
+
+[2024-05-10 18:07:29,004] {utils.py:526---} : INFO | Pipeline finished 2024-05-10 18:07:29, and took 0h:32m:20s 0:32:20s 243.606ms to run.
