@@ -87,7 +87,7 @@ pipeline_debug_config = {
     # --- SVC ---------------------------------------------------------------- #
     'SVC':                          True,
     'C_PARAMS_SVC':                 [0.1, 1.0],
-    'KERNEL_PARAMS_SVC':                  ['poly'],
+    'KERNEL_PARAMS_SVC':            ['poly'],
     'DEGREE_PARAMS_SVC':            [3],
     'GAMMA_PARAMS_SVC':             ['auto'],
     'COEF0_PARAMS_SVC':             [1],
@@ -97,7 +97,7 @@ pipeline_debug_config = {
     'CACHE_SIZE_PARAMS_SVC':        [500],
     'CLASS_WEIGHT_SVC':             None,
     'VERB_SVC':                     1,
-    'MAX_ITER_PARAMS_SVC':          1_000_000,
+    'MAX_ITER_PARAMS_SVC':          [1_000_000],
     'DECISION_FUNCTION_PARAMS_SVC': ['ovr'],
     'BREAK_TIES_PARAMS_SVC':        [False],
     'RETURN_TRAIN_SCORE_SVC':       False,

@@ -13,8 +13,10 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 
 ## Standard library imports
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 
+import joblib
 ## External imports
 import pandas as pd
 import numpy as np
@@ -75,10 +77,10 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
 # %% Option 2: Iterative Imputer
 
 
-def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol=0.001,
-                              initial_strategy=("mean",), n_nearest_features=[10],
+def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_criterion='squared_error', max_iter=10, tol=0.001,
+                              initial_strategy=("mean",), n_nearest_features=(10,),
                               imputation_order=("ascending",), add_indicator=True,
-                              min_value='stat', max_value='stat'):
+                              min_value='stat', max_value='stat', verbose=VERBOSE):
     """
     Impute missing values using IterativeImputer (experimental feature).
 
@@ -88,7 +90,9 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
     - ``sklearn.impute.IterativeImputer``
     - ``sklearn.linear_model.BayesianRidge``
 
+
     :param estimators: The estimators to use at each step of the round-robin imputation.
+    :param estimator_criterion: The criterion to use for the estimator.
     :param max_iter: The maximum number of imputation rounds to perform.
     :param tol: The tolerance/stopping criterion for imputation.
     :param initial_strategy: The imputation strategy to use for the initial imputation.
@@ -98,6 +102,7 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
     :param min_value: A cap on the minimum value to impute. If 'stat', the 10th percentile of the dataset is used.
     :param max_value: A cap on the maximum value to impute. If 'stat', the 90th percentile of the dataset is used.
     :param df: The dataset to impute. Used to determine the min and max values for imputation.
+    :param verbose: The verbosity level.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
     # Imports
@@ -109,12 +114,12 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
     from sklearn.linear_model import BayesianRidge
 
     if min_value == 'stat':
-        min_value = 0.9 * utils.summary_statistics(df, range(11, df.shape[1]))[1].min()
-
+        m = utils.summary_statistics(df, range(11, df.shape[1]))[1].min()
+        min_value = 0.25 * m if m > 0 else 1.75 * m
     if max_value == 'stat':
         # We set max_value to 1.1*max value of the dataset, to avoid imputing values significantly
         # higher than the original data.
-        max_value = 1.1 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max() # Ask Cristina for exact values
+        max_value = 1.75 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max()  # Ask Cristina for exact values
 
 
     ## Create imputers with different configurations
@@ -136,7 +141,7 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
                         skip_complete=False,          # Default
                         min_value=min_value,          # TODO: use data stats to set limits
                         max_value=max_value,
-                        verbose=VERBOSE,
+                        verbose=verbose,
                         random_state=SEED,
                         add_indicator=add_indicator,  # interesting for later, TODO: explore
                         keep_empty_features=False,    # no effect: we have removed empty features in cleanup
@@ -145,6 +150,7 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
                         "type": "IterativeImputer",
                         "imputer": imputer,
                         "estimator": estimator,
+                        "estimator_criterion": estimator_criterion,  # "squared_error" is default
                         "sample_posterior": False,
                         "max_iter": max_iter,
                         "tol": tol,
@@ -154,7 +160,7 @@ def create_iterative_imputers(df, estimators=[BayesianRidge()], max_iter=10, tol
                         "min_value": min_value,
                         "max_value": max_value,
                         "random_state": SEED,
-                        "add_indicator": True
+                        "add_indicator": add_indicator
                     }
                     iterative_imputers.append(imputer_dict)
     
@@ -280,7 +286,7 @@ def sparse_no_impute(data_dict: dict, protein_start_col=11):
     return [data_dict_sparse]
 
 
-def impute_data(imp_dict, df, start_col_X=11, size_X=False, add_indicator=True):
+def impute_data(imp_dict, df, start_col_X=11, add_indicator=True, log=print):
     """
     Impute missing values in the dataset using the specified imputer.
 
@@ -304,22 +310,45 @@ def impute_data(imp_dict, df, start_col_X=11, size_X=False, add_indicator=True):
     :param start_col_X: The start index of the columns to impute.
     :param size_X: The number of columns to impute counting from the start index.
     :param add_indicator: Whether to add a missing indicator column to the dataset.
+    :param log: A logging function.
     :return: A dictionary containing the type of imputation, the imputed dataset, and the date
     of imputation.
     """
-    if not size_X:
-        # If size_X is not provided, set it to the number of columns from start_col_X to the end
-        size_X = df.shape[1] - start_col_X
+    # Start time
+    iter_imp_start_time = datetime.now()
+    if VERBOSE and imp_dict['type'] == 'IterativeImputer':
+        log('IMPUTATION')
+        log(f'Imputation Method: {imp_dict["type"]}')
+        log(f'Estimator: {imp_dict["estimator"]}')
+        log(f'Estimator criterion: {imp_dict["estimator_criterion"]}')
+        log(f'Random State (seed): {imp_dict["random_state"]}')
+        log(f'Missing Indicator Method (add_indicators): {imp_dict["add_indicator"]}')
+        log(f'Sample Posterior: {imp_dict["sample_posterior"]}')
+        log(f'Imputation order: {imp_dict["imputation_order"]}')
+        log(f'Initial imputation strategy: {imp_dict["initial_strategy"]}')
+        log(f'Max iterations: {imp_dict["max_iter"]}')
+        log(f'Tolerance: {imp_dict["tol"]}')
+        log(f'Num nearest features to consider for each imputation: {imp_dict["n_nearest_features"]}')
+        log(f'Starting {imp_dict["type"]} Imputation ...')
+
+    if imp_dict['add_indicator']:
+        add_indicator = True
+
+    # Set size to the number of columns from start_col_X to the end
+    size_X = df.shape[1] - start_col_X
 
     # Isolate relevant data
     df_imputed = df.copy()
 
     # Extract the protein intensities
-    X = df_imputed.iloc[:, start_col_X:start_col_X + size_X]
+    X = df_imputed.iloc[:, start_col_X:]
 
     # Impute missing values
     # A numpy ndarray is returned, not a dataframe, has no column names, need to convert back to dataframe
-    X_imputed_arr = imp_dict['imputer'].fit_transform(X)
+    imputer = imp_dict['imputer']
+    X_imputed_arr = imputer.fit_transform(X)
+    imputed_features_index = imputer.indicator_.features_
+    imp_dict['imputer'] = imputer  # save the imputer object
 
     # Convert the imputed values separately back to a dataframe
     X_imputed = pd.DataFrame(X_imputed_arr[:, 0:size_X], columns=X.columns)
@@ -328,15 +357,29 @@ def impute_data(imp_dict, df, start_col_X=11, size_X=False, add_indicator=True):
     imp_dict['X_imputed'] = X_imputed  # save the imputed values
 
     # Insert and replace the original values with the imputed values in the original dataframe
-    df_imputed.iloc[:, start_col_X:start_col_X + size_X] = X_imputed
+    df_imputed.iloc[:, start_col_X:] = X_imputed
 
     if add_indicator:
+        if VERBOSE > 3:
+            for i, f in np.ndenumerate(imputed_features_index):
+                # Check if all features have missing value indicators
+                print(f"Missing value indicator {i} corresponds to feature {f}.")
+                if i == len(X.columns)-1:
+                    print("All features have missing value indicators.")
+                    print(f"Num missing should be {2*i} and was {X_imputed_arr.shape[1]}")
+
+
         # Generate column names for the missing value indicator features
         X_column_names = X.columns
-        X_indicator_column_names = [f"{col_name}_missing" for col_name in X_column_names]
+        # Drop unused missing value indicator column labels (if any)
+        X_indicator_column_names = [
+            f"{col_name}_missing" for col_name in X_column_names
+            if X.columns.get_loc(col_name) in imputed_features_index
+        ]
 
         # Convert the missing value indicators separately into a dataframe
         X_indicators = pd.DataFrame(X_imputed_arr[:, size_X:], columns=X_indicator_column_names)
+
         imp_dict['X_missing_values'] = X_indicators  # save the missing value indicators
 
         # Drop rows outside the selection range
@@ -351,7 +394,20 @@ def impute_data(imp_dict, df, start_col_X=11, size_X=False, add_indicator=True):
 
     # Save the date of imputation
     imp_dict['date'] = pd.Timestamp.now()
-    
+
+    # Log time taken to run
+    iter_imp_end_time = imp_dict['date']
+    timedelta = str(iter_imp_end_time - iter_imp_start_time).split('.')
+    hms = timedelta[0].split(':')
+    if VERBOSE:
+        log(
+            f"Imputation with {str(type(imputer)).split("'")[1].split('.')[-1]} using a {str(imputer.estimator).split("(")[0]} estimator finished {iter_imp_end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
+            f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run."
+        )
+
+    # Pickle imputation dict to disk
+    joblib.dump(deepcopy(imp_dict), PROJECT_ROOT/'out'/Path(utils.get_file_name(imp_dict) + '_Imputed_Datadict.pkl'))
+
     return imp_dict
 
 

@@ -372,6 +372,10 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     log(f"max protein intensities: {original_dataset.iloc[:, original_protein_start_col:].max().max()}")
     log(f"min protein intensities: {original_dataset.iloc[:, original_protein_start_col:].min().min()}\n")
 
+    # Cleaning
+    log(f"CLEANING")
+    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}\n")
+
     # Log imputation modes
     log(f"IMPUTATION MODES")
     log(f"SimpleImputer: {config['SIMPLE_IMPUTER']}")
@@ -382,7 +386,6 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     log(f"NAN_ELIMINATION: {config['NAN_ELIMINATION']}")
     if config['NAN_ELIMINATION']:
         log(f"nan elimination drop: {'columns' if config['DROP_COLS_NAN_ELIM'] else 'rows'}\n")
-
 
     # Log data normalization
     log(f"DATA NORMALIZATION")
@@ -401,23 +404,21 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     log(f"Test proportion: {config['TEST_PROPORTION']}")
     log(f"Training proportion: {1 - config['TEST_PROPORTION']}")
     log(f"X start column index: {config['X_START_COLUMN_IDX']}")
-    log(f"y column label: {repr(config['Y_COLUMN_LABEL'])}")
+    log(f"y column label: {repr(config['Y_COLUMN_LABEL'])}\n")
 
     # Log feature selection
-    log(f"FEATURE SELECTION")
-    log(f"Feature selection score function for KBest: {repr(config['SCORE_FUNC_FEATURES'])} (not necessarily used)")
-    log(f"KBest k: {config['K_FEATURES']}\n")
-    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}")
-    if config['SPARSE_NO_IMPUTATION']:
-        log(f"Not performing feature selection with KBest on sparse data.")
-        log("")  # TODO: log XGB in more detail, reformulate if statement since we wont use nan-sparse data anymore
-        #                We should prob to add boolean variables specific to our feature select methods and then filters in the
-        #                beginning of them that rejects incompatible datasets
+    if not config['SELECT_XGB']:
+        log(f"FEATURE SELECTION")
+        log(f"Feature selection method: KBest")
+        log(f"Feature selection score function for KBest: {repr(config['SCORE_FUNC_FEATURES'])}")
+        log(f"KBest k: {config['K_FEATURES']}")
 
     # Log classifier
     log(f"CLASSIFIERS")
-    log(f"SVC: {config['SVC']}\n")
-    log(f"SVR: {config['SVR']}")
+    if config['SVC']:
+        log(f"SVC: {config['SVC']}\n")
+    if config['SVR']:
+        log(f"SVR: {config['SVR']}\n")
 
     return None
 
