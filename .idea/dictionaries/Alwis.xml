@@ -2,6 +2,7 @@
   <dictionary name="Alwis">
     <words>
       <w>alwis</w>
+      <w>binarylogistic</w>
       <w>coef</w>
       <w>coeff</w>
       <w>coolwarm</w>
@@ -10,6 +11,7 @@
       <w>iloc</w>
       <w>importances</w>
       <w>linspace</w>
+      <w>missingness</w>
       <w>nsaa</w>
       <w>rfecv</w>
       <w>strat</w>
