@@ -62,7 +62,7 @@ def find_best_svm_model(pipeline_config,
                         return_train_score=False,
                         grid_search_scoring=0,
                         k_cv_folds=5,
-                        calc_final_scores=False):
+                        calc_final_scores=True):
     """
     Create a list of Support Vector Machine models for classification and regression with
     different configurations.
@@ -119,8 +119,9 @@ def find_best_svm_model(pipeline_config,
         verbose=grid_search_verbosity,
         return_train_score=return_train_score,
     )
+
     if calc_final_scores:
-        clf = clf.fit_calc_final_scores(X_training, y_training, X_testing, y_testing)
+        clf = clf.fit_calc_final_scores(X_training, y_training['FT5'], X_testing, y_testing['FT5'])
     else:
         clf = clf.fit(X_training, y_training['FT5'])
 
@@ -137,7 +138,7 @@ def find_best_svm_model(pipeline_config,
 
     dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}
 
-    joblib.dump(clf, PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dict, pipeline_config) + '.pkl'))
+    joblib.dump(clf, PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dict, pipeline_config) + '_CLF꞉SVC.pkl'))
 
     return dataset_dict
 
