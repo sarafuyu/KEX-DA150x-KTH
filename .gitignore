@@ -320,3 +320,7 @@ out/*/*
 !data/*
 !data/*.log
 !data/*/*
+
+# Ignore very large files
+2024-05-13-164419__IterativeImputer_imputed_data_dict.pkl
+2024-05-12-002355__IterativeImputer_imputed_data_dict.pkl
