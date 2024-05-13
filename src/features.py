@@ -238,7 +238,11 @@ def select_mutual_info_regression(data_dict, k):
     return data_dict
 
 
-def select_XGB(data_dict, k, log=print, original_dataset=None, original_protein_start_col=11, config=None, start_time=None, logfile=None):
+def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_encoder=False, validate_parameters=True,
+               missing=np.nan, objective='binary:logistic', n_jobs_xgb=6, n_jobs_rfecv=2, scoring='accuracy', cv=5,
+               min_features_to_select=1, step=1,
+               original_dataset=None, original_protein_start_col=11,
+               config=None, start_time=None, logfile=None):
     import xgboost as xgb
     from sklearn.model_selection import train_test_split
     import xgboost as xgb
@@ -255,31 +259,32 @@ def select_XGB(data_dict, k, log=print, original_dataset=None, original_protein_
     y_test = data_dict['y_testing']
 
     # Set n_estimators to size of training set
-    n_estimators = X_train.shape[1]
+    if n_estimators == -1:
+        n_estimators = X_train.shape[1]
 
     # Setup XGB feature selection
-    objective = 'binary:logistic'  # default for binary classification
     xgbclf = xgb.XGBClassifier(
         random_state=SEED,
-        n_jobs=6,
+        n_jobs=n_jobs_xgb,
         n_estimators=n_estimators,
-        verbosity=3,
-        use_label_encoder=False,
-        validate_parameters=True,
-        missing=np.nan,
-        objective=objective
+        verbosity=verbosity,
+        use_label_encoder=use_label_encoder,
+        validate_parameters=validate_parameters,
+        missing=missing,
+        objective=objective,
     )
     xgbclf.fit(X_train, y_train)
-    rfecv = RFECV(estimator=xgbclf, step=1, min_features_to_select=1, cv=5, scoring='accuracy', verbose=3, n_jobs=2, importance_getter='auto')
+    rfecv = RFECV(estimator=xgbclf, step=step, min_features_to_select=min_features_to_select, cv=cv, scoring=scoring, verbose=verbosity, n_jobs=n_jobs_rfecv, importance_getter='auto')
     min_features_to_select = rfecv.min_features_to_select
     xgbclf = rfecv.estimator
 
     if VERBOSE:
-        log('FEATURE SELECTION')
-        log('Feature Selection Method: XGB-RFE-CV')
-        log(f'Objective function: {objective}')
-        log(f'Minimum features to select: {min_features_to_select}')
-        log(f'Num estimators/trees: {xgbclf.n_estimators}')
+        log('|--- FEATURE SELECTION --- |')
+        log('Feature Selection Method: ----- XGB-RFECV')
+        log(f'Objective function: ----------- {objective}')
+        log(f'Minimum features to select: --- {min_features_to_select}')
+        log(f'Step size: -------------------- {step}')
+        log(f'Num estimators/trees: --------- {(str(n_estimators) + ' (1 per feature)') if n_estimators == X_train.shape[1] else n_estimators}')
         log(f'Num CV folds: {rfecv.cv}')
         log(f'Starting XGB-RFE-CV Feature Selection ...')
 
@@ -292,25 +297,23 @@ def select_XGB(data_dict, k, log=print, original_dataset=None, original_protein_
     timedelta = str(XGB_end_time - XGB_start_time).split('.')
     hms = timedelta[0].split(':')
     if VERBOSE:
-        log(
-            f"XGB feature selection finished {XGB_end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
-            f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run."
-        )
+        log(f"Finished: --------------------- {XGB_end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log(f"Run time: --------------------- {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.")
 
     # Log results
     opt_features = rfecv.n_features_
     best_features = X_train.columns[rfecv.support_]
     accuracy = accuracy_score(y_test, rfecv.predict(X_test))
     if VERBOSE:
-        log(f'Classes: {rfecv.classes_}')
-        log(f'Accuracy score: {accuracy}')
-        log(f'Num optimal features found: {opt_features}')
+        log(f'Classes: ---------------------- {rfecv.classes_}')
+        log(f'Accuracy score: --------------- {accuracy}')
+        log(f'Num optimal features found: --- {opt_features}')
     if VERBOSE > 2:
-        log(f'Optimal features found: {best_features}')
+        log(f'Optimal features found: ------- {best_features}')
     # Save best_features to file
     try:
         X_train[best_features].to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉X_train_best_features.csv'), index=False)
-        log(f'Optimal features found saved to {PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉X_train_best_features.csv')}')
+        log(f'Optimal features found saved to: --------------------------- {PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉X_train_best_features.csv')}')
     except Exception as e:
         # Handle error instead of crashing
         log(f'Error: {e}')
@@ -339,17 +342,17 @@ def select_XGB(data_dict, k, log=print, original_dataset=None, original_protein_
                 yerr=rfecv.cv_results_["std_test_score"],
             )
             plt.savefig(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉cv_results_.png'))
-            log(f'Plot of feature selection CV results saved to {PROJECT_ROOT/"out"/(utils.get_file_name(data_dict)+"_FeatureSelect:XGB-RFE-CV:cv_results_.png")}')
+            log(f'Plot of feature selection CV results saved to: ------------- {PROJECT_ROOT/"out"/(utils.get_file_name(data_dict)+"_FeatureSelect:XGB-RFE-CV:cv_results_.png")}')
     except Exception as e:
         # Handle error instead of crashing
         log(f'Error: {e}')
     # Save the classifier and RFECV object to file
     try:
-        joblib.dump(deepcopy(xgbclf), PROJECT_ROOT / 'out' / Path(utils.get_file_name(data_dict) + '_FeatureSelect꞉XGB.pkl'))
-        log(f"XGB feature selection classifier object saved to file at: {PROJECT_ROOT/'out'/Path(utils.get_file_name(data_dict)+'_FeatureSelect:XGB.pkl')}")
+        joblib.dump(deepcopy(xgbclf), PROJECT_ROOT / 'out' / (config['START_TIME'].strftime('%Y-%m-%d %H:%M:%S') + '__FeatureSelect__XGB.pkl'))
+        log(f"XGB feature selection classifier object saved to file at: -- {PROJECT_ROOT/'out'/(config['START_TIME'] + '__FeatureSelect__XGB.pkl')}")
 
-        joblib.dump(deepcopy(rfecv), PROJECT_ROOT / 'out' / Path(utils.get_file_name(data_dict) + '_FeatureSelect꞉RFECV.pkl'))
-        log(f"XGB feature selection RFECV object saved to file at: {PROJECT_ROOT/'out'/Path(utils.get_file_name(data_dict)+'_FeatureSelect꞉RFECV.pkl')}\n")
+        joblib.dump(deepcopy(rfecv), PROJECT_ROOT / 'out' / (config['START_TIME'].strftime('%Y-%m-%d %H:%M:%S') + '__FeatureSelect__RFECV.pkl'))
+        log(f"XGB feature selection RFECV object saved to file at: ------- {PROJECT_ROOT/'out'/(config['START_TIME'].strftime('%Y-%m-%d %H:%M:%S') + '__FeatureSelect__RFECV.pkl')}\n")
     except Exception as e:
         log(f'Error: {e}')
 

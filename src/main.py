@@ -12,44 +12,13 @@ TODOs
 =====
 
 ------ MVP for today ------
-TODO(priority 1): Look into sparse (and possibly no) imputation
-TODO(priority 1): Add sparse compatible feature selection (mutual_info_classif instead of f_classif)
-
-
-TODO(priority 1): Add filtering of dataset dicts in each find_best_Xmodel function
-                  so that only compatible datasets are used during gridsearch
-TODO(priority 1): Add SVR classifier
------- Nice to have for today ------
-TODO(priority 2): Implement SVM classifier with NaN
-TODO(priority 2): Validate that multiclass SVM still works in the pipeline
------- MVP for tomorrow ------
-TODO(priority 3): Add Ridge Regression
-TODO(priority 3): Add Lasso Regression
------- Nice to have for tomorrow ------
-TODO(priority 4): Add Decision Tree classifier
-TODO(priority 4): Add Naive Bayes classifier
-TODO(priority 4): Refactor cleaning.py
 TODO(priority 5): Refactor main.py pipeline to make it more DRY (construct grid_param in main and 
                   pass to a function that calls the various grid search functions for the various 
                   models depending on the different
                   dataset dict attributes)
 --------------------------------
 
-Experiments
-
-Feature selection:
-samples: N=301
-N*3^x
----------------------------
-number of features selected (k):
-1009 (no feature selection)
-903 (3 feat/sample)
-301 (1 feat/sample)
-100 (1/3 feat/sample)
-33 (1/9 feat/sample)
-11 (1/27 feat/sample)
-
-------------
+# Cutoff
 Write in thesis: we choose 17 since it represents av average score of 1 on each NSAA item.
 o Score of 2 = ‘Normal’ – no obvious modification of activity
 o Score of 1 = Modified method but achieves goal with no physical assistance
@@ -86,6 +55,7 @@ import pandas as pd
 from sklearn.feature_selection import f_classif, mutual_info_classif, chi2
 from sklearn.impute import MissingIndicator
 from sklearn.linear_model import BayesianRidge
+from sklearn.metrics import accuracy_score, r2_score
 from sklearn.preprocessing import MinMaxScaler
 
 # %% Setup
@@ -140,6 +110,88 @@ DATA_FILE: Path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_
 
 
 # **********----------------------------------------------------------------------------********** #
+# |                                 ~~ Missing Indicators ~~                                     | #
+# **********----------------------------------------------------------------------------********** #
+
+ADD_INDICATORS: bool = False
+
+# Values to consider as missing values
+MISSING_VALUES_INDICATOR: float = np.nan
+
+# Whether to create missing indicators for all features or only for features with some missingness
+FEATURES_INDICATOR: str = 'missing-only'
+
+# Whether to output a sparse matrix for the missing indicators
+SPARSE_INDICATOR: bool = False
+
+
+# **********----------------------------------------------------------------------------********** #
+# |                                   ~~ Train-test split ~~                                     | #
+# **********----------------------------------------------------------------------------********** #
+
+# For detailed configuration for each feature selection mode, see features.py
+TEST_PROPORTION: float = 0.2  # TODO: full cross validation settings
+
+# Column index to start from. Will split the selected X and y data, into the two data subsets:
+#   X_train, y_train,
+#   X_test, y_test,
+# where X_train and X_test are the input variables and y_train and y_test are the target variables.
+X_START_COLUMN_IDX: int = 11  # X columns are from this column index and onwards TODO: check if 11 is the correct index.
+Y_COLUMN_LABEL: str = 'FT5'   # y column label
+
+
+# **********----------------------------------------------------------------------------********** #
+# |                        ~~ Re-categorization of Northstar score (y) ~~                        | #
+# **********----------------------------------------------------------------------------********** #
+# Northstar score (y) is originally a discrete variable on [0,34]
+#
+# Bin Northstar score into a categorical variable.
+# For N cutoffs, the data is divided into N+1 classes.
+# For binary classification, use one cutoff, [a].
+#
+# Example:
+# CUTOFFS=[a] will create a binary variable with classes:
+#   df.iloc[:, 0:(a - 1)] == 1
+#   df.iloc[:, a:       ] == 0
+# i.e. the variable is 1 if (x < a) else 0.
+#
+CUTOFFS: Sequence[int] | bool = [17]  # False  # [17]  # break into classes at 17
+COLUMN_TO_CATEGORIZE: str = 'FT5'
+
+
+# **********----------------------------------------------------------------------------********** #
+# |                              ~~ Feature selection (XGB-RFECV) ~~                             | #
+# **********----------------------------------------------------------------------------********** #
+
+# Use XGB feature selection
+SELECT_XGB: bool = True
+
+# Stop the pipeline after feature selection
+FEATURE_SELECT_ONLY: bool = False
+
+# Use precomputed XGB selected data dict
+# If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
+# and will start with imputing the data using the precomputed imputer objects.
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'
+
+# 37 specific features was found to be the best number of features using XGB feature selection.
+
+# XGB-RFECV Config
+N_ESTIMATORS_XGB = -1,
+VERBOSITY_XGB = 0,
+USE_LABEL_ENCODER_XGB = False,
+VALIDATE_PARAMETERS_XGB = True,
+MISSING_XGB = np.nan,
+OBJECTIVE_XGB = 'binary:logistic',
+N_JOBS_XGB = 6
+N_JOBS_RFECV = 2
+SCORING_RFECV = 'accuracy'
+CV_RFE = 5
+MIN_FEATURES_TO_SELECT_XGB = 1
+STEP_XGB = 1
+
+
+# **********----------------------------------------------------------------------------********** #
 # |                                     ~~ Data imputation ~~                                    | #
 # **********----------------------------------------------------------------------------********** #
 
@@ -166,31 +218,40 @@ COPY_SIMPLE_IMP: bool = True
 # --------------------------------
 # Iterative imputer configuration
 # --------------------------------
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 # Estimator, e.g. a BayesianRidge() object or an estimator object from scikit-learn.
 # Can probably be customized, but leave default for now.
 # For future type hints, see: https://stackoverflow.com/a/60542986/6292000
-ESTIMATOR_CRITERION_ITER_IMP = 'absolute_error'  # 'friedman_mse'  # 'squared_error'
-ESTIMATOR_ITER_IMP = [DecisionTreeRegressor(criterion=ESTIMATOR_CRITERION_ITER_IMP, random_state=SEED)]  # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
+ESTIMATOR_CRITERION_ITER_IMP = 'squared_error'  # 'friedman_mse'  # 'squared_error'
+ESTIMATOR_ITER_IMP = [RandomForestRegressor(
+    criterion=ESTIMATOR_CRITERION_ITER_IMP, max_depth=None, min_samples_split=2, min_samples_leaf=1,
+    min_weight_fraction_leaf=0.0, max_features='sqrt', max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True,
+    oob_score=r2_score, n_jobs=7, random_state=SEED, verbose=0, warm_start=False, ccp_alpha=0.0, max_samples=None,
+    monotonic_cst=None,
+)]  # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
 # Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
-MAX_ITER_ITER_IMP: int = 50  # try low number of iterations first, see if converges, then try higher numbers
-TOL_ITER_IMP: float = 0.05  # might need to adjust
+MAX_ITER_ITER_IMP: int = 600  # try low number of iterations first, see if converges, then try higher numbers
+TOL_ITER_IMP: float = 0.009  # might need to adjust
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
-N_NEAREST_FEATURES_ITER_IMP: Sequence[int | None] = [30]  # [15]  # [5, 10, 20, 50, None]  # [10, 100, 500, None]
+N_NEAREST_FEATURES_ITER_IMP: Sequence[int | None] = [None]  # [15]  # [5, 10, 20, 50, None]  # [10, 100, 500, None]
 INITIAL_STRATEGY_ITER_IMP: Sequence[str] = ["mean"]  # ["mean", "median", "most_frequent", "constant"]
 IMPUTATION_ORDER_ITER_IMP: Sequence[str] = ["ascending"]  # Default, alternatives: ["ascending", "descending" "random"]
-ADD_INDICATOR_ITER_IMP: bool = True  # Add indicator for missing values
+ADD_INDICATOR_ITER_IMP: bool = False  # Add indicator for missing values
 # ascending: From the features with the fewest missing values to those with the most
-MIN_VALUE_ITER_IMP: str | int = 'stat'  # no features have negative values, adjust tighter for prot intensities?
+MIN_VALUE_ITER_IMP: str | int = 'stat'  # no fea tures have negative values, adjust tighter for prot intensities?
 MAX_VALUE_ITER_IMP: str | int = 'stat'
 VERBOSE_ITER_IMP: int = 3
 
 # Use precomputed imputed dataset
 # Leave as None to use the imputed dataset generated in the pipeline
 PRECOMPUTED_ITERATIVE_IMPUTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'IterativeImputed-dataset-dict-minimal-test'/'TP꞉IterativeImputer_IT꞉200_TO꞉0.04_NF꞉None_IS꞉mean_IM꞉ascending_DT꞉2024-05-09-201931_Imputed_Datadict_using_23_features.pkl'
+
+# Stop the pipeline after imputation
+STOP_AFTER_IMPUTATION: bool = True
+
 
 # --------------------------
 # KNN imputer configuration
@@ -228,72 +289,6 @@ FIRST_COLUMN_TO_NORMALIZE: int = 11
 # TODO: check if this is the correct index. Should it be 10 instead?
 # TODO: instead iterate over the column labels until we reach the first protein intensity column
 #       then normalize all columns from there and onwards instead of hardcoding the index.
-
-
-# **********----------------------------------------------------------------------------********** #
-# |                        ~~ Re-categorization of Northstar score (y) ~~                        | #
-# **********----------------------------------------------------------------------------********** #
-# Northstar score (y) is originally a discrete variable on [0,34]
-#
-# Bin Northstar score into a categorical variable.
-# For N cutoffs, the data is divided into N+1 classes.
-# For binary classification, use one cutoff, [a].
-#
-# Example:
-# CUTOFFS=[a] will create a binary variable with classes:
-#   df.iloc[:, 0:(a - 1)] == 1
-#   df.iloc[:, a:       ] == 0
-# i.e. the variable is 1 if (x < a) else 0.
-#
-CUTOFFS: Sequence[int] | bool = [17]  # False  # [17]  # break into classes at 17
-COLUMN_TO_CATEGORIZE: str = 'FT5'
-
-
-# **********----------------------------------------------------------------------------********** #
-# |                                   ~~ Train-test split ~~                                     | #
-# **********----------------------------------------------------------------------------********** #
-
-# For detailed configuration for each feature selection mode, see features.py
-TEST_PROPORTION: float = 0.2  # TODO: full cross validation settings
-
-# Column index to start from. Will split the selected X and y data, into the two data subsets:
-#   X_train, y_train,
-#   X_test, y_test,
-# where X_train and X_test are the input variables and y_train and y_test are the target variables.
-X_START_COLUMN_IDX: int = 11  # X columns are from this column index and onwards TODO: check if 11 is the correct index.
-Y_COLUMN_LABEL: str = 'FT5'   # y column label
-
-
-# **********----------------------------------------------------------------------------********** #
-# |                                   ~~ Feature selection ~~                                    | #
-# **********----------------------------------------------------------------------------********** #
-
-# SCORE_FUNC_FEATURES is a function taking in X, an array of columns (features), and y, a target column,
-# and returning a pair of arrays (scores, p-values).
-#
-# f_classif: is a function that computes the ANOVA F-value between the label/feature for classification tasks and
-# should be used on dense data.
-#
-# mutual_info_classif: is a function that computes the mutual information between the label/feature for classification
-# tasks and should be used on sparse data.
-#
-SCORE_FUNC_FEATURES: Callable[[Sequence, Sequence], tuple[Sequence, Sequence]] = chi2  # mutual_info_classif  # f_classif
-K_FEATURES: int = 23  # 216  # 100 # TODO: add different levels: 30, 60, 90, 120, 150, 200 ...
-#
-# For N=301 samples try with N*3^x features:
-# ---------------------------
-# number of features selected (k):
-# 1009 (no feature selection)
-# 903 (3 feat/sample)
-# 301 (1 feat/sample)
-# 100 (1/3 feat/sample)
-# 33 (1/9 feat/sample)
-# 11 (1/27 feat/sample)
-
-# Select XGB features instead of KBest
-SELECT_XGB: bool = True
-
-# 23 specific features was found to be the best number of features using XGB feature selection.
 
 
 # **********----------------------------------------------------------------------------********** #
@@ -342,33 +337,6 @@ BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 RETURN_TRAIN_SCORE_SVC: bool = True
 GRID_SEARCH_SCORING_SVC: str = 'accuracy'
 
-# --------------
-# SVR Classifier
-# --------------
-
-# Enable SVR
-SVR = False
-
-KERNEL_PARAMS_SVR: Sequence[str] = ['poly']
-DEGREE_PARAMS_SVR: Sequence[int] = [3]
-GAMMA_PARAMS_SVR: Sequence[str] = ['scale']
-COEF0_PARAMS_SVR: Sequence[float] = [0.0]
-TOL_PARAMS_SVR: Sequence[float] = [0.001]
-C_PARAMS_SVR: Sequence[float] = [1.0, 10.0]
-EPSILON_PARAMS_SVR: Sequence[float] = [0.1]
-SHRINKING_PARAMS_SVR: Sequence[bool] = [True]
-CACHE_SIZE_PARAMS_SVR: Sequence[int] = [200]
-VERB_SVR: int = VERBOSE
-MAX_ITER_PARAMS_SVR: Sequence[int] = [-1]
-
-# RETURN_TRAIN_SCORE_SVR:
-# Include scores in `cv_results_`. Computing training scores is used to get insights on how different parameter settings
-# impact the overfitting/underfitting trade-off. However, computing the scores on the training set can be
-# computationally expensive and is not strictly required to select the parameters that yield the best generalization
-# performance.
-RETURN_TRAIN_SCORE_SVR: bool = True
-GRID_SEARCH_SCORING_SVR: str = 'neg_mean_squared_error'
-
 
 # %% Local imports
 
@@ -398,7 +366,7 @@ handlers.append(stdout_handler)
 # Configure logging level and format
 logging.basicConfig(level=logging.DEBUG,
                     format=('[%(asctime)s] '
-                            '{%(filename)s:%(lineno)d} : '
+                            '{%(filename)-13s:%(lineno)-4d} : '
                             '%(levelname)s | '
                             '%(message)s'),
                     handlers=handlers)
@@ -410,96 +378,230 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 log = logging.getLogger('LOGGER_NAME').info
 
 pipeline_config = {
-    'DEBUG':                       DEBUG,
-    'SEED':                        SEED,
-    'VERBOSE':                     VERBOSE,
-    'DATA_FILE':                   DATA_FILE,
-    'SIMPLE_IMPUTER':              SIMPLE_IMPUTER,
-    'ITERATIVE_IMPUTER':           ITERATIVE_IMPUTER,
-    'KNN_IMPUTER':                 KNN_IMPUTER,
-    'NAN_ELIMINATION':             NAN_ELIMINATION,
-    'NO_IMPUTATION':               NO_IMPUTATION,
-    'SPARSE_NO_IMPUTATION':        SPARSE_NO_IMPUTATION,
-    'ADD_INDICATOR_SIMPLE_IMP':    ADD_INDICATOR_SIMPLE_IMP,
-    'COPY_SIMPLE_IMP':             COPY_SIMPLE_IMP,
-    'STRATEGY_SIMPLE_IMP':         STRATEGY_SIMPLE_IMP,
-    'ESTIMATOR_ITER_IMP':          ESTIMATOR_ITER_IMP,
-    'MAX_ITER_ITER_IMP':           MAX_ITER_ITER_IMP,
-    'TOL_ITER_IMP':                TOL_ITER_IMP,
-    'ADD_INDICATOR_ITER_IMP':      ADD_INDICATOR_ITER_IMP,
-    'INITIAL_STRATEGY_ITER_IMP':   INITIAL_STRATEGY_ITER_IMP,
-    'N_NEAREST_FEATURES_ITER_IMP': N_NEAREST_FEATURES_ITER_IMP,
-    'IMPUTATION_ORDER_ITER_IMP':   IMPUTATION_ORDER_ITER_IMP,
-    'MIN_VALUE_ITER_IMP':          MIN_VALUE_ITER_IMP,
-    'MAX_VALUE_ITER_IMP':          MAX_VALUE_ITER_IMP,
-    'N_NEIGHBOURS_KNN_IMP':        N_NEIGHBOURS_KNN_IMP,
-    'WEIGHTS_KNN_IMP':             WEIGHTS_KNN_IMP,
-    'METRIC_KNN_IMP':              METRIC_KNN_IMP,
-    'VERBOSE_ITER_IMP':            VERBOSE_ITER_IMP,
-    'DROP_COLS_NAN_ELIM':          DROP_COLS_NAN_ELIM,
-    'FIRST_COLUMN_TO_NORMALIZE':   FIRST_COLUMN_TO_NORMALIZE,
-    'CUTOFFS':                     CUTOFFS,
-    'COLUMN_TO_CATEGORIZE':        COLUMN_TO_CATEGORIZE,
-    'TEST_PROPORTION':             TEST_PROPORTION,
-    'X_START_COLUMN_IDX':          X_START_COLUMN_IDX,
-    'Y_COLUMN_LABEL':              Y_COLUMN_LABEL,
-    'SCORE_FUNC_FEATURES':         SCORE_FUNC_FEATURES,
-    'K_FEATURES':                  K_FEATURES,
-    'SELECT_XGB':                  SELECT_XGB,
-    'SVC':                         SVC,
-    'SVR':                         SVR,
-    'START_TIME':                  START_TIME,
+    'DEBUG':                         DEBUG,
+    'SEED':                          SEED,
+    'VERBOSE':                       VERBOSE,
+    'DATA_FILE':                     DATA_FILE,
+    'SIMPLE_IMPUTER':                SIMPLE_IMPUTER,
+    'ITERATIVE_IMPUTER':             ITERATIVE_IMPUTER,
+    'KNN_IMPUTER':                   KNN_IMPUTER,
+    'NAN_ELIMINATION':               NAN_ELIMINATION,
+    'NO_IMPUTATION':                 NO_IMPUTATION,
+    'SPARSE_NO_IMPUTATION':          SPARSE_NO_IMPUTATION,
+    'ADD_INDICATOR_SIMPLE_IMP':      ADD_INDICATOR_SIMPLE_IMP,
+    'COPY_SIMPLE_IMP':               COPY_SIMPLE_IMP,
+    'STRATEGY_SIMPLE_IMP':           STRATEGY_SIMPLE_IMP,
+    'ESTIMATOR_ITER_IMP':            ESTIMATOR_ITER_IMP,
+    'MAX_ITER_ITER_IMP':             MAX_ITER_ITER_IMP,
+    'TOL_ITER_IMP':                  TOL_ITER_IMP,
+    'ADD_INDICATOR_ITER_IMP':        ADD_INDICATOR_ITER_IMP,
+    'INITIAL_STRATEGY_ITER_IMP':     INITIAL_STRATEGY_ITER_IMP,
+    'N_NEAREST_FEATURES_ITER_IMP':   N_NEAREST_FEATURES_ITER_IMP,
+    'IMPUTATION_ORDER_ITER_IMP':     IMPUTATION_ORDER_ITER_IMP,
+    'MIN_VALUE_ITER_IMP':            MIN_VALUE_ITER_IMP,
+    'MAX_VALUE_ITER_IMP':            MAX_VALUE_ITER_IMP,
+    'N_NEIGHBOURS_KNN_IMP':          N_NEIGHBOURS_KNN_IMP,
+    'WEIGHTS_KNN_IMP':               WEIGHTS_KNN_IMP,
+    'METRIC_KNN_IMP':                METRIC_KNN_IMP,
+    'VERBOSE_ITER_IMP':              VERBOSE_ITER_IMP,
+    'DROP_COLS_NAN_ELIM':            DROP_COLS_NAN_ELIM,
+    'FIRST_COLUMN_TO_NORMALIZE':     FIRST_COLUMN_TO_NORMALIZE,
+    'CUTOFFS':                       CUTOFFS,
+    'COLUMN_TO_CATEGORIZE':          COLUMN_TO_CATEGORIZE,
+    'TEST_PROPORTION':               TEST_PROPORTION,
+    'X_START_COLUMN_IDX':            X_START_COLUMN_IDX,
+    'ADD_INDICATORS':                ADD_INDICATORS,
+    'Y_COLUMN_LABEL':                Y_COLUMN_LABEL,
+    'SELECT_XGB':                    SELECT_XGB,
+    'SVC':                           SVC,
+    'START_TIME':                    START_TIME,
+    'PRECOMPUTED_XGB_SELECTED_DATA': PRECOMPUTED_XGB_SELECTED_DATA,
+    'STOP_AFTER_IMPUTATION':         STOP_AFTER_IMPUTATION,
 }
 
-# %% Load Data
 
-# Load the data
-dataset = pd.read_csv(DATA_FILE)
+# %% Generate new XGB selected data
 
-if VERBOSE:
-    log("|--- PIPELINE ---|")
-    log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
-    log(f"Debug mode: {DEBUG}")
-    log("Data loaded successfully.\n")
-if DEBUG:
-    # Import and unpack pipeline debug config from debug_config.py
-    from debug_config import pipeline_debug_config
-    for varname, value in pipeline_debug_config.items():
-        globals()[varname] = value  # Overwrite variables in this script with those from the debug config
+dataset = None
+dataset_dicts = []
+if not PRECOMPUTED_XGB_SELECTED_DATA:
 
 
-# %% Data Cleaning
+    # %% Load Data
 
-# Clean and preprocess the data
-dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME, dataset_path=DATA_FILE)
-# dataset = dataset.iloc[:, 0:30]  # TODO: remove this later
+    # Load the data
+    dataset = pd.read_csv(DATA_FILE)
 
-# TODO ------------------------------------- Temporary for testing -----------------------------------------------------
-# TODO: testing normalization before imputation: remove this later if not works
-# indicator = MissingIndicator(missing_values=np.nan, features='missing-only', sparse=False)
-# dataset.iloc[:, 11:] = indicator.fit_transform(dataset.iloc[:, 11:])
-# TODO: remove this later:
-# Use only part of dataset for testing
-# # Drop all columns after FT5
-# selected_feature_names = pd.read_csv(PROJECT_ROOT/'data'/'results'/'FeatureSelect꞉XGB-RFE-5-fold-CV_NumSelectedFeatures꞉23_TP꞉NO_IMPUTATION_DT꞉2024-05-04-233011'/'TP꞉NO_IMPUTATION_DT꞉2024-05-04-233011_CL꞉RFECv_CL꞉XgbClf_BestFeatures꞉23.csv').columns
-# selected_features = dataset[selected_feature_names]
-# dataset.drop(dataset.columns[dataset.columns.get_loc('FT5')+1:], axis=1, inplace=True)
-# dataset = pd.concat([dataset, selected_features], axis=1)
-# TODO -----------------------------------------------------------------------------------------------------------------
+    if VERBOSE:
+        log("|--- PIPELINE ---|")
+        log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
+        log(f"Debug mode: {DEBUG}")
+        log("Data loaded successfully.\n")
+    if DEBUG:
+        # Import and unpack pipeline debug config from debug_config.py
+        from debug_config import pipeline_debug_config
+        for varname, value in pipeline_debug_config.items():
+            globals()[varname] = value  # Overwrite variables in this script with those from the debug config
+
+
+    # %% Data Cleaning
+
+    # Clean and preprocess the data
+    dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME, dataset_path=DATA_FILE)
+
+    # Add NaN-eliminated and un-imputed datasets
+    if NAN_ELIMINATION:
+        dataset_dicts = dataset_dicts + imputation.eliminate_nan(dataset, drop_cols=DROP_COLS_NAN_ELIM)
+    if NO_IMPUTATION:
+        dataset_dicts = dataset_dicts + imputation.no_imputer(dataset, copy=True)
+
+
+    # %% Sparse Data Handling
+
+    # TODO: might not work with the current implementation, we can probably remove this since we don't use it
+    if SPARSE_NO_IMPUTATION:
+        dataset_dicts = dataset_dicts + imputation.sparse_no_impute(
+            utils.get_dict_from_list_of_dict(
+                dataset_dicts, dict_key='type',
+                dict_value='NO_IMPUTATION',
+            ),
+            protein_start_col=X_START_COLUMN_IDX,
+        )
+
+
+    # %% Data Imputation Setup
+
+    # Create imputers
+    if SIMPLE_IMPUTER:
+        dataset_dicts = dataset_dicts + imputation.create_simple_imputers(
+            df=dataset,
+            add_indicator=ADD_INDICATOR_SIMPLE_IMP,
+            copy=COPY_SIMPLE_IMP,
+            strategy=STRATEGY_SIMPLE_IMP
+            )
+    if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
+        dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
+            df=dataset,
+            estimators=ESTIMATOR_ITER_IMP,
+            estimator_criterion=ESTIMATOR_CRITERION_ITER_IMP,
+            max_iter=MAX_ITER_ITER_IMP,
+            tol=TOL_ITER_IMP,
+            initial_strategy=INITIAL_STRATEGY_ITER_IMP,
+            n_nearest_features=N_NEAREST_FEATURES_ITER_IMP,
+            imputation_order=IMPUTATION_ORDER_ITER_IMP,
+            add_indicator=ADD_INDICATOR_ITER_IMP,
+            min_value=MIN_VALUE_ITER_IMP,
+            max_value=MAX_VALUE_ITER_IMP,
+            verbose=VERBOSE_ITER_IMP,
+        )
+    if KNN_IMPUTER:
+        dataset_dicts = dataset_dicts + imputation.create_KNN_imputers(
+            df=dataset,
+            missing_values=MISSING_VALUES_KNN_IMP,
+            n_neighbours=N_NEIGHBOURS_KNN_IMP,
+            weights=WEIGHTS_KNN_IMP,
+            metric=METRIC_KNN_IMP,
+            copy=COPY_KNN_IMP,
+            add_indicator=ADD_INDICATOR_KNN_IMP,
+            keep_empty_features=KEEP_EMPTY_FEATURES_KNN_IMP,
+        )
+
+
+    # %% Add Missing Indicators
+
+    if ADD_INDICATORS:
+        for dataset_dict in dataset_dicts:
+            indicator = MissingIndicator(missing_values=MISSING_VALUES_INDICATOR, features=FEATURES_INDICATOR, sparse=SPARSE_INDICATOR)
+            indicators = indicator.fit_transform(dataset_dict['dataset'].iloc[:, 11:]).astype(float)
+            feature_names = indicator.get_feature_names_out()
+            indicators = pd.DataFrame(indicators, columns=feature_names)
+            indicators.index = dataset_dict['dataset'].index
+            dataset_dict['dataset'] = pd.concat((dataset_dict['dataset'], indicators), axis=1)
+
+
+    # %% Categorization of Northstar score (y)
+
+    dataset_dicts = [
+        utils.make_binary(
+            data_dict,
+            column_label=COLUMN_TO_CATEGORIZE,
+            cutoffs=CUTOFFS, copy=False
+        )
+        for data_dict in dataset_dicts
+    ]
+
+
+    # %% Train-test Split
+
+    # Split data
+    dataset_dicts = [
+        features.split_data(
+            data=dataset_dict,
+            test_size=TEST_PROPORTION,
+            random_state=SEED,
+            start_col=X_START_COLUMN_IDX,
+            y_col_label='FT5',
+        )
+        for dataset_dict in dataset_dicts
+    ]
+
+
+    # %% Feature selection
+
+    if SPARSE_NO_IMPUTATION or SELECT_XGB:
+        dataset_dicts = [
+            features.select_XGB(
+                data_dict=data_dict,
+                log=log,
+                n_estimators=N_ESTIMATORS_XGB,
+                verbosity=VERBOSITY_XGB,
+                use_label_encoder=USE_LABEL_ENCODER_XGB,
+                validate_parameters=VALIDATE_PARAMETERS_XGB,
+                missing=MISSING_XGB,
+                objective=OBJECTIVE_XGB,
+                n_jobs_xgb=N_JOBS_XGB,
+                n_jobs_rfecv=N_JOBS_RFECV,
+                scoring=SCORING_RFECV,
+                cv=CV_RFE,
+                min_features_to_select=MIN_FEATURES_TO_SELECT_XGB,
+                step=STEP_XGB,
+                original_dataset=dataset,
+                original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
+                config=pipeline_config,
+                start_time=START_TIME,
+                logfile=LOG_FILE,
+            )
+            for data_dict in dataset_dicts
+        ]
+
+    if FEATURE_SELECT_ONLY:
+        utils.log_results(
+            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
+        )
+        utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
+
+        joblib.dump(
+            dataset_dicts[0], PROJECT_ROOT / 'out' / Path(
+                utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
+                )
+            )
+
+        exit(0)
+
+
+# %% Load Precomputed XGB Selected Data
+
+else:
+    dataset_dicts = [joblib.load(PRECOMPUTED_XGB_SELECTED_DATA)]
+    dataset = dataset_dicts[0]['dataset']
 
 
 # %% Data Imputation
 
-# Create imputers
-dataset_dicts = []
-if SIMPLE_IMPUTER:
-    dataset_dicts = dataset_dicts + imputation.create_simple_imputers(
-        add_indicator=ADD_INDICATOR_SIMPLE_IMP,
-        copy=COPY_SIMPLE_IMP,
-        strategy=STRATEGY_SIMPLE_IMP
-        )
-if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
-    dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
+imputer_dicts = []
+if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA and PRECOMPUTED_XGB_SELECTED_DATA:
+    imputer_dicts = []
+    imputer_dicts = imputer_dicts + imputation.create_iterative_imputers(
         df=dataset,
         estimators=ESTIMATOR_ITER_IMP,
         estimator_criterion=ESTIMATOR_CRITERION_ITER_IMP,
@@ -513,87 +615,6 @@ if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
         max_value=MAX_VALUE_ITER_IMP,
         verbose=VERBOSE_ITER_IMP,
     )
-if KNN_IMPUTER:
-    dataset_dicts = dataset_dicts + imputation.create_KNN_imputers(
-        missing_values=MISSING_VALUES_KNN_IMP,
-        n_neighbours=N_NEIGHBOURS_KNN_IMP,
-        weights=WEIGHTS_KNN_IMP,
-        metric=METRIC_KNN_IMP,
-        copy=COPY_KNN_IMP,
-        add_indicator=ADD_INDICATOR_KNN_IMP,
-        keep_empty_features=KEEP_EMPTY_FEATURES_KNN_IMP,
-    )
-
-# TODO ------------------------------------- Temporary for XGB feature selection ---------------------------------------
-# % Train-test Split
-
-indicator = MissingIndicator(missing_values=np.nan, features='missing-only', sparse=False)
-indicators = indicator.fit_transform(dataset.iloc[:, 11:]).astype(float)
-feature_names = indicator.get_feature_names_out()
-indicators = pd.DataFrame(indicators, columns=feature_names)
-
-indicators.index = dataset.index
-dataset = pd.concat((dataset, indicators), axis=1)
-
-dataset_dicts[0]['dataset'] = dataset
-dataset = dataset_dicts[0]['dataset']
-
-# Make y (FT5) a categorical variable compatible with XGB feature selection
-# Currently, y varies from 1 to 34. They need to start from 0 (0-33) for XGB feature selection.
-# dataset_dicts[0]['dataset']['FT5'] = dataset_dicts[0]['dataset']['FT5'] - 1
-# dataset_dicts[0]['y_training']['FT5'] = dataset_dicts[0]['y_training']['FT5'] - 1
-# dataset_dicts[0]['y_testing']['FT5'] = dataset_dicts[0]['y_testing']['FT5'] - 1
-
-# % Categorization of Northstar score (y)
-dataset_dicts = [
-    utils.make_binary(
-        data_dict,
-        column_label=COLUMN_TO_CATEGORIZE,
-        cutoffs=CUTOFFS, copy=False
-    )
-    for data_dict in dataset_dicts
-]
-
-
-# Split data
-dataset_dicts = [
-    features.split_data(
-        data=dataset_dict,
-        test_size=TEST_PROPORTION,
-        random_state=SEED,
-        start_col=X_START_COLUMN_IDX,
-        y_col_label='FT5',
-    )
-    for dataset_dict in dataset_dicts
-]
-
-# % Feature selection
-if SPARSE_NO_IMPUTATION or SELECT_XGB:
-    dataset_dicts = [
-        features.select_XGB(
-            data_dict=data_dict,
-            k=K_FEATURES,
-            log=log,
-            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config,
-            start_time=START_TIME, logfile=LOG_FILE,
-        )
-        for data_dict in dataset_dicts
-    ]
-
-    utils.log_results(
-        original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
-    )
-    utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
-
-    joblib.dump(
-        dataset_dicts[0], PROJECT_ROOT / 'out' / Path(
-            utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
-            )
-        )
-
-    exit(0)
-
-# TODO ---------------------------------------------- Remove later -----------------------------------------------------
 
 
 # Impute data using generated imputers
@@ -604,19 +625,31 @@ if ITERATIVE_IMPUTER and PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
     except Exception as e:
         log(f"Error: {e}")
         log("Could not load precomputed imputed data. Exiting.")
-        sys.exit(1)
+        exit(1)
     else:
         log("Precomputed imputed data loaded successfully!\n")
-        dataset = dataset_dicts[0]['dataset']
 else:
-    dataset_dicts = [imputation.impute_data(imputer_dict, dataset, 11, log=log)
-                     for imputer_dict in dataset_dicts]
+    dataset_dicts = [
+        imputation.impute_data(
+            data_dict=data_dict,
+            df=data_dict['dataset'],
+            pipeline_start_time=START_TIME,
+            imputer_dict=imp_dict,
+            start_col_X=11,
+            log=log
+        )
+        for data_dict, imp_dict in zip(dataset_dicts, imputer_dicts)
+    ]
 
-# Add NaN-eliminated and un-imputed datasets
-if NAN_ELIMINATION:
-    dataset_dicts = dataset_dicts + imputation.eliminate_nan(dataset, drop_cols=DROP_COLS_NAN_ELIM)
-if NO_IMPUTATION:
-    dataset_dicts = dataset_dicts + imputation.no_imputer(dataset, copy=True)
+if STOP_AFTER_IMPUTATION:
+    utils.log_results(
+        original_dataset=dataset,
+        original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
+        config=pipeline_config,
+        log=log
+    )
+    utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
+    exit(0)
 
 
 # %% Report Summary Statistics
@@ -639,126 +672,7 @@ dataset_dicts = [
 ]
 
 
-# %% Categorization of Northstar score (y)
-
-if CUTOFFS:
-    dataset_dicts = [
-        utils.make_binary(
-            data_dict,
-            column_label=COLUMN_TO_CATEGORIZE,
-            cutoffs=CUTOFFS, copy=False
-        )
-        for data_dict in dataset_dicts
-    ]
-else:
-    # Make the y column continuous
-    dataset_dicts = [
-        utils.make_continuous(
-            data_dict,
-            column_label=COLUMN_TO_CATEGORIZE,
-            copy=False
-        )
-        for data_dict in dataset_dicts
-    ]
-
-
-# # %% Train-test Split
-#
-# # Split data
-# dataset_dicts = [
-#     features.split_data(
-#         data=dataset_dict,
-#         test_size=TEST_PROPORTION,
-#         random_state=SEED,
-#         start_col=X_START_COLUMN_IDX,
-#         y_col_label=Y_COLUMN_LABEL,
-#     )
-#     for dataset_dict in dataset_dicts
-# ]
-
-
-# %% Sparse Data Handling
-
-if SPARSE_NO_IMPUTATION:
-    dataset_dicts = dataset_dicts + imputation.sparse_no_impute(
-        utils.get_dict_from_list_of_dict(
-            dataset_dicts, dict_key='type',
-            dict_value='NO_IMPUTATION',
-        ),
-        protein_start_col=X_START_COLUMN_IDX,
-    )
-
-
-# %% Feature selection
-
-# TODO: move pipeline_config up to here probably (select_XGB, and prob others in future, need it for logging)
-# pipeline_config = {
-#     'DEBUG':                       DEBUG,
-#     'SEED':                        SEED,
-#     'VERBOSE':                     VERBOSE,
-#     'DATA_FILE':                   DATA_FILE,
-#     'SIMPLE_IMPUTER':              SIMPLE_IMPUTER,
-#     'ITERATIVE_IMPUTER':           ITERATIVE_IMPUTER,
-#     'KNN_IMPUTER':                 KNN_IMPUTER,
-#     'NAN_ELIMINATION':             NAN_ELIMINATION,
-#     'NO_IMPUTATION':               NO_IMPUTATION,
-#     'SPARSE_NO_IMPUTATION':        SPARSE_NO_IMPUTATION,
-#     'ADD_INDICATOR_SIMPLE_IMP':    ADD_INDICATOR_SIMPLE_IMP,
-#     'COPY_SIMPLE_IMP':             COPY_SIMPLE_IMP,
-#     'STRATEGY_SIMPLE_IMP':         STRATEGY_SIMPLE_IMP,
-#     'ESTIMATOR_ITER_IMP':          ESTIMATOR_ITER_IMP,
-#     'MAX_ITER_ITER_IMP':           MAX_ITER_ITER_IMP,
-#     'TOL_ITER_IMP':                TOL_ITER_IMP,
-#     'ADD_INDICATOR_ITER_IMP':      ADD_INDICATOR_ITER_IMP,
-#     'INITIAL_STRATEGY_ITER_IMP':   INITIAL_STRATEGY_ITER_IMP,
-#     'N_NEAREST_FEATURES_ITER_IMP': N_NEAREST_FEATURES_ITER_IMP,
-#     'IMPUTATION_ORDER_ITER_IMP':   IMPUTATION_ORDER_ITER_IMP,
-#     'MIN_VALUE_ITER_IMP':          MIN_VALUE_ITER_IMP,
-#     'MAX_VALUE_ITER_IMP':          MAX_VALUE_ITER_IMP,
-#     'N_NEIGHBOURS_KNN_IMP':        N_NEIGHBOURS_KNN_IMP,
-#     'WEIGHTS_KNN_IMP':             WEIGHTS_KNN_IMP,
-#     'METRIC_KNN_IMP':              METRIC_KNN_IMP,
-#     'DROP_COLS_NAN_ELIM':          DROP_COLS_NAN_ELIM,
-#     'FIRST_COLUMN_TO_NORMALIZE':   FIRST_COLUMN_TO_NORMALIZE,
-#     'CUTOFFS':                     CUTOFFS,
-#     'COLUMN_TO_CATEGORIZE':        COLUMN_TO_CATEGORIZE,
-#     'TEST_PROPORTION':             TEST_PROPORTION,
-#     'X_START_COLUMN_IDX':          X_START_COLUMN_IDX,
-#     'Y_COLUMN_LABEL':              Y_COLUMN_LABEL,
-#     'SCORE_FUNC_FEATURES':         SCORE_FUNC_FEATURES,
-#     'K_FEATURES':                  K_FEATURES,
-#     'SELECT_XGB':                  SELECT_XGB,
-#     'SVC':                         SVC,
-#     'SVR':                         SVR,
-#     'START_TIME':                  START_TIME,
-# }
-
-# Feature selection
-if SPARSE_NO_IMPUTATION or SELECT_XGB:
-    dataset_dicts = [
-        features.select_XGB(
-            data_dict=data_dict,
-            k=K_FEATURES,
-            log=log,
-            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config,
-            start_time=START_TIME, logfile=LOG_FILE,
-        )
-        for data_dict in dataset_dicts
-    ]
-else:
-    dataset_dicts = [
-        features.select_KBest(
-            data_dict=data_dict,
-            score_func=SCORE_FUNC_FEATURES,
-            k=K_FEATURES,
-        )
-        for data_dict in dataset_dicts
-    ]
-
-
 # %% Log results
-
-
 
 utils.log_results(
     original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
@@ -801,48 +715,13 @@ if SVC:
         for dataset_dict in dataset_dicts
     ]
 
-# Find best SVR model
-if SVR:
-    dataset_dicts = [
-        classifier.find_best_svr_model(
-            pipeline_config=pipeline_config,
-            dataset_dict=dataset_dict,
-            kernels=KERNEL_PARAMS_SVR,
-            degree_params=DEGREE_PARAMS_SVR,
-            gamma_params=GAMMA_PARAMS_SVR,
-            coef0_params=COEF0_PARAMS_SVR,
-            tol_params=TOL_PARAMS_SVR,
-            C_params=C_PARAMS_SVR,
-            epsilon_params=EPSILON_PARAMS_SVR,
-            shrinking_params=SHRINKING_PARAMS_SVR,
-            cache_size_params=CACHE_SIZE_PARAMS_SVR,
-            verb=VERB_SVR,
-            max_iter_params=MAX_ITER_PARAMS_SVR,
-            grid_search_verbosity=GRID_SEARCH_VERBOSITY,
-            return_train_score=RETURN_TRAIN_SCORE_SVR,
-            grid_search_scoring=GRID_SEARCH_SCORING_SVR,
-            k_cv_folds=K_CV_FOLDS,
-            calc_final_scores=CALC_FINAL_SCORES,
-            log=log,
-            )
-        for dataset_dict in dataset_dicts
-    ]
-
-# Find best Ridge Regression model
-# TODO
-
-# Find best Lasso Regression model
-# TODO
-
-# Find best Decision Tree model
-# TODO
-
 
 # %% End Time
 
-utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
+joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
+log(f"Pickled dataset_dict saved to: ----------------------------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
 
-joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dicts[0], pipeline_config) + '_Dataset_dict_final.pkl'))
+utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
 
 
 # %% Breakpoint

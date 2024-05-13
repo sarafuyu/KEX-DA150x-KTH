@@ -20,6 +20,7 @@ import joblib
 ## External imports
 import pandas as pd
 import numpy as np
+from IPython.core.display_functions import display
 from sklearn.linear_model import BayesianRidge
 
 # Local imports
@@ -35,7 +36,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Option 1: Simple Imputer
 
-def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
+def create_simple_imputers(df, add_indicator=False, copy=True, strategy=("mean",)):
     """
     Impute missing values (e.g., with simple statistical values of each column) using SimpleImputer.
 
@@ -46,6 +47,7 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
 
     Parameters
     ==========
+    :param df: The dataset to impute.
     :param add_indicator: Whether to add a missing indicator column to the dataset.
     :param copy: Whether to create a copy of the dataset (`True`) or modify it in place (`False`).
     :param strategy: The imputation strategies to use.
@@ -68,6 +70,7 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
             "imputer": imputer,
             "strategy": strat,
             "add_indicator": add_indicator,
+            "dataset": df,
         }
         simple_imputers.append(imputer_dict)
     
@@ -80,7 +83,7 @@ def create_simple_imputers(add_indicator=False, copy=True, strategy=("mean",)):
 def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_criterion='squared_error', max_iter=10, tol=0.001,
                               initial_strategy=("mean",), n_nearest_features=(10,),
                               imputation_order=("ascending",), add_indicator=True,
-                              min_value='stat', max_value='stat', verbose=VERBOSE):
+                              min_value='stat', max_value='stat', verbose=VERBOSE, imputers_only=False):
     """
     Impute missing values using IterativeImputer (experimental feature).
 
@@ -90,7 +93,7 @@ def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_crite
     - ``sklearn.impute.IterativeImputer``
     - ``sklearn.linear_model.BayesianRidge``
 
-
+    :param df: The dataset to impute.
     :param estimators: The estimators to use at each step of the round-robin imputation.
     :param estimator_criterion: The criterion to use for the estimator.
     :param max_iter: The maximum number of imputation rounds to perform.
@@ -101,8 +104,8 @@ def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_crite
     :param add_indicator: Whether to add a missing indicator column to the dataset.
     :param min_value: A cap on the minimum value to impute. If 'stat', the 10th percentile of the dataset is used.
     :param max_value: A cap on the maximum value to impute. If 'stat', the 90th percentile of the dataset is used.
-    :param df: The dataset to impute. Used to determine the min and max values for imputation.
     :param verbose: The verbosity level.
+    :param imputers_only: Whether to return only the imputers or the dataset dictionary as well.
     :return: A list of dictionaries, each containing an imputer object and its configuration.
     """
     # Imports
@@ -160,16 +163,17 @@ def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_crite
                         "min_value": min_value,
                         "max_value": max_value,
                         "random_state": SEED,
-                        "add_indicator": add_indicator
+                        "add_indicator": add_indicator,
+                        "dataset": df,
                     }
                     iterative_imputers.append(imputer_dict)
-    
+
     return iterative_imputers
 
 
 # %% Option 3: KNN Imputer
 
-def create_KNN_imputers(missing_values=np.nan, n_neighbours=(5,), weights=('uniform',),
+def create_KNN_imputers(df, missing_values=np.nan, n_neighbours=(5,), weights=('uniform',),
                         metric=('nan_euclidean',), copy=True,
                         add_indicator=False, keep_empty_features=False):
     """
@@ -179,6 +183,7 @@ def create_KNN_imputers(missing_values=np.nan, n_neighbours=(5,), weights=('unif
 
     - ``sklearn.impute.KNNImputer``
 
+    :param df: The dataset to impute.
     :param missing_values: The placeholder for missing values.
     :param n_neighbours: List of number of neighbours to use.
     :param weights: List of weighting schemes.
@@ -212,6 +217,7 @@ def create_KNN_imputers(missing_values=np.nan, n_neighbours=(5,), weights=('unif
                     'weights': weight,
                     'metric': met,
                     'add_indicator': add_indicator,
+                    "dataset": df,
                 }
                 knn_imputers.append(imputer_dict)
     
@@ -261,11 +267,11 @@ def sparse_no_impute(data_dict: dict, protein_start_col=11):
     dataset, dataset_col_names = utils.dataframe_to_sparse(data_dict_sparse['dataset'], column_start=protein_start_col)
     X_train, X_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_training'])
     X_test, X_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['X_testing'])
-    if type(data_dict_sparse['y_training']) == pd.Series:
+    if type(data_dict_sparse['y_training']) is pd.Series:
         y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'].to_frame())
     else:
         y_train, y_train_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_training'])
-    if type(data_dict_sparse['y_testing']) == pd.Series:
+    if type(data_dict_sparse['y_testing']) is pd.Series:
         y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'].to_frame())
     else:
         y_test, y_test_col_names = utils.dataframe_to_sparse(data_dict_sparse['y_testing'])
@@ -286,7 +292,7 @@ def sparse_no_impute(data_dict: dict, protein_start_col=11):
     return [data_dict_sparse]
 
 
-def impute_data(imp_dict, df, start_col_X=11, add_indicator=True, log=print):
+def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col_X=11, log=print):
     """
     Impute missing values in the dataset using the specified imputer.
 
@@ -305,110 +311,100 @@ def impute_data(imp_dict, df, start_col_X=11, add_indicator=True, log=print):
     to the next step in the pipeline. I therefore recommend keeping the 'dataset' key as the main
     dataset to be passed forward.
 
-    :param imp_dict: A dictionary containing the imputer object and its configuration.
+    :param data_dict: A dictionary containing the imputer object and its configuration.
     :param df: The dataset to impute.
+    :param pipeline_start_time: The start time of the pipeline.
+    :param imputer_dict: A list of imputer dictionaries.
     :param start_col_X: The start index of the columns to impute.
-    :param size_X: The number of columns to impute counting from the start index.
-    :param add_indicator: Whether to add a missing indicator column to the dataset.
     :param log: A logging function.
     :return: A dictionary containing the type of imputation, the imputed dataset, and the date
     of imputation.
     """
     # Start time
     iter_imp_start_time = datetime.now()
-    if VERBOSE and imp_dict['type'] == 'IterativeImputer':
-        log('IMPUTATION')
-        log(f'Imputation Method: {imp_dict["type"]}')
-        log(f'Estimator: {imp_dict["estimator"]}')
-        log(f'Estimator criterion: {imp_dict["estimator_criterion"]}')
-        log(f'Random State (seed): {imp_dict["random_state"]}')
-        log(f'Missing Indicator Method (add_indicators): {imp_dict["add_indicator"]}')
-        log(f'Sample Posterior: {imp_dict["sample_posterior"]}')
-        log(f'Imputation order: {imp_dict["imputation_order"]}')
-        log(f'Initial imputation strategy: {imp_dict["initial_strategy"]}')
-        log(f'Max iterations: {imp_dict["max_iter"]}')
-        log(f'Tolerance: {imp_dict["tol"]}')
-        log(f'Num nearest features to consider for each imputation: {imp_dict["n_nearest_features"]}')
-        log(f'Starting {imp_dict["type"]} Imputation ...')
-
-    if imp_dict['add_indicator']:
-        add_indicator = True
-
-    # Set size to the number of columns from start_col_X to the end
-    size_X = df.shape[1] - start_col_X
-
-    # Isolate relevant data
-    df_imputed = df.copy()
 
     # Extract the protein intensities
-    X = df_imputed.iloc[:, start_col_X:]
+    X_selected = data_dict['X_training'].columns
+    X = df.copy()[X_selected]
 
     # Impute missing values
     # A numpy ndarray is returned, not a dataframe, has no column names, need to convert back to dataframe
-    imputer = imp_dict['imputer']
+    if imputer_dict is None:
+        imputer = data_dict['imputer']
+    else:
+        imputer = imputer_dict['imputer']
+        data_dict['type'] = imputer_dict['type']
+        data_dict['imputer'] = imputer_dict['imputer']
+        data_dict['estimator'] = imputer_dict['estimator']
+        data_dict['estimator_criterion'] = imputer_dict['estimator_criterion']
+        data_dict['sample_posterior'] = imputer_dict['sample_posterior']
+        data_dict['max_iter'] = imputer_dict['max_iter']
+        data_dict['tol'] = imputer_dict['tol']
+        data_dict['n_nearest_features'] = imputer_dict['n_nearest_features']
+        data_dict['initial_strategy'] = imputer_dict['initial_strategy']
+        data_dict['imputation_order'] = imputer_dict['imputation_order']
+        data_dict['min_value'] = imputer_dict['min_value']
+        data_dict['max_value'] = imputer_dict['max_value']
+        data_dict['random_state'] = imputer_dict['random_state']
+        data_dict['add_indicator'] = imputer_dict['add_indicator']
+
+    if VERBOSE and data_dict['type'] == 'IterativeImputer':
+        log('|--- IMPUTATION ---|')
+        log(f'Imputation Method: ------------------ {data_dict["type"]}')
+        log(f'Estimator: -------------------------- {data_dict["estimator"]}')
+        log(f'Estimator criterion: ---------------- {data_dict["estimator_criterion"]}')
+        log(f'Random State (seed): ---------------- {data_dict["random_state"]}')
+        log(f'Missing Indicator Method: ----------- {data_dict["add_indicator"]}')
+        log(f'Sample Posterior: ------------------- {data_dict["sample_posterior"]}')
+        log(f'Imputation order: ------------------- {data_dict["imputation_order"]}')
+        log(f'Initial imputation strategy: -------- {data_dict["initial_strategy"]}')
+        log(f'Max iterations: --------------------- {data_dict["max_iter"]}')
+        log(f'Tolerance: -------------------------- {data_dict["tol"]}')
+        log(f'Num nearest features to consider: --- {data_dict["n_nearest_features"]}')
+        log(f'Starting {data_dict["type"]} Imputation ...')
+
     X_imputed_arr = imputer.fit_transform(X)
-    imputed_features_index = imputer.indicator_.features_
-    imp_dict['imputer'] = imputer  # save the imputer object
+    data_dict['imputer'] = imputer  # save the imputer object
 
     # Convert the imputed values separately back to a dataframe
-    X_imputed = pd.DataFrame(X_imputed_arr[:, 0:size_X], columns=X.columns)
+    X_imputed = pd.DataFrame(X_imputed_arr, columns=X.columns)
+
+    # Print the whole dataframe
+    display(X_imputed.to_string())
+
+    # Assert that there are no missing values in the imputed dataset
+    # assert not any([not any(x) for x in X_imputed.isna()])
 
     # Save the imputed values as a separate dataframe in the dictionary
-    imp_dict['X_imputed'] = X_imputed  # save the imputed values
-
-    # Insert and replace the original values with the imputed values in the original dataframe
-    df_imputed.iloc[:, start_col_X:] = X_imputed
-
-    if add_indicator:
-        if VERBOSE > 3:
-            for i, f in np.ndenumerate(imputed_features_index):
-                # Check if all features have missing value indicators
-                print(f"Missing value indicator {i} corresponds to feature {f}.")
-                if i == len(X.columns)-1:
-                    print("All features have missing value indicators.")
-                    print(f"Num missing should be {2*i} and was {X_imputed_arr.shape[1]}")
-
-
-        # Generate column names for the missing value indicator features
-        X_column_names = X.columns
-        # Drop unused missing value indicator column labels (if any)
-        X_indicator_column_names = [
-            f"{col_name}_missing" for col_name in X_column_names
-            if X.columns.get_loc(col_name) in imputed_features_index
-        ]
-
-        # Convert the missing value indicators separately into a dataframe
-        X_indicators = pd.DataFrame(X_imputed_arr[:, size_X:], columns=X_indicator_column_names)
-
-        imp_dict['X_missing_values'] = X_indicators  # save the missing value indicators
-
-        # Drop rows outside the selection range
-        df_imputed = df_imputed.drop(df_imputed.columns[start_col_X + size_X:], axis=1)
-
-        # Concatenate missing value indicators with the rest of the dataset
-        X_indicators.index = df_imputed.index  # Ensure row indices match
-        df_imputed = pd.concat([df_imputed, X_indicators], axis=1)
-
-    # Return the imputed dataset
-    imp_dict['dataset'] = df_imputed
+    data_dict['X_imputed'] = X_imputed  # save the imputed values
 
     # Save the date of imputation
-    imp_dict['date'] = pd.Timestamp.now()
+    data_dict['date'] = pd.Timestamp.now()
 
     # Log time taken to run
-    iter_imp_end_time = imp_dict['date']
+    iter_imp_end_time = data_dict['date']
     timedelta = str(iter_imp_end_time - iter_imp_start_time).split('.')
     hms = timedelta[0].split(':')
     if VERBOSE:
         log(
             f"Imputation with {str(type(imputer)).split("'")[1].split('.')[-1]} using a {str(imputer.estimator).split("(")[0]} estimator finished {iter_imp_end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
-            f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run."
+            f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.\n"
         )
 
     # Pickle imputation dict to disk
-    joblib.dump(deepcopy(imp_dict), PROJECT_ROOT/'out'/Path(utils.get_file_name(imp_dict) + '_Imputed_Datadict.pkl'))
+    try:
+        breakpoint()
+        X_imputed.to_csv(PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_X_imputed.csv'))
+    except:
+        pass
+    try:
+        breakpoint()
+        joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
+    except:
+        pass
 
-    return imp_dict
+    breakpoint()
+    return data_dict
 
 
 # %% Main

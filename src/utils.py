@@ -262,35 +262,35 @@ def print_summary_statistics(data_dict, log=print, start_column=11):
     df = data_dict['dataset']
     if VERBOSITY_LEVEL > 1:
         log("|--- SUMMARY STATISTICS (POST-IMPUTATION) ---|")
-        log(f"Dataset: {get_file_name(data_dict)}")
-        log(f"Number of features (X): {df.shape[1]}")
-        log(f"Number of entries (N): {df.shape[0]}")
-        log(f"Northstar Score (y) mean: {df['FT5'].mean()}")
-        log(f"Northstar Score (y) median: "
+        log(f"Dataset: ---------------------------- {get_file_name(data_dict)}")
+        log(f"Number of features (X): ------------- {df.shape[1]}")
+        log(f"Number of entries (N): -------------- {df.shape[0]}")
+        log(f"Northstar Score (y) mean: ----------- {df['FT5'].mean()}")
+        log(f"Northstar Score (y) median: --------- "
             f"{df['FT5'].median()}")
-        log(f"Northstar Score (y) variance: "
+        log(f"Northstar Score (y) variance: ------- "
             f"{df['FT5'].var()}")
-        log(f"Northstar Score (y) std deviation: "
+        log(f"Northstar Score (y) std deviation: -- "
             f"{df['FT5'].std()}")
-        log(f"Northstar Score (y) max: "
+        log(f"Northstar Score (y) max: ------------ "
             f"{df['FT5'].max()}")
-        log(f"Northstar Score (y) min: "
+        log(f"Northstar Score (y) min: ------------ "
             f"{df['FT5'].min()}")
-        log(f"Protein intensities (X) global mean: "
+        log(f"Intensities (X) global mean: -------- "
             f"{df.iloc[:, start_column:].mean().mean()}")
-        log(f"Protein intensities (X) global median: "
+        log(f"Intensities (X) global median: ------ "
              f"{df.iloc[:, start_column:].median().mean()}")
-        log(f"Protein intensities (X) global variance: "
+        log(f"Intensities (X) global variance: ---- "
             f"{df.iloc[:, start_column:].var().mean()}")
-        log(f"Protein intensities (X) std deviation: "
+        log(f"Intensities (X) std deviation: ------ "
             f"{df.iloc[:, start_column:].std().mean()}")
-        log(f"Protein intensities (X) max: "
+        log(f"Intensities (X) max: ---------------- "
             f"{df.iloc[:, start_column:].max().max()}")
-        log(f"Protein intensities (X) min: "
+        log(f"Intensities (X) min: ---------------- "
             f"{df.iloc[:, start_column:].min().min()}")
     # if VERBOSITY_LEVEL > 2:
-        # log(f"Mean values: {df.mean()}")
-        # log(f"Median values: {df.median()}")
+    #     log(f"Mean values: ------------------------ {df.mean()}")
+    #     log(f"Median values: ---------------------- {df.median()}")
     if VERBOSITY_LEVEL > 1:
         log("\n")
 
@@ -355,70 +355,70 @@ def log_results(original_dataset, original_protein_start_col, config, log=print)
     :param log: A logging and/or printing function.
     :return: None
     """
-    log("|--- RESULTS ---|")
-    log(f"ORIGINAL DATASET")
-    log(f"File: {config['DATA_FILE']}")
-    log(f"shape: {original_dataset.shape}")
-    log(f"mean FT5: {original_dataset['FT5'].mean().mean()}")
-    log(f"median FT5: {original_dataset['FT5'].median().mean()}")
-    log(f"variance FT5: {original_dataset['FT5'].var().mean()}")
-    log(f"std deviation FT5: {original_dataset['FT5'].std().mean()}")
-    log(f"max FT5: {original_dataset['FT5'].max().max()}")
-    log(f"min FT5: {original_dataset['FT5'].min().min()}")
-    log(f"mean protein intensities: {original_dataset.iloc[:, original_protein_start_col:].mean().mean()}")
-    log(f"median protein intensities: {original_dataset.iloc[:, original_protein_start_col:].median().mean()}")
-    log(f"variance protein intensities: {original_dataset.iloc[:, original_protein_start_col:].var().mean()}")
-    log(f"std deviation protein intensities: {original_dataset.iloc[:, original_protein_start_col:].std().mean()}")
-    log(f"max protein intensities: {original_dataset.iloc[:, original_protein_start_col:].max().max()}")
-    log(f"min protein intensities: {original_dataset.iloc[:, original_protein_start_col:].min().min()}\n")
 
-    # Cleaning
-    log(f"CLEANING")
-    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}\n")
-
-    # Log imputation modes
-    log(f"IMPUTATION MODES")
-    log(f"SimpleImputer: {config['SIMPLE_IMPUTER']}")
-    log(f"IterativeImputer: {config['ITERATIVE_IMPUTER']}")
-    log(f"KNN_Imputer: {config['KNN_IMPUTER']}")
-    log(f"NO_IMPUTATION: {config['NO_IMPUTATION']}")
-    log(f"Sparse: {config['SPARSE_NO_IMPUTATION']}")
-    log(f"NAN_ELIMINATION: {config['NAN_ELIMINATION']}")
-    if config['NAN_ELIMINATION']:
-        log(f"nan elimination drop: {'columns' if config['DROP_COLS_NAN_ELIM'] else 'rows'}\n")
-
-    # Log data normalization
-    log(f"DATA NORMALIZATION")
-    log(f"FIRST_COLUMN_TO_NORMALIZE: {config['FIRST_COLUMN_TO_NORMALIZE']}\n")
+    log("|--- DATASET ---|")
+    log(f"Missing indicators: ----------------- {config['ADD_INDICATORS']}")
+    log(f"Shape: ------------------------------ {original_dataset.shape}")
+    log(f"Number of features (X): ------------- {original_dataset.shape[1] - 11}")
+    log(f"Mean FT5: --------------------------- {original_dataset['FT5'].mean().mean()}")
+    log(f"Median FT5: ------------------------- {original_dataset['FT5'].median().mean()}")
+    log(f"Variance FT5: ----------------------- {original_dataset['FT5'].var().mean()}")
+    log(f"Std deviation FT5: ------------------ {original_dataset['FT5'].std().mean()}")
+    log(f"Max FT5: ---------------------------- {original_dataset['FT5'].max().max()}")
+    log(f"Min FT5: ---------------------------- {original_dataset['FT5'].min().min()}")
+    log(f"Mean protein intensities: ----------- {original_dataset.iloc[:, original_protein_start_col:].mean().mean()}")
+    log(f"Median protein intensities: --------- {original_dataset.iloc[:, original_protein_start_col:].median().mean()}")
+    log(f"Variance protein intensities: ------- {original_dataset.iloc[:, original_protein_start_col:].var().mean()}")
+    log(f"Std deviation protein intensities: -- {original_dataset.iloc[:, original_protein_start_col:].std().mean()}")
+    log(f"Max protein intensities: ------------ {original_dataset.iloc[:, original_protein_start_col:].max().max()}")
+    log(f"Min protein intensities: ------------ {original_dataset.iloc[:, original_protein_start_col:].min().min()}\n")
 
     # Log categorization
-    log(f"CATEGORIZATION")
+    log(f"|--- CATEGORIZATION ---|")
     if not len(config['CUTOFFS']):
-        log(f"No categorization (continuous variable)")
+        log(f"Type: ------------------------------- No categorization (continuous)")
     else:
-        log(f"Cut-offs: {config['CUTOFFS']}")
-        log(f"Number of classes: {len(config['CUTOFFS']) + 1}")
-
+        log(f"Cut-offs: --------------------------- {config['CUTOFFS']}")
+        log(f"Number of classes: ------------------ {len(config['CUTOFFS']) + 1}\n")
 
     # Log training split
-    log(f"Test proportion: {config['TEST_PROPORTION']}")
-    log(f"Training proportion: {1 - config['TEST_PROPORTION']}")
-    log(f"X start column index: {config['X_START_COLUMN_IDX']}")
-    log(f"y column label: {repr(config['Y_COLUMN_LABEL'])}\n")
+    log(f"|--- TRAINING SPLIT ---|")
+    log(f"Test proportion: -------------------- {config['TEST_PROPORTION']}")
+    log(f"Training proportion: ---------------- {1 - config['TEST_PROPORTION']}")
+    log(f"X start column index: --------------- {config['X_START_COLUMN_IDX']}")
+    log(f"y column label: --------------------- {repr(config['Y_COLUMN_LABEL'])}\n")
 
     # Log feature selection
-    if not config['SELECT_XGB']:
-        log(f"FEATURE SELECTION")
-        log(f"Feature selection method: KBest")
-        log(f"Feature selection score function for KBest: {repr(config['SCORE_FUNC_FEATURES'])}")
-        log(f"KBest k: {config['K_FEATURES']}")
+    log(f"|--- FEATURE SELECTION ---|")
+    log(f"Feature selection: ------------------ {'XGB-RFECV' if config['SELECT_XGB'] else 'No info'}")
+    if config['PRECOMPUTED_XGB_SELECTED_DATA']:
+        log(f"Pre-computed: ----------------------- True")
+        log(f"Pre-computed file: ------------------ {str(config['PRECOMPUTED_XGB_SELECTED_DATA']).split('PycharmProjects\\')[-1]}\n")
+    else:
+        log(f"Pre-computed: ----------------------- False\n")
 
-    # Log classifier
-    log(f"CLASSIFIERS")
-    if config['SVC']:
-        log(f"SVC: {config['SVC']}\n")
-    if config['SVR']:
-        log(f"SVR: {config['SVR']}\n")
+    # Log imputation modes
+    log(f"|--- IMPUTATION MODES ---|")
+    log(f"SimpleImputer: ---------------------- {config['SIMPLE_IMPUTER']}")
+    log(f"IterativeImputer: ------------------- {config['ITERATIVE_IMPUTER']}")
+    log(f"KNN_Imputer: ------------------------ {config['KNN_IMPUTER']}")
+    log(f"NO_IMPUTATION: ---------------------- {config['NO_IMPUTATION']}")
+    log(f"Sparse: ----------------------------- {config['SPARSE_NO_IMPUTATION']}")
+    if config['NAN_ELIMINATION']:
+        log(f"NAN_ELIMINATION: -------------------- {config['NAN_ELIMINATION']}")
+        log(f"NaN elimination drop: \n{'columns' if config['DROP_COLS_NAN_ELIM'] else 'rows'}\n")
+    else:
+        log(f"NAN_ELIMINATION: -------------------- {config['NAN_ELIMINATION']}\n")
+
+    if not config['STOP_AFTER_IMPUTATION']:
+        # Log data normalization
+        log(f"|--- DATA NORMALIZATION ---|")
+        log(f"FIRST_COLUMN_TO_NORMALIZE: ---------- {config['FIRST_COLUMN_TO_NORMALIZE']}\n")
+
+        # Log classifier
+        log(f"|--- CLASSIFIER ---|")
+        if config['SVC']:
+            log(f"SVC: -------------------------------- {config['SVC']}\n")
 
     return None
 
@@ -429,62 +429,60 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
 
     :return: None
     """
-    log(f"|--- PROCESSED DATASET ---|")
+    log(f"|--- GRID SEARCH ---|\n")
     dataset = dataset_dict['dataset']
 
     # Print imputation information
     log(f"IMPUTATION")
-    log(f"Date: {dataset_dict['date']}")
-    log(f"Imputer type: {dataset_dict['type']}")
+    log(f"Date: ------------------------------- {dataset_dict['date']}")
+    log(f"Imputer type: ----------------------- {dataset_dict['type']}")
     if dataset_dict['type'] == 'SimpleImputer':
-        log(f"ADD_INDICATOR_SIMPLE_IMP: {pipeline_config['ADD_INDICATOR_SIMPLE_IMP']}")
-        log(f"COPY_SIMPLE_IMP: {pipeline_config['COPY_SIMPLE_IMP']}")
-        log(f"STRATEGY_SIMPLE_IMP: {pipeline_config['STRATEGY_SIMPLE_IMP']}")
+        log(f"ADD_INDICATOR_SIMPLE_IMP: ----------- {pipeline_config['ADD_INDICATOR_SIMPLE_IMP']}")
+        log(f"COPY_SIMPLE_IMP: -------------------- {pipeline_config['COPY_SIMPLE_IMP']}")
+        log(f"STRATEGY_SIMPLE_IMP: ---------------- {pipeline_config['STRATEGY_SIMPLE_IMP']}")
     elif dataset_dict['type'] == 'IterativeImputer':
-        log(f"ESTIMATOR_ITER_IMP: {pipeline_config['ESTIMATOR_ITER_IMP']}")
-        log(f"MAX_ITER_ITER_IMP: {pipeline_config['MAX_ITER_ITER_IMP']}")
-        log(f"TOL_ITER_IMP: {pipeline_config['TOL_ITER_IMP']}")
-        log(f"INITIAL_STRATEGY_ITER_IMP: {pipeline_config['INITIAL_STRATEGY_ITER_IMP']}")
-        log(f"N_NEAREST_FEATURES_ITER_IMP: {pipeline_config['N_NEAREST_FEATURES_ITER_IMP']}")
-        log(f"IMPUTATION_ORDER_ITER_IMP: {pipeline_config['IMPUTATION_ORDER_ITER_IMP']}")
-        log(f"MIN_VALUE_ITER_IMP: {pipeline_config['MIN_VALUE_ITER_IMP']}")
-        log(f"MAX_VALUE_ITER_IMP: {pipeline_config['MAX_VALUE_ITER_IMP']}")
+        log(f"ESTIMATOR_ITER_IMP: ----------------- {pipeline_config['ESTIMATOR_ITER_IMP']}")
+        log(f"MAX_ITER_ITER_IMP: ------------------ {pipeline_config['MAX_ITER_ITER_IMP']}")
+        log(f"TOL_ITER_IMP: ----------------------- {pipeline_config['TOL_ITER_IMP']}")
+        log(f"INITIAL_STRATEGY_ITER_IMP: ---------- {pipeline_config['INITIAL_STRATEGY_ITER_IMP']}")
+        log(f"N_NEAREST_FEATURES_ITER_IMP: -------- {pipeline_config['N_NEAREST_FEATURES_ITER_IMP']}")
+        log(f"IMPUTATION_ORDER_ITER_IMP: ---------- {pipeline_config['IMPUTATION_ORDER_ITER_IMP']}")
+        log(f"MIN_VALUE_ITER_IMP: ----------------- {pipeline_config['MIN_VALUE_ITER_IMP']}")
+        log(f"MAX_VALUE_ITER_IMP: ----------------- {pipeline_config['MAX_VALUE_ITER_IMP']}")
     elif dataset_dict['type'] == 'KNNImputer':
-        log(f"N_NEIGHBOURS_KNN_IMP: {pipeline_config['N_NEIGHBOURS_KNN_IMP']}")
-        log(f"WEIGHTS_KNN_IMP: {pipeline_config['WEIGHTS_KNN_IMP']}")
-        log(f"METRIC_KNN_IMP: {pipeline_config['METRIC_KNN_IMP']}")
-        log(f"ADD_INDICATOR_KNN_IMP: {pipeline_config['ADD_INDICATOR_KNN_IMP']}")
+        log(f"N_NEIGHBOURS_KNN_IMP: --------------- {pipeline_config['N_NEIGHBOURS_KNN_IMP']}")
+        log(f"WEIGHTS_KNN_IMP: -------------------- {pipeline_config['WEIGHTS_KNN_IMP']}")
+        log(f"METRIC_KNN_IMP: --------------------- {pipeline_config['METRIC_KNN_IMP']}")
+        log(f"ADD_INDICATOR_KNN_IMP: -------------- {pipeline_config['ADD_INDICATOR_KNN_IMP']}")
     elif dataset_dict['type'] == 'NAN_ELIMINATION':
-        log(f"DROP_COLS_NAN_ELIM: {pipeline_config['DROP_COLS_NAN_ELIM']}")
-    elif dataset_dict['type'] == 'NO_IMPUTATION':
-        log(f"No imputation performed.\n")
-    log(f"shape: {dataset.shape}\n")
+        log(f"DROP_COLS_NAN_ELIM: ----------------- {pipeline_config['DROP_COLS_NAN_ELIM']}")
+    log(f"Shape: ------------------------------ {dataset.shape}\n")
 
     # TODO: print feature scores from dataset_dict
 
     # Print summary statistics
     log(f"SUMMARY STATISTICS")
-    log(f"Mean FT5: {dataset['FT5'].mean().mean()}")
-    log(f"Median FT5: {dataset['FT5'].median().mean()}")
-    log(f"Variance FT5: {dataset['FT5'].var().mean()}")
-    log(f"Std deviation FT5: {dataset['FT5'].std().mean()}")
-    log(f"Max FT5: {dataset['FT5'].max().max()}")
-    log(f"Min FT5: {dataset['FT5'].min().min()}")
-    log(f"Mean protein intensities: {dataset.iloc[:, protein_start_col:].mean().mean()}")
-    log(f"Median protein intensities: {dataset.iloc[:, protein_start_col:].median().mean()}")
-    log(f"Variance protein intensities: {dataset.iloc[:, protein_start_col:].var().mean()}")
-    log(f"Std deviation protein intensities: {dataset.iloc[:, protein_start_col:].std().mean()}")
-    log(f"Max protein intensities: {dataset.iloc[:, protein_start_col:].max().max()}")
-    log(f"Min protein intensities: {dataset.iloc[:, protein_start_col:].min().min()}\n")
+    log(f"Mean FT5: --------------------------- {dataset['FT5'].mean().mean()}")
+    log(f"Median FT5: ------------------------- {dataset['FT5'].median().mean()}")
+    log(f"Variance FT5: ----------------------- {dataset['FT5'].var().mean()}")
+    log(f"Std deviation FT5: ------------------ {dataset['FT5'].std().mean()}")
+    log(f"Max FT5: ---------------------------- {dataset['FT5'].max().max()}")
+    log(f"Min FT5: ---------------------------- {dataset['FT5'].min().min()}")
+    log(f"Mean protein intensities: ----------- {dataset.iloc[:, protein_start_col:].mean().mean()}")
+    log(f"Median protein intensities: --------- {dataset.iloc[:, protein_start_col:].median().mean()}")
+    log(f"Variance protein intensities: ------- {dataset.iloc[:, protein_start_col:].var().mean()}")
+    log(f"Std deviation protein intensities: -- {dataset.iloc[:, protein_start_col:].std().mean()}")
+    log(f"Max protein intensities: ------------ {dataset.iloc[:, protein_start_col:].max().max()}")
+    log(f"Min protein intensities: ------------ {dataset.iloc[:, protein_start_col:].min().min()}\n")
 
     # Print classifier information
     log(f"CLASSIFIER")
-    log(f"Classifier: {repr(clf.best_estimator_)}")
-    log(f"Test accuracy: {accuracy}")
+    log(f"Classifier: ------------------------- {repr(clf.best_estimator_)}")
+    log(f"Test accuracy: ---------------------- {accuracy}")
 
     # Log best parameters
     if hasattr(clf, 'best_params_'):
-        log("Best parameters combination found:")
+        log("Best parameters combination found:\n")
         best_parameters = clf.best_params_
         for param_name in sorted(best_parameters.keys()):
             log(f"{param_name}: {best_parameters[param_name]}")
@@ -507,8 +505,8 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
                     else:
                         log(f"{col}: {cv_results[col]}\n")
 
-        log(f"Grid search completed!")
-        log(f"Results saved to: {grid_search_file_name}\n")
+        log(f"Grid search finished: --------------- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        log(f"Results saved to: ------------------- {grid_search_file_name}\n")
     return
 
 
@@ -523,9 +521,9 @@ def log_time(start_time, end_time, log=print, logfile: Path = None):
     """
     timedelta = str(end_time - start_time).split('.')
     hms = timedelta[0].split(':')
+    if logfile:
+        log(f"Logs saved to: --------------------------------------------- {logfile}\n")
     log(
         f"Pipeline finished {end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
-        f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[0]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run."
+        f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.\n"
     )
-    if logfile:
-        log(f"Logs saved to: {logfile}\n")
