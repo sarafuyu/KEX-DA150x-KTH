@@ -1,281 +1,281 @@
-[2024-05-13 16:44:21,067] {imputation.py:352 } : INFO | |--- IMPUTATION ---|
-[2024-05-13 16:44:21,067] {imputation.py:353 } : INFO | Imputation Method: ------------------ IterativeImputer
-[2024-05-13 16:44:21,070] {imputation.py:354 } : INFO | Estimator: -------------------------- RandomForestRegressor(max_features='sqrt', n_jobs=7,
-                      oob_score=<function r2_score at 0x000002B8E66567A0>,
+[2024-05-13 23:12:36,112] {imputation.py:352 } : INFO | |--- IMPUTATION ---|
+[2024-05-13 23:12:36,113] {imputation.py:353 } : INFO | Imputation Method: ------------------ IterativeImputer
+[2024-05-13 23:12:36,115] {imputation.py:354 } : INFO | Estimator: -------------------------- RandomForestRegressor(max_features='sqrt', n_jobs=7,
+                      oob_score=<function r2_score at 0x000001AD001727A0>,
                       random_state=42)
-[2024-05-13 16:44:21,070] {imputation.py:355 } : INFO | Estimator criterion: ---------------- squared_error
-[2024-05-13 16:44:21,070] {imputation.py:356 } : INFO | Random State (seed): ---------------- 42
-[2024-05-13 16:44:21,070] {imputation.py:357 } : INFO | Missing Indicator Method: ----------- False
-[2024-05-13 16:44:21,070] {imputation.py:358 } : INFO | Sample Posterior: ------------------- False
-[2024-05-13 16:44:21,070] {imputation.py:359 } : INFO | Imputation order: ------------------- ascending
-[2024-05-13 16:44:21,070] {imputation.py:360 } : INFO | Initial imputation strategy: -------- mean
-[2024-05-13 16:44:21,071] {imputation.py:361 } : INFO | Max iterations: --------------------- 600
-[2024-05-13 16:44:21,071] {imputation.py:362 } : INFO | Tolerance: -------------------------- 0.009
-[2024-05-13 16:44:21,071] {imputation.py:363 } : INFO | Num nearest features to consider: --- None
-[2024-05-13 16:44:21,071] {imputation.py:364 } : INFO | Starting IterativeImputer Imputation ...
+[2024-05-13 23:12:36,116] {imputation.py:355 } : INFO | Estimator criterion: ---------------- squared_error
+[2024-05-13 23:12:36,116] {imputation.py:356 } : INFO | Random State (seed): ---------------- 42
+[2024-05-13 23:12:36,116] {imputation.py:357 } : INFO | Missing Indicator Method: ----------- False
+[2024-05-13 23:12:36,116] {imputation.py:358 } : INFO | Sample Posterior: ------------------- False
+[2024-05-13 23:12:36,116] {imputation.py:359 } : INFO | Imputation order: ------------------- ascending
+[2024-05-13 23:12:36,116] {imputation.py:360 } : INFO | Initial imputation strategy: -------- mean
+[2024-05-13 23:12:36,116] {imputation.py:361 } : INFO | Max iterations: --------------------- 200
+[2024-05-13 23:12:36,116] {imputation.py:362 } : INFO | Tolerance: -------------------------- 0.009
+[2024-05-13 23:12:36,116] {imputation.py:363 } : INFO | Num nearest features to consider: --- None
+[2024-05-13 23:12:36,116] {imputation.py:364 } : INFO | Starting IterativeImputer Imputation ...
 [IterativeImputer] Completing matrix with shape (301, 37)
-[IterativeImputer] Ending imputation round 1/600, elapsed time 4.90
-[IterativeImputer] Change: 0.6990963919116986, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 2/600, elapsed time 9.17
-[IterativeImputer] Change: 0.24880799153074484, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 3/600, elapsed time 14.30
-[IterativeImputer] Change: 0.15584895985885439, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 4/600, elapsed time 18.87
-[IterativeImputer] Change: 0.17949456364682526, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 5/600, elapsed time 23.66
-[IterativeImputer] Change: 0.15922787864761467, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 6/600, elapsed time 28.87
-[IterativeImputer] Change: 0.13323991317613526, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 7/600, elapsed time 33.52
-[IterativeImputer] Change: 0.15703203549314537, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 8/600, elapsed time 39.00
-[IterativeImputer] Change: 0.13282906481789603, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 9/600, elapsed time 43.59
-[IterativeImputer] Change: 0.12137303957180912, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 10/600, elapsed time 48.42
-[IterativeImputer] Change: 0.13271882087568798, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 11/600, elapsed time 53.68
-[IterativeImputer] Change: 0.12765879514200762, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 12/600, elapsed time 58.55
-[IterativeImputer] Change: 0.13766452336530755, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 13/600, elapsed time 63.98
+[IterativeImputer] Ending imputation round 1/200, elapsed time 4.64
+[IterativeImputer] Change: 0.699096391911695, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 2/200, elapsed time 9.12
+[IterativeImputer] Change: 0.24880799153073951, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 3/200, elapsed time 13.73
+[IterativeImputer] Change: 0.15584895985885971, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 4/200, elapsed time 18.23
+[IterativeImputer] Change: 0.1794945636468288, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 5/200, elapsed time 23.04
+[IterativeImputer] Change: 0.15922787864760224, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 6/200, elapsed time 27.75
+[IterativeImputer] Change: 0.13323991317612283, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 7/200, elapsed time 32.50
+[IterativeImputer] Change: 0.15703203549315248, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 8/200, elapsed time 37.32
+[IterativeImputer] Change: 0.13282906481788892, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 9/200, elapsed time 41.81
+[IterativeImputer] Change: 0.12137303957182333, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 10/200, elapsed time 46.43
+[IterativeImputer] Change: 0.1327188208757164, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 11/200, elapsed time 51.29
+[IterativeImputer] Change: 0.12765879514200584, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 12/200, elapsed time 56.16
+[IterativeImputer] Change: 0.13766452336529156, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 13/200, elapsed time 60.95
 [IterativeImputer] Change: 0.16041634198418286, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 14/600, elapsed time 68.60
-[IterativeImputer] Change: 0.1507386986372179, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 15/600, elapsed time 73.37
-[IterativeImputer] Change: 0.1719164512041722, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 16/600, elapsed time 78.72
-[IterativeImputer] Change: 0.17341379834013892, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 17/600, elapsed time 83.52
-[IterativeImputer] Change: 0.16211919533416186, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 18/600, elapsed time 88.97
-[IterativeImputer] Change: 0.13897955419726138, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 19/600, elapsed time 93.68
-[IterativeImputer] Change: 0.13540297361274867, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 20/600, elapsed time 99.04
-[IterativeImputer] Change: 0.19556811755259496, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 21/600, elapsed time 103.64
-[IterativeImputer] Change: 0.17057835994759074, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 22/600, elapsed time 108.31
-[IterativeImputer] Change: 0.17784072211302338, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 23/600, elapsed time 113.55
-[IterativeImputer] Change: 0.17220939445076588, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 24/600, elapsed time 118.36
-[IterativeImputer] Change: 0.21223040875778842, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 25/600, elapsed time 123.71
-[IterativeImputer] Change: 0.13478091833732186, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 26/600, elapsed time 128.31
-[IterativeImputer] Change: 0.15512600215204841, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 27/600, elapsed time 133.06
-[IterativeImputer] Change: 0.15708203131280563, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 28/600, elapsed time 138.44
-[IterativeImputer] Change: 0.16949340568955762, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 29/600, elapsed time 143.11
-[IterativeImputer] Change: 0.16927240114511122, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 30/600, elapsed time 147.84
-[IterativeImputer] Change: 0.16372613215731313, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 31/600, elapsed time 153.20
-[IterativeImputer] Change: 0.2078392619153533, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 32/600, elapsed time 157.94
-[IterativeImputer] Change: 0.1761031758418472, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 33/600, elapsed time 163.26
-[IterativeImputer] Change: 0.16997505501146293, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 34/600, elapsed time 167.96
-[IterativeImputer] Change: 0.14636807196425927, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 35/600, elapsed time 173.32
-[IterativeImputer] Change: 0.13996335001268356, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 36/600, elapsed time 177.89
+[IterativeImputer] Ending imputation round 14/200, elapsed time 65.61
+[IterativeImputer] Change: 0.15073869863719658, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 15/200, elapsed time 70.96
+[IterativeImputer] Change: 0.1719164512041811, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 16/200, elapsed time 76.06
+[IterativeImputer] Change: 0.1734137983401407, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 17/200, elapsed time 81.19
+[IterativeImputer] Change: 0.1621191953341814, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 18/200, elapsed time 86.38
+[IterativeImputer] Change: 0.1389795541972667, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 19/200, elapsed time 91.47
+[IterativeImputer] Change: 0.13540297361275044, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 20/200, elapsed time 96.21
+[IterativeImputer] Change: 0.1955681175525843, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 21/200, elapsed time 101.03
+[IterativeImputer] Change: 0.17057835994761206, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 22/200, elapsed time 105.82
+[IterativeImputer] Change: 0.17784072211303226, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 23/200, elapsed time 110.67
+[IterativeImputer] Change: 0.17220939445077832, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 24/200, elapsed time 115.44
+[IterativeImputer] Change: 0.21223040875779375, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 25/200, elapsed time 120.25
+[IterativeImputer] Change: 0.1347809183373183, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 26/200, elapsed time 125.09
+[IterativeImputer] Change: 0.15512600215204309, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 27/200, elapsed time 129.81
+[IterativeImputer] Change: 0.1570820313128074, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 28/200, elapsed time 134.56
+[IterativeImputer] Change: 0.1694934056895434, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 29/200, elapsed time 139.30
+[IterativeImputer] Change: 0.16927240114510944, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 30/200, elapsed time 144.16
+[IterativeImputer] Change: 0.1637261321573149, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 31/200, elapsed time 149.01
+[IterativeImputer] Change: 0.20783926191535862, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 32/200, elapsed time 153.77
+[IterativeImputer] Change: 0.1761031758418543, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 33/200, elapsed time 158.53
+[IterativeImputer] Change: 0.16997505501147891, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 34/200, elapsed time 163.30
+[IterativeImputer] Change: 0.14636807196425217, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 35/200, elapsed time 168.18
+[IterativeImputer] Change: 0.1399633500126889, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 36/200, elapsed time 172.98
 [IterativeImputer] Change: 0.16101048646455318, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 37/600, elapsed time 182.65
-[IterativeImputer] Change: 0.13504859082909526, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 38/600, elapsed time 187.98
-[IterativeImputer] Change: 0.15463811857765464, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 39/600, elapsed time 192.55
-[IterativeImputer] Change: 0.14667655578169203, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 40/600, elapsed time 197.42
-[IterativeImputer] Change: 0.1628177853890591, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 41/600, elapsed time 202.59
-[IterativeImputer] Change: 0.16001932026156496, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 42/600, elapsed time 207.37
-[IterativeImputer] Change: 0.15644478765447545, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 43/600, elapsed time 212.11
-[IterativeImputer] Change: 0.15161855785597567, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 44/600, elapsed time 217.48
-[IterativeImputer] Change: 0.160339234930845, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 45/600, elapsed time 222.26
-[IterativeImputer] Change: 0.17387553612544693, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 46/600, elapsed time 227.70
-[IterativeImputer] Change: 0.13459069344307117, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 47/600, elapsed time 232.24
-[IterativeImputer] Change: 0.18596285760186682, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 48/600, elapsed time 237.09
-[IterativeImputer] Change: 0.14354869706304996, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 49/600, elapsed time 242.42
-[IterativeImputer] Change: 0.14501855322394874, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 50/600, elapsed time 247.09
-[IterativeImputer] Change: 0.1704281033169721, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 51/600, elapsed time 251.88
-[IterativeImputer] Change: 0.20035493315178954, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 52/600, elapsed time 257.13
-[IterativeImputer] Change: 0.17367786991081147, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 53/600, elapsed time 261.90
-[IterativeImputer] Change: 0.17032503429557977, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 54/600, elapsed time 267.19
-[IterativeImputer] Change: 0.14235768073873523, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 55/600, elapsed time 271.86
-[IterativeImputer] Change: 0.14184785465950256, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 56/600, elapsed time 277.15
-[IterativeImputer] Change: 0.1384427988727488, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 57/600, elapsed time 281.83
-[IterativeImputer] Change: 0.15176210908012244, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 58/600, elapsed time 286.92
-[IterativeImputer] Change: 0.1714851192594189, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 59/600, elapsed time 291.85
-[IterativeImputer] Change: 0.15093208273625613, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 60/600, elapsed time 296.72
-[IterativeImputer] Change: 0.13936407519792837, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 61/600, elapsed time 301.46
-[IterativeImputer] Change: 0.14539648282190143, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 62/600, elapsed time 306.65
-[IterativeImputer] Change: 0.14172393897498914, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 63/600, elapsed time 311.47
+[IterativeImputer] Ending imputation round 37/200, elapsed time 177.72
+[IterativeImputer] Change: 0.1350485908290917, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 38/200, elapsed time 182.50
+[IterativeImputer] Change: 0.15463811857764043, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 39/200, elapsed time 187.36
+[IterativeImputer] Change: 0.14667655578169558, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 40/200, elapsed time 192.18
+[IterativeImputer] Change: 0.16281778538905023, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 41/200, elapsed time 197.02
+[IterativeImputer] Change: 0.1600193202615383, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 42/200, elapsed time 201.82
+[IterativeImputer] Change: 0.156444787654463, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 43/200, elapsed time 206.70
+[IterativeImputer] Change: 0.15161855785598277, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 44/200, elapsed time 211.57
+[IterativeImputer] Change: 0.1603392349308539, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 45/200, elapsed time 216.30
+[IterativeImputer] Change: 0.1738755361254416, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 46/200, elapsed time 221.09
+[IterativeImputer] Change: 0.13459069344308006, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 47/200, elapsed time 225.89
+[IterativeImputer] Change: 0.18596285760185438, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 48/200, elapsed time 230.69
+[IterativeImputer] Change: 0.14354869706305173, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 49/200, elapsed time 235.55
+[IterativeImputer] Change: 0.1450185532239594, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 50/200, elapsed time 240.37
+[IterativeImputer] Change: 0.17042810331698632, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 51/200, elapsed time 245.14
+[IterativeImputer] Change: 0.20035493315177, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 52/200, elapsed time 249.98
+[IterativeImputer] Change: 0.17367786991082035, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 53/200, elapsed time 254.84
+[IterativeImputer] Change: 0.17032503429559043, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 54/200, elapsed time 259.67
+[IterativeImputer] Change: 0.142357680738737, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 55/200, elapsed time 264.59
+[IterativeImputer] Change: 0.1418478546595079, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 56/200, elapsed time 269.34
+[IterativeImputer] Change: 0.13844279887275412, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 57/200, elapsed time 274.12
+[IterativeImputer] Change: 0.15176210908010646, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 58/200, elapsed time 278.86
+[IterativeImputer] Change: 0.1714851192594402, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 59/200, elapsed time 283.73
+[IterativeImputer] Change: 0.15093208273626324, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 60/200, elapsed time 288.57
+[IterativeImputer] Change: 0.13936407519791771, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 61/200, elapsed time 293.29
+[IterativeImputer] Change: 0.14539648282190676, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 62/200, elapsed time 298.07
+[IterativeImputer] Change: 0.14172393897498559, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 63/200, elapsed time 302.91
 [IterativeImputer] Change: 0.14756859673755507, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 64/600, elapsed time 316.80
-[IterativeImputer] Change: 0.12932987631548976, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 65/600, elapsed time 321.52
-[IterativeImputer] Change: 0.15300996059020733, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 66/600, elapsed time 326.28
-[IterativeImputer] Change: 0.17568357221302833, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 67/600, elapsed time 331.63
-[IterativeImputer] Change: 0.15805376859900377, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 68/600, elapsed time 336.31
-[IterativeImputer] Change: 0.15464658115655716, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 69/600, elapsed time 341.68
-[IterativeImputer] Change: 0.15855572117156846, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 70/600, elapsed time 346.27
-[IterativeImputer] Change: 0.1783053228614353, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 71/600, elapsed time 350.94
-[IterativeImputer] Change: 0.1871261552894179, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 72/600, elapsed time 356.43
-[IterativeImputer] Change: 0.19831729217054672, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 73/600, elapsed time 361.09
+[IterativeImputer] Ending imputation round 64/200, elapsed time 307.66
+[IterativeImputer] Change: 0.1293298763154791, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 65/200, elapsed time 312.39
+[IterativeImputer] Change: 0.15300996059020378, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 66/200, elapsed time 317.07
+[IterativeImputer] Change: 0.17568357221303543, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 67/200, elapsed time 321.87
+[IterativeImputer] Change: 0.1580537685990091, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 68/200, elapsed time 326.58
+[IterativeImputer] Change: 0.15464658115656071, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 69/200, elapsed time 331.38
+[IterativeImputer] Change: 0.15855572117158268, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 70/200, elapsed time 336.28
+[IterativeImputer] Change: 0.1783053228614513, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 71/200, elapsed time 340.97
+[IterativeImputer] Change: 0.187126155289441, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 72/200, elapsed time 345.71
+[IterativeImputer] Change: 0.19831729217053073, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 73/200, elapsed time 350.47
 [IterativeImputer] Change: 0.19782556776337046, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 74/600, elapsed time 365.82
-[IterativeImputer] Change: 0.12694325518007332, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 75/600, elapsed time 371.14
-[IterativeImputer] Change: 0.12230442554614385, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 76/600, elapsed time 375.98
-[IterativeImputer] Change: 0.14688805770605562, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 77/600, elapsed time 381.21
-[IterativeImputer] Change: 0.17012850667126322, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 78/600, elapsed time 385.86
-[IterativeImputer] Change: 0.1420069669380144, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 79/600, elapsed time 391.18
-[IterativeImputer] Change: 0.14985479526159295, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 80/600, elapsed time 395.94
-[IterativeImputer] Change: 0.17824428945062465, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 81/600, elapsed time 401.24
-[IterativeImputer] Change: 0.18691687471481266, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 82/600, elapsed time 405.76
-[IterativeImputer] Change: 0.16570657740595607, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 83/600, elapsed time 410.49
-[IterativeImputer] Change: 0.18552165837439638, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 84/600, elapsed time 415.70
-[IterativeImputer] Change: 0.13494055042226627, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 85/600, elapsed time 420.55
-[IterativeImputer] Change: 0.15980762904943902, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 86/600, elapsed time 425.28
-[IterativeImputer] Change: 0.14006859790285198, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 87/600, elapsed time 430.06
-[IterativeImputer] Change: 0.155179182238113, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 88/600, elapsed time 435.39
-[IterativeImputer] Change: 0.15135967252271598, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 89/600, elapsed time 440.08
-[IterativeImputer] Change: 0.16659394293672136, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 90/600, elapsed time 444.86
-[IterativeImputer] Change: 0.1861292753712629, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 91/600, elapsed time 450.10
-[IterativeImputer] Change: 0.18562100158789718, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 92/600, elapsed time 454.82
-[IterativeImputer] Change: 0.17385664068575402, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 93/600, elapsed time 459.48
-[IterativeImputer] Change: 0.16886494333735946, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 94/600, elapsed time 464.72
-[IterativeImputer] Change: 0.14375190193838705, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 95/600, elapsed time 469.45
-[IterativeImputer] Change: 0.18473921995206766, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 96/600, elapsed time 474.73
-[IterativeImputer] Change: 0.16977390658992952, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 97/600, elapsed time 479.48
-[IterativeImputer] Change: 0.17423759925069504, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 98/600, elapsed time 484.54
-[IterativeImputer] Change: 0.18124505957335124, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 99/600, elapsed time 489.19
-[IterativeImputer] Change: 0.15005919894929676, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 100/600, elapsed time 494.06
-[IterativeImputer] Change: 0.16514436682416367, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 101/600, elapsed time 499.37
-[IterativeImputer] Change: 0.2209081230729737, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 102/600, elapsed time 504.13
-[IterativeImputer] Change: 0.18624570476165658, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 103/600, elapsed time 508.99
-[IterativeImputer] Change: 0.13102848957189828, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 104/600, elapsed time 514.16
-[IterativeImputer] Change: 0.1526492384806435, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 105/600, elapsed time 518.95
-[IterativeImputer] Change: 0.1564205168800541, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 106/600, elapsed time 523.66
-[IterativeImputer] Change: 0.13066043912927938, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 107/600, elapsed time 529.04
-[IterativeImputer] Change: 0.1284943409566317, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 108/600, elapsed time 533.74
-[IterativeImputer] Change: 0.161016688445331, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 109/600, elapsed time 538.56
-[IterativeImputer] Change: 0.14603076171948182, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 110/600, elapsed time 543.96
-[IterativeImputer] Change: 0.16248503449613594, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 111/600, elapsed time 548.58
-[IterativeImputer] Change: 0.1722512887565255, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 112/600, elapsed time 553.25
-[IterativeImputer] Change: 0.15360971796900458, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 113/600, elapsed time 558.01
-[IterativeImputer] Change: 0.14670966832305865, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 114/600, elapsed time 563.27
-[IterativeImputer] Change: 0.15190339238119321, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 115/600, elapsed time 567.98
-[IterativeImputer] Change: 0.14141352658122663, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 116/600, elapsed time 573.46
-[IterativeImputer] Change: 0.1378231278639408, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 117/600, elapsed time 578.07
-[IterativeImputer] Change: 0.15583267011077773, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 118/600, elapsed time 582.84
-[IterativeImputer] Change: 0.192413901657833, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 119/600, elapsed time 588.21
-[IterativeImputer] Change: 0.13370527742496208, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 120/600, elapsed time 592.93
-[IterativeImputer] Change: 0.18638131533643154, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 121/600, elapsed time 597.80
-[IterativeImputer] Change: 0.180541982111178, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 122/600, elapsed time 603.11
-[IterativeImputer] Change: 0.1444191435403539, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 123/600, elapsed time 607.95
-[IterativeImputer] Change: 0.14079245298142062, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 124/600, elapsed time 613.32
-[IterativeImputer] Change: 0.13549702762384008, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 125/600, elapsed time 617.96
-[IterativeImputer] Change: 0.1534797471773448, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 126/600, elapsed time 622.73
-[IterativeImputer] Change: 0.15262697997550312, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 127/600, elapsed time 627.52
-[IterativeImputer] Change: 0.19074040877911358, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 128/600, elapsed time 632.78
-[IterativeImputer] Change: 0.149948775714142, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 129/600, elapsed time 637.54
-[IterativeImputer] Change: 0.1608866041193142, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 130/600, elapsed time 642.29
-[IterativeImputer] Change: 0.16046978066876427, scaled tolerance: 0.12083347205999999 
-[IterativeImputer] Ending imputation round 131/600, elapsed time 647.57
-[IterativeImputer] Change: 0.11503753876753642, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 74/200, elapsed time 355.25
+[IterativeImputer] Change: 0.126943255180068, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 75/200, elapsed time 359.97
+[IterativeImputer] Change: 0.12230442554615273, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 76/200, elapsed time 364.71
+[IterativeImputer] Change: 0.14688805770605917, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 77/200, elapsed time 369.51
+[IterativeImputer] Change: 0.17012850667126678, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 78/200, elapsed time 374.29
+[IterativeImputer] Change: 0.14200696693801618, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 79/200, elapsed time 378.91
+[IterativeImputer] Change: 0.14985479526160006, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 80/200, elapsed time 383.79
+[IterativeImputer] Change: 0.17824428945064774, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 81/200, elapsed time 388.53
+[IterativeImputer] Change: 0.1869168747148091, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 82/200, elapsed time 393.31
+[IterativeImputer] Change: 0.16570657740597206, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 83/200, elapsed time 398.21
+[IterativeImputer] Change: 0.18552165837440526, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 84/200, elapsed time 402.99
+[IterativeImputer] Change: 0.1349405504222876, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 85/200, elapsed time 407.75
+[IterativeImputer] Change: 0.15980762904945145, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 86/200, elapsed time 412.62
+[IterativeImputer] Change: 0.1400685979028573, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 87/200, elapsed time 417.43
+[IterativeImputer] Change: 0.15517918223810945, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 88/200, elapsed time 422.34
+[IterativeImputer] Change: 0.1513596725227142, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 89/200, elapsed time 427.15
+[IterativeImputer] Change: 0.1665939429367338, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 90/200, elapsed time 431.92
+[IterativeImputer] Change: 0.18612927537128243, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 91/200, elapsed time 436.72
+[IterativeImputer] Change: 0.1856210015879043, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 92/200, elapsed time 441.50
+[IterativeImputer] Change: 0.1738566406857629, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 93/200, elapsed time 446.31
+[IterativeImputer] Change: 0.1688649433373559, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 94/200, elapsed time 451.11
+[IterativeImputer] Change: 0.14375190193840126, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 95/200, elapsed time 455.86
+[IterativeImputer] Change: 0.18473921995208187, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 96/200, elapsed time 460.69
+[IterativeImputer] Change: 0.16977390658994018, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 97/200, elapsed time 465.54
+[IterativeImputer] Change: 0.17423759925069326, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 98/200, elapsed time 470.30
+[IterativeImputer] Change: 0.18124505957334414, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 99/200, elapsed time 475.12
+[IterativeImputer] Change: 0.15005919894929143, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 100/200, elapsed time 479.84
+[IterativeImputer] Change: 0.16514436682417077, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 101/200, elapsed time 484.63
+[IterativeImputer] Change: 0.2209081230729879, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 102/200, elapsed time 489.35
+[IterativeImputer] Change: 0.18624570476166902, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 103/200, elapsed time 494.16
+[IterativeImputer] Change: 0.13102848957186808, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 104/200, elapsed time 498.89
+[IterativeImputer] Change: 0.15264923848063106, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 105/200, elapsed time 503.79
+[IterativeImputer] Change: 0.15642051688004166, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 106/200, elapsed time 508.62
+[IterativeImputer] Change: 0.13066043912927405, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 107/200, elapsed time 513.41
+[IterativeImputer] Change: 0.1284943409566175, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 108/200, elapsed time 518.21
+[IterativeImputer] Change: 0.16101668844535055, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 109/200, elapsed time 522.98
+[IterativeImputer] Change: 0.14603076171950669, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 110/200, elapsed time 527.82
+[IterativeImputer] Change: 0.16248503449613239, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 111/200, elapsed time 532.63
+[IterativeImputer] Change: 0.17225128875649354, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 112/200, elapsed time 537.60
+[IterativeImputer] Change: 0.15360971796899392, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 113/200, elapsed time 542.39
+[IterativeImputer] Change: 0.1467096683230782, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 114/200, elapsed time 547.32
+[IterativeImputer] Change: 0.15190339238120742, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 115/200, elapsed time 552.15
+[IterativeImputer] Change: 0.14141352658122308, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 116/200, elapsed time 556.97
+[IterativeImputer] Change: 0.13782312786393014, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 117/200, elapsed time 561.75
+[IterativeImputer] Change: 0.15583267011078483, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 118/200, elapsed time 566.49
+[IterativeImputer] Change: 0.19241390165784011, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 119/200, elapsed time 571.41
+[IterativeImputer] Change: 0.13370527742494076, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 120/200, elapsed time 576.22
+[IterativeImputer] Change: 0.1863813153364422, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 121/200, elapsed time 580.98
+[IterativeImputer] Change: 0.18054198211121353, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 122/200, elapsed time 585.77
+[IterativeImputer] Change: 0.14441914354035923, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 123/200, elapsed time 590.65
+[IterativeImputer] Change: 0.14079245298142773, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 124/200, elapsed time 595.43
+[IterativeImputer] Change: 0.1354970276238312, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 125/200, elapsed time 600.21
+[IterativeImputer] Change: 0.15347974717733237, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 126/200, elapsed time 605.02
+[IterativeImputer] Change: 0.15262697997550667, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 127/200, elapsed time 609.74
+[IterativeImputer] Change: 0.19074040877910825, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 128/200, elapsed time 614.50
+[IterativeImputer] Change: 0.1499487757141349, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 129/200, elapsed time 619.20
+[IterativeImputer] Change: 0.1608866041193302, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 130/200, elapsed time 624.08
+[IterativeImputer] Change: 0.1604697806687625, scaled tolerance: 0.12083347205999999 
+[IterativeImputer] Ending imputation round 131/200, elapsed time 628.85
+[IterativeImputer] Change: 0.11503753876753997, scaled tolerance: 0.12083347205999999 
 [IterativeImputer] Early stopping criterion reached.
      HPA034631_SBA1_rep1  HPA000898_SBA1_rep1  HPA040323_SBA1_rep1  HPA059367_SBA1_rep1  HPA006360_SBA1_rep1  HPA072123_SBA1_rep1  HPA063011_SBA1_rep1  HPA070467_SBA1_rep1  HPA036898_SBA1_rep1  HPA041390_SBA1_rep1  HPA067758_SBA1_rep1  HPA001425_SBA2_rep1  HPA028487_SBA2_rep1  HPA022128_SBA2_rep1  HPA046579_SBA2_rep1  HPA035933_SBA2_rep1  HPA008241_SBA2_rep1  HPA028414_SBA2_rep1  HPA017380_SBA2_rep1  HPA008395_SBA2_rep1  HPA051694_SBA2_rep1  HPA011165_SBA3_rep1  HPA055478_SBA3_rep1  HPA044540_SBA3_rep1  HPA047151_SBA3_rep1  HPA044620_SBA3_rep1  HPA047248_SBA3_rep1  HPA055767_SBA3_rep1  HPA024575_SBA4_rep1  HPA001373_SBA4_rep1  HPA035029_SBA4_rep1  HPA004248_SBA4_rep1  HPA006983_SBA4_rep1  HPA041471_SBA4_rep1  HPA027735_SBA4_rep1  HPA014326_SBA4_rep1  HPA049320_SBA4_rep1
 0              12.273962            12.321593            12.513444            12.398564            12.368867            12.243328            12.307792            12.393444            12.246564            12.456160            12.328809            11.630491            11.613183            11.959855            11.828637            12.083973            11.770114            11.641739            11.881330            11.694011            11.661252            12.723288            12.648159            12.653836            12.539502            12.871653            12.824275            12.686545            12.737599            12.446111            12.557933            12.366310            12.438289            12.398084            12.540832            12.494915            12.543301
@@ -579,55 +579,49 @@
 298            12.176821            12.337183            12.355923            12.777465            12.362424            12.088720            12.305106            12.327481            12.214985            12.594500            12.267218            11.467918            11.521278            12.184095            11.872441            12.369758            11.663621            11.660968            11.999628            11.511049            11.661632            12.547086            12.600332            12.580824            12.479347            12.767744            12.704923            12.663369            13.042389            12.472461            12.498648            12.366626            12.714007            12.443907            12.386886            12.789731            12.593581
 299            12.290592            12.401669            12.727382            12.520709            12.455920            12.187917            12.337975            12.385221            12.250333            12.564356            12.292051            11.668091            11.540455            11.886594            11.775056            12.009106            11.788901            11.649407            11.850492            11.765367            11.755033            12.700942            12.642882            12.654192            12.551100            12.872009            12.653969            12.684871            12.866065            12.415869            12.435021            12.330219            12.517974            12.505862            12.407037            12.544773            12.690320
 300            12.236126            12.267045            12.444997            12.793537            12.411388            12.105969            12.350931            12.382331            12.206882            12.720320            12.343433            11.591564            11.531413            12.202225            11.801446            12.283721            11.674212            11.579614            11.998956            11.560638            11.709160            12.700148            12.676616            12.582168            12.543042            12.722790            12.711778            12.792992            13.219757            12.510208            12.496244            12.330458            12.856255            12.547651            12.622761            12.966537            12.575577
-[2024-05-13 16:55:08,734] {imputation.py:389 } : INFO | Imputation with IterativeImputer using a RandomForestRegressor estimator finished 2024-05-13 16:55:08, and took 0 days 00h:10m:47s 0 days 00:10:47s 677.386ms to run.
+[2024-05-13 23:23:05,078] {imputation.py:389 } : INFO | Imputation with IterativeImputer using a RandomForestRegressor estimator finished 2024-05-13 23:23:05, and took 0 days 00h:10m:28s 0 days 00:10:28s 961.987ms to run.
 
-> c:\users\alwis\pycharmprojects\kex-da150x-kth\src\imputation.py(397)impute_data()
--> X_imputed.to_csv(PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_X_imputed.csv'))
-(Pdb) > c:\users\alwis\pycharmprojects\kex-da150x-kth\src\imputation.py(402)impute_data()
--> joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
-(Pdb) > c:\users\alwis\pycharmprojects\kex-da150x-kth\src\imputation.py(407)impute_data()
--> return data_dict
-(Pdb) (Pdb) [2024-05-13 16:58:56,864] {utils.py     :359 } : INFO | |--- DATASET ---|
-[2024-05-13 16:58:56,864] {utils.py     :360 } : INFO | Missing indicators: ----------------- False
-[2024-05-13 16:58:56,865] {utils.py     :361 } : INFO | Shape: ------------------------------ (301, 1009)
-[2024-05-13 16:58:56,865] {utils.py     :362 } : INFO | Number of features (X): ------------- 998
-[2024-05-13 16:58:56,866] {utils.py     :363 } : INFO | Mean FT5: --------------------------- 0.24916943521594684
-[2024-05-13 16:58:56,868] {utils.py     :364 } : INFO | Median FT5: ------------------------- 0.0
-[2024-05-13 16:58:56,868] {utils.py     :365 } : INFO | Variance FT5: ----------------------- 0.1877076411960133
-[2024-05-13 16:58:56,869] {utils.py     :366 } : INFO | Std deviation FT5: ------------------ 0.43325239895009615
-[2024-05-13 16:58:56,869] {utils.py     :367 } : INFO | Max FT5: ---------------------------- 1
-[2024-05-13 16:58:56,870] {utils.py     :368 } : INFO | Min FT5: ---------------------------- 0
-[2024-05-13 16:58:56,879] {utils.py     :369 } : INFO | Mean protein intensities: ----------- 12.331256538045068
-[2024-05-13 16:58:56,899] {utils.py     :370 } : INFO | Median protein intensities: --------- 12.32640037713433
-[2024-05-13 16:58:56,904] {utils.py     :371 } : INFO | Variance protein intensities: ------- 0.026574325939378692
-[2024-05-13 16:58:56,910] {utils.py     :372 } : INFO | Std deviation protein intensities: -- 0.12609969268146295
-[2024-05-13 16:58:56,913] {utils.py     :373 } : INFO | Max protein intensities: ------------ 16.6934712065454
-[2024-05-13 16:58:56,916] {utils.py     :374 } : INFO | Min protein intensities: ------------ 8.72125121808696
+[2024-05-13 23:26:03,985] {utils.py     :359 } : INFO | |--- DATASET ---|
+[2024-05-13 23:26:03,988] {utils.py     :360 } : INFO | Missing indicators: ----------------- False
+[2024-05-13 23:26:03,988] {utils.py     :361 } : INFO | Shape: ------------------------------ (301, 1009)
+[2024-05-13 23:26:03,988] {utils.py     :362 } : INFO | Number of features (X): ------------- 998
+[2024-05-13 23:26:03,995] {utils.py     :363 } : INFO | Mean FT5: --------------------------- 0.24916943521594684
+[2024-05-13 23:26:03,996] {utils.py     :364 } : INFO | Median FT5: ------------------------- 0.0
+[2024-05-13 23:26:03,997] {utils.py     :365 } : INFO | Variance FT5: ----------------------- 0.1877076411960133
+[2024-05-13 23:26:03,997] {utils.py     :366 } : INFO | Std deviation FT5: ------------------ 0.43325239895009615
+[2024-05-13 23:26:03,998] {utils.py     :367 } : INFO | Max FT5: ---------------------------- 1
+[2024-05-13 23:26:03,998] {utils.py     :368 } : INFO | Min FT5: ---------------------------- 0
+[2024-05-13 23:26:04,020] {utils.py     :369 } : INFO | Mean protein intensities: ----------- 12.331256538045068
+[2024-05-13 23:26:04,047] {utils.py     :370 } : INFO | Median protein intensities: --------- 12.32640037713433
+[2024-05-13 23:26:04,051] {utils.py     :371 } : INFO | Variance protein intensities: ------- 0.026574325939378692
+[2024-05-13 23:26:04,056] {utils.py     :372 } : INFO | Std deviation protein intensities: -- 0.12609969268146295
+[2024-05-13 23:26:04,058] {utils.py     :373 } : INFO | Max protein intensities: ------------ 16.6934712065454
+[2024-05-13 23:26:04,060] {utils.py     :374 } : INFO | Min protein intensities: ------------ 8.72125121808696
 
-[2024-05-13 16:58:56,916] {utils.py     :377 } : INFO | |--- CATEGORIZATION ---|
-[2024-05-13 16:58:56,916] {utils.py     :381 } : INFO | Cut-offs: --------------------------- [17]
-[2024-05-13 16:58:56,916] {utils.py     :382 } : INFO | Number of classes: ------------------ 2
+[2024-05-13 23:26:04,061] {utils.py     :377 } : INFO | |--- CATEGORIZATION ---|
+[2024-05-13 23:26:04,061] {utils.py     :381 } : INFO | Cut-offs: --------------------------- [17]
+[2024-05-13 23:26:04,061] {utils.py     :382 } : INFO | Number of classes: ------------------ 2
 
-[2024-05-13 16:58:56,916] {utils.py     :385 } : INFO | |--- TRAINING SPLIT ---|
-[2024-05-13 16:58:56,916] {utils.py     :386 } : INFO | Test proportion: -------------------- 0.2
-[2024-05-13 16:58:56,916] {utils.py     :387 } : INFO | Training proportion: ---------------- 0.8
-[2024-05-13 16:58:56,916] {utils.py     :388 } : INFO | X start column index: --------------- 11
-[2024-05-13 16:58:56,916] {utils.py     :389 } : INFO | y column label: --------------------- 'FT5'
+[2024-05-13 23:26:04,061] {utils.py     :385 } : INFO | |--- TRAINING SPLIT ---|
+[2024-05-13 23:26:04,061] {utils.py     :386 } : INFO | Test proportion: -------------------- 0.2
+[2024-05-13 23:26:04,061] {utils.py     :387 } : INFO | Training proportion: ---------------- 0.8
+[2024-05-13 23:26:04,061] {utils.py     :388 } : INFO | X start column index: --------------- 11
+[2024-05-13 23:26:04,061] {utils.py     :389 } : INFO | y column label: --------------------- 'FT5'
 
-[2024-05-13 16:58:56,916] {utils.py     :392 } : INFO | |--- FEATURE SELECTION ---|
-[2024-05-13 16:58:56,917] {utils.py     :393 } : INFO | Feature selection: ------------------ XGB-RFECV
-[2024-05-13 16:58:56,917] {utils.py     :395 } : INFO | Pre-computed: ----------------------- True
-[2024-05-13 16:58:56,917] {utils.py     :396 } : INFO | Pre-computed file: ------------------ KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est?ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+[2024-05-13 23:26:04,061] {utils.py     :392 } : INFO | |--- FEATURE SELECTION ---|
+[2024-05-13 23:26:04,061] {utils.py     :393 } : INFO | Feature selection: ------------------ XGB-RFECV
+[2024-05-13 23:26:04,061] {utils.py     :395 } : INFO | Pre-computed: ----------------------- True
+[2024-05-13 23:26:04,061] {utils.py     :396 } : INFO | Pre-computed file: ------------------ KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est?ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
 
-[2024-05-13 16:58:56,917] {utils.py     :401 } : INFO | |--- IMPUTATION MODES ---|
-[2024-05-13 16:58:56,917] {utils.py     :402 } : INFO | SimpleImputer: ---------------------- False
-[2024-05-13 16:58:56,917] {utils.py     :403 } : INFO | IterativeImputer: ------------------- True
-[2024-05-13 16:58:56,917] {utils.py     :404 } : INFO | KNN_Imputer: ------------------------ False
-[2024-05-13 16:58:56,917] {utils.py     :405 } : INFO | NO_IMPUTATION: ---------------------- False
-[2024-05-13 16:58:56,917] {utils.py     :406 } : INFO | Sparse: ----------------------------- False
-[2024-05-13 16:58:56,917] {utils.py     :411 } : INFO | NAN_ELIMINATION: -------------------- False
+[2024-05-13 23:26:04,061] {utils.py     :401 } : INFO | |--- IMPUTATION MODES ---|
+[2024-05-13 23:26:04,061] {utils.py     :402 } : INFO | SimpleImputer: ---------------------- False
+[2024-05-13 23:26:04,061] {utils.py     :403 } : INFO | IterativeImputer: ------------------- True
+[2024-05-13 23:26:04,061] {utils.py     :404 } : INFO | KNN_Imputer: ------------------------ False
+[2024-05-13 23:26:04,062] {utils.py     :405 } : INFO | NO_IMPUTATION: ---------------------- False
+[2024-05-13 23:26:04,062] {utils.py     :406 } : INFO | Sparse: ----------------------------- False
+[2024-05-13 23:26:04,062] {utils.py     :411 } : INFO | NAN_ELIMINATION: -------------------- False
 
-[2024-05-13 16:58:56,917] {utils.py     :525 } : INFO | Logs saved to: --------------------------------------------- C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\out\pipline-log-DT?2024-05-13-164419.log
+[2024-05-13 23:26:04,062] {utils.py     :525 } : INFO | Logs saved to: --------------------------------------------- C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\out\pipline-log-DT?2024-05-13-231235.log
 
-[2024-05-13 16:58:56,918] {utils.py     :526 } : INFO | Pipeline finished 2024-05-13 16:58:56, and took 0h:14m:36s 948.160ms to run.
+[2024-05-13 23:26:04,062] {utils.py     :526 } : INFO | Pipeline finished 2024-05-13 23:26:04, and took 0h:13m:28s 568.764ms to run.
 

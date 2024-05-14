@@ -393,17 +393,27 @@ def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col
 
     # Pickle imputation dict to disk
     try:
-        breakpoint()
-        X_imputed.to_csv(PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_X_imputed.csv'))
+        # breakpoint()
+        joblib.dump(imputer,
+                    (PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S") + f'__{data_dict['type']}.pkl')))
     except:
         pass
     try:
-        breakpoint()
-        joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
+        # breakpoint()
+        pass
+        X_imputed.to_csv(PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_X_imputed.csv'))
+        # joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
     except:
         pass
+    try:
+        X_imputed.to_csv(
+            PROJECT_ROOT / 'out' / (
+                        pipeline_start_time.strftime("%Y-%m-%d-%H%M%S") + f'__{data_dict['type']}_df.csv')
+            )
+    except:
+        pass
+    # breakpoint()
 
-    breakpoint()
     return data_dict
 
 

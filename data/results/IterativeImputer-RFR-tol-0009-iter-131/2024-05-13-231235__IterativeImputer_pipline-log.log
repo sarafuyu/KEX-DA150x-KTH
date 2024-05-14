@@ -1,0 +1,59 @@
+[2024-05-13 23:26:03,985] {utils.py     :359 } : INFO | |--- DATASET ---|
+[2024-05-13 23:26:03,988] {utils.py     :360 } : INFO | Missing indicators: ----------------- False
+[2024-05-13 23:26:03,988] {utils.py     :361 } : INFO | Shape: ------------------------------ (301, 1009)
+[2024-05-13 23:26:03,988] {utils.py     :362 } : INFO | Number of features (X): ------------- 998
+[2024-05-13 23:26:03,995] {utils.py     :363 } : INFO | Mean FT5: --------------------------- 0.24916943521594684
+[2024-05-13 23:26:03,996] {utils.py     :364 } : INFO | Median FT5: ------------------------- 0.0
+[2024-05-13 23:26:03,997] {utils.py     :365 } : INFO | Variance FT5: ----------------------- 0.1877076411960133
+[2024-05-13 23:26:03,997] {utils.py     :366 } : INFO | Std deviation FT5: ------------------ 0.43325239895009615
+[2024-05-13 23:26:03,998] {utils.py     :367 } : INFO | Max FT5: ---------------------------- 1
+[2024-05-13 23:26:03,998] {utils.py     :368 } : INFO | Min FT5: ---------------------------- 0
+[2024-05-13 23:26:04,020] {utils.py     :369 } : INFO | Mean protein intensities: ----------- 12.331256538045068
+[2024-05-13 23:26:04,047] {utils.py     :370 } : INFO | Median protein intensities: --------- 12.32640037713433
+[2024-05-13 23:26:04,051] {utils.py     :371 } : INFO | Variance protein intensities: ------- 0.026574325939378692
+[2024-05-13 23:26:04,056] {utils.py     :372 } : INFO | Std deviation protein intensities: -- 0.12609969268146295
+[2024-05-13 23:26:04,058] {utils.py     :373 } : INFO | Max protein intensities: ------------ 16.6934712065454
+[2024-05-13 23:26:04,060] {utils.py     :374 } : INFO | Min protein intensities: ------------ 8.72125121808696
+
+[2024-05-13 23:26:04,061] {utils.py     :392 } : INFO | |--- FEATURE SELECTION ---|
+[2024-05-13 23:26:04,061] {utils.py     :393 } : INFO | Feature selection: ------------------ XGB-RFECV
+[2024-05-13 23:26:04,061] {utils.py     :395 } : INFO | Pre-computed: ----------------------- True
+[2024-05-13 23:26:04,061] {utils.py     :396 } : INFO | Pre-computed file: ------------------ KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+[2024-05-13 23:26:04,061] {utils.py     :386 } : INFO | Feature select test proportion: ----- 0.2
+[2024-05-13 23:26:04,061] {utils.py     :387 } : INFO | Feature select training proportion: - 0.8
+[2024-05-13 23:26:04,061] {utils.py     :388 } : INFO | X start column index: --------------- 11
+[2024-05-13 23:26:04,061] {utils.py     :389 } : INFO | y column label: --------------------- 'FT5'
+
+[2024-05-13 23:26:04,061] {utils.py     :401 } : INFO | |--- IMPUTATION MODES ---|
+[2024-05-13 23:26:04,061] {utils.py     :402 } : INFO | SimpleImputer: ---------------------- False
+[2024-05-13 23:26:04,061] {utils.py     :403 } : INFO | IterativeImputer: ------------------- True
+[2024-05-13 23:26:04,061] {utils.py     :404 } : INFO | KNN_Imputer: ------------------------ False
+[2024-05-13 23:26:04,062] {utils.py     :405 } : INFO | NO_IMPUTATION: ---------------------- False
+[2024-05-13 23:26:04,062] {utils.py     :406 } : INFO | Sparse: ----------------------------- False
+[2024-05-13 23:26:04,062] {utils.py     :411 } : INFO | NAN_ELIMINATION: -------------------- False
+
+[2024-05-13 23:12:36,112] {imputation.py:352 } : INFO | |--- IMPUTATION ---|
+[2024-05-13 23:12:36,112] {imputation.py:352 } : INFO | On whole, unsplit X: ---------------- True
+[2024-05-13 23:12:36,113] {imputation.py:353 } : INFO | Imputation Method: ------------------ IterativeImputer
+[2024-05-13 23:12:36,115] {imputation.py:354 } : INFO | Estimator: -------------------------- RandomForestRegressor(max_features='sqrt', n_jobs=7, oob_score=<function r2_score at 0x000001AD001727A0>, random_state=42)
+[2024-05-13 23:12:36,116] {imputation.py:355 } : INFO | Estimator criterion: ---------------- squared_error
+[2024-05-13 23:12:36,116] {imputation.py:356 } : INFO | Random State (seed): ---------------- 42
+[2024-05-13 23:12:36,116] {imputation.py:357 } : INFO | Missing Indicator Method: ----------- False
+[2024-05-13 23:12:36,116] {imputation.py:358 } : INFO | Sample Posterior: ------------------- False
+[2024-05-13 23:12:36,116] {imputation.py:359 } : INFO | Imputation order: ------------------- ascending
+[2024-05-13 23:12:36,116] {imputation.py:360 } : INFO | Initial imputation strategy: -------- mean
+[2024-05-13 23:12:36,116] {imputation.py:361 } : INFO | Max iterations: --------------------- 200
+[2024-05-13 23:12:36,116] {imputation.py:361 } : INFO | Num iterations until converging: ---- 131
+[2024-05-13 23:12:36,116] {imputation.py:362 } : INFO | Tolerance: -------------------------- 0.009
+[2024-05-13 23:12:36,116] {imputation.py:363 } : INFO | Num nearest features to consider: --- All
+[2024-05-13 23:12:36,116] {imputation.py:364 } : INFO | Starting IterativeImputer Imputation ...
+[2024-05-13 23:23:05,078] {imputation.py:389 } : INFO | Finished: --------------------------- 2024-05-13 23:23:05
+[2024-05-13 23:23:05,078] {imputation.py:389 } : INFO | Run time: --------------------------- 00h:10m:28s 0 days 00:10:28s 961.987ms
+
+[2024-05-13 23:26:04,062] {utils.py     :525 } : INFO | IterativeImputer object saved to: -------------------------- KEX-DA150x-KTH\out\2024-05-13-231235__IterativeImputer.pkl
+[2024-05-13 23:26:04,062] {utils.py     :525 } : INFO | Full preprocessed (un-imputed) dataframe saved to: --------- KEX-DA150x-KTH\out\2024-05-13-231235__IterativeImputer_df.csv
+[2024-05-13 23:26:04,062] {utils.py     :525 } : INFO | Imputed X dataframe saved to: ------------------------------ KEX-DA150x-KTH\out\2024-05-13-231235__IterativeImputer_X_imputed.csv
+[2024-05-13 23:26:04,062] {utils.py     :525 } : INFO | Logs saved to: --------------------------------------------- KEX-DA150x-KTH\out\2024-05-13-231235__IterativeImputer_pipline-log.log
+
+[2024-05-13 23:26:04,062] {utils.py     :526 } : INFO | Pipeline finished 2024-05-13 23:26:04, and took 0h:13m:28s 568.764ms to run.
+
