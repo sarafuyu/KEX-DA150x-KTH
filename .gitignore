@@ -325,3 +325,5 @@ out/*/*
 2024-05-13-164419__IterativeImputer_imputed_data_dict.pkl
 2024-05-12-002355__IterativeImputer_imputed_data_dict.pkl
 2024-05-13-231235__IterativeImputer.pkl
+data/results/GridSearch-full-2024-05-15-163036/2024-05-15-163036__cv_results.csv
+data/results/GridSearch-full-2024-05-15-163036/2024-05-15-163036__raw_console_output.log
