@@ -333,12 +333,28 @@ N_JOBS_GRID_SEARCH: int = 7
 # Enable SVC
 SVC = True
 
+# Hyperparameters:            # np.logspace(start, stop, num=50)
+C_PARAMS_SVC: Sequence[float] = [0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
+COEF0_PARAMS_SVC: Sequence[float] = [-1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
+PROBABILITY_SVC: Sequence[bool] = [False]
+TOL_PARAMS_SVC: Sequence[float] = [0.000_01, 0.000_1, 0.001, 0.01, 0.1,]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
+CLASS_WEIGHT_SVC: dict | None = None
+VERB_SVC: int = VERBOSE
+MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
+DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
+BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
+
 # # Hyperparameters:            # np.logspace(start, stop, num=50)
-# C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+# C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_001, 0.0001, 0.01, 1.0, 10.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
 # KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-# DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+# DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8]
 # GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-# COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+# COEF0_PARAMS_SVC: Sequence[float] = [-1000.0, -10.0, -1.0, -0.1, -0.01, 0.0, 0.01, 0.1, 1.0, 10.0, 1000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 # SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 # PROBABILITY_SVC: Sequence[bool] = [False]
 # TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1,]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
@@ -348,22 +364,6 @@ SVC = True
 # MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
 # DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
 # BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
-
-# Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_001, 0.0001, 0.01, 1.0, 10.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8]
-GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [-1000.0, -10.0, -1.0, -0.1, -0.01, 0.0, 0.01, 0.1, 1.0, 10.0, 1000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
-SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
-PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1,]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
-CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
-CLASS_WEIGHT_SVC: dict | None = None
-VERB_SVC: int = VERBOSE
-MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
-DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
-BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 
 # RETURN_TRAIN_SCORE_SVC:
 # Include scores in `cv_results_`. Computing training scores is used to get insights on how different parameter settings
@@ -809,7 +809,7 @@ clf = GridSearchCV(
 #     clf = clf.fit(X_training, y_training['FT5'])
 
 # clf = clf.fit(X_testing, y_testing['FT5'])
-clf = clf.fit(X, y)
+clf = clf.fit(X_training, y_training)
 
 # With whole dataset StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
 # [0.85245902 0.85245902 0.85245902 0.85245902 0.85245902 0.85245902]
