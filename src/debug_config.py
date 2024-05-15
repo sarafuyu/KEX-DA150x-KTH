@@ -28,6 +28,10 @@ from sklearn.feature_selection import f_classif  # needed for f_classif
 from sklearn.linear_model import BayesianRidge   # needed for BayesianRidge
 from pathlib import Path
 
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
+
+def identity(X):
+    return X
 
 # %% Debug Config
 
@@ -118,4 +122,12 @@ pipeline_debug_config = {
     # 'RETURN_TRAIN_SCORE_SVR':       [False],
     # 'GRID_SEARCH_SCORING_SVR':      'neg_mean_squared_error',
     # ------------------------------------------------------------------------ #
+    # 'NORMALIZATION_MODES_PARAMS':     [
+    #     StandardScaler(copy=False, with_mean=True, with_std=True),
+    #     MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
+    #     FunctionTransformer(identity, validate=True),
+    # ],
+    'N_JOBS_GRID_SEARCH':           1,
+
+
 }

@@ -37,11 +37,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Data Splitting
 
-def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
+def split_data(data, X=None, y=None, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
     """
     Split the data into input and target variables.
 
-    :param data: A pandas DataFrame or a dictionary with a 'data' key.
+    :param X: A pandas DataFrame containing the input variables.
+    :param y: A pandas DataFrame containing the target variable.
+    :param data: A pandas DataFrame or a dictionary with a 'data' key. If X and y are not provided,
+        the full dataset under the 'dataset' key will be split into input and target variables.
     :param test_size: The proportion of the dataset to include in the test split.
     :param random_state: The seed used by the random number generator.
     :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
@@ -57,9 +60,14 @@ def split_data(data, test_size=0.2, random_state=42, start_col=11, y_col_label='
     else:
         raise ValueError("Argument data must be a pandas DataFrame or a dictionary "
                          "with a 'dataset' key.")
-    
-    y_data = df[y_col_label]         # Vector for the target variable
-    X_data = df.iloc[:, start_col:]  # Matrix with variable input
+
+    if X is not None and y is not None:
+        X_data = X
+        y_data = y
+    else:
+        X_data = df.iloc[:, start_col:]  # Matrix with variable input
+        y_data = df[y_col_label]         # Vector for the target variable
+
 
     if test_size:
         # Split the dataset into training and testing sets (default 80% - 20%)
@@ -279,12 +287,13 @@ def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_enc
     xgbclf = rfecv.estimator
 
     if VERBOSE:
-        log('|--- FEATURE SELECTION --- |')
-        log('Feature Selection Method: ----- XGB-RFECV')
-        log(f'Objective function: ----------- {objective}')
-        log(f'Minimum features to select: --- {min_features_to_select}')
-        log(f'Step size: -------------------- {step}')
-        log(f'Num estimators/trees: --------- {(str(n_estimators) + ' (1 per feature)') if n_estimators == X_train.shape[1] else n_estimators}')
+        log('/__ FEATURE SELECTION _________________________________________')
+        log(f"Mean std deviation X: ---------------- {X_imputed.std().mean()}\n")
+        log('Feature Selection Method: ------------- XGB-RFECV')
+        log(f'Objective function: ------------------ {objective}')
+        log(f'Minimum features to select: ---------- {min_features_to_select}')
+        log(f'Step size: --------------------------- {step}')
+        log(f'Num estimators/trees: ---------------- {(str(n_estimators) + ' (1 per feature)') if n_estimators == X_train.shape[1] else n_estimators}')
         log(f'Num CV folds: {rfecv.cv}')
         log(f'Starting XGB-RFE-CV Feature Selection ...')
 
@@ -297,19 +306,22 @@ def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_enc
     timedelta = str(XGB_end_time - XGB_start_time).split('.')
     hms = timedelta[0].split(':')
     if VERBOSE:
-        log(f"Finished: --------------------- {XGB_end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        log(f"Run time: --------------------- {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.")
+        log(f"Finished: ---------------------------- {XGB_end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log(f"Run time: ---------------------------- {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.")
 
     # Log results
     opt_features = rfecv.n_features_
     best_features = X_train.columns[rfecv.support_]
     accuracy = accuracy_score(y_test, rfecv.predict(X_test))
     if VERBOSE:
-        log(f'Classes: ---------------------- {rfecv.classes_}')
-        log(f'Accuracy score: --------------- {accuracy}')
-        log(f'Num optimal features found: --- {opt_features}')
+        log(f'Classes: ----------------------------- {rfecv.classes_}')
+        log(f'Accuracy score: ---------------------- {accuracy}')
+        log(f'Num optimal features found: ---------- {opt_features}')
     if VERBOSE > 2:
-        log(f'Optimal features found: ------- {best_features}')
+        log(f'Optimal features found: -------------- {best_features}')
+    if VERBOSE:
+        utils.print_summary_statistics(data_dict, log=log, current_step='(POST-FEATURE SELECTION) ')
+
     # Save best_features to file
     try:
         X_train[best_features].to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉X_train_best_features.csv'), index=False)

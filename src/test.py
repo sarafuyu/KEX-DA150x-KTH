@@ -93,7 +93,7 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger('LOGGER_NAME')
 
 if verbose:
-    logger.info("#------ # SVM CLASSIFICATION # ------#")
+    logger.info("/__ SVM CLASSIFICATION ________________________________________")
     logger.info("|--- HYPERPARAMETERS ---|")
     logger.info(f"Dataset: {path}")
     logger.info(f"Impute: {data_imputation}")
@@ -161,8 +161,7 @@ else:
 # Add imputed dataset and date to dictionary
 data_dict['date'] = pd.Timestamp.now()
 
-
-logger.info("|--- DATA IMPUTATION ---|")
+logger.info("/__ DATA IMPUTATION ___________________________________________")
 logger.info(
     f"Imputed protein intensity columns free from NaN values: "
     f"{not bool(df_imputed.iloc[:, start_column:].isna().any(axis=None))}"
@@ -173,7 +172,7 @@ logger.info("\n")
 # %% Summary Statistics
 
 if verbose:
-    logger.info("|--- SUMMARY STATISTICS (POST-IMPUTATION) ---|")
+    logger.info("/__ SUMMARY STATISTICS (POST-IMPUTATION) ______________________")
     logger.info(f"Number of features (X): {df_imputed.shape[1]}")
     logger.info(f"Number of entries (N): {df_imputed.shape[0]}")
     logger.info(f"Northstar Score (y) mean: {df_imputed['FT5'].mean()}")
@@ -231,7 +230,7 @@ d_protein_intensities = df_imputed.copy().iloc[:, start_column:]
 scaler.fit(d_protein_intensities)
 
 if verbose:
-    logger.info("|--- NORMALIZATION ---|")
+    logger.info("/__ NORMALIZATION _____________________________________________")
     logger.info(f"Mean before normalization: {scaler.mean_.mean()}")
     logger.info("Variance before normalization: {scaler.var_.mean()}")
 
@@ -345,7 +344,7 @@ data_dict['X_testing'] = X_testing_selected
 # %% Naïve Bayes
 
 if verbose:
-    logger.info("#--- MODEL TRAINING & FITTING (BAYES) ---#")
+    logger.info("/__ MODEL TRAINING & FITTING (BAYES)  _________________________")
     logger.info("\n")
 
 from sklearn.model_selection import train_test_split
@@ -415,7 +414,8 @@ for c in [0.1, 1.0, 10.0]:
     
     # C & kernel
     if verbose:
-        logger.info(f"|--- SVM MODEL PARAMETERS {i} ---|")
+        logger.info("/__ SVM CLASSIFICATION ________________________________________")
+        logger.info(f"/__ SVM MODEL PARAMETERS {i} ___________________________________")
         
         logger.info(
             f"SVC(C={c}, kernel={kernel_type}, degree=2, gamma='scale', coef0=0.0, "

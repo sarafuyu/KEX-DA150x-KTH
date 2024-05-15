@@ -226,10 +226,10 @@ def find_best_svr_model(pipeline_config,
 
     # Log best parameters
     if verb and hasattr(clf, 'best_params_'):
-        log("Best parameters combination found:")
+        log("BEST PARAMETERS COMBINATION FOUND:")
         best_parameters = clf.best_params_
         for param_name in sorted(best_parameters.keys()):
-            log(f"{param_name}: {best_parameters[param_name]}")
+            log(f"{param_name}: {'-'*(36-len(param_name))} {best_parameters[param_name]}")
 
     # Calculate and log best score (neg mean squared error)
     if hasattr(clf, 'score'):

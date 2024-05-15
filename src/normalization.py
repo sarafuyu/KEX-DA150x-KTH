@@ -17,6 +17,9 @@ from pathlib import Path
 # External library imports
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin, BaseEstimator, OneToOneFeatureMixin
+from sklearn.exceptions import NotFittedError
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 
 # Local imports
 import utils
@@ -94,13 +97,13 @@ def std_normalization(data, start_column):
 
     # Create a copy of the DataFrame
     df_normalized = df.copy()
-    
+
     # Extract the protein intensities
     d_protein_intensities = df.copy().iloc[:, start_column:end_col]
-    
+
     # Create and fit StandardScaler
     scaler = StandardScaler(copy=False, with_mean=True, with_std=True)
-    
+
     # Normalize protein intensities (Note: not the missing indicator columns!)
     df_normalized.iloc[:, start_column:end_col] = scaler.fit_transform(d_protein_intensities)
     
@@ -150,50 +153,61 @@ def log2_normalization(data, start_column):
     else:
         Warning(f"The data in {log2_normalization.__name__} is not a dictionary. Returning a tuple.")
         return df_normalized
-    
-    
+
+
+# def identity(X):
+#     return X
+#
+#
+# class Normalizer(BaseEstimator, TransformerMixin, OneToOneFeatureMixin):  # Maybe OneToOneFeatureMixin is better?
+#     def __init__(self, model=None):
+#         self.model = model
+#
+#     def __repr__(self, N_CHAR_MAX=700):
+#         if self.model is None or type(self.model) is FunctionTransformer:
+#             return 'No Normalization'
+#         else:
+#             return repr(self.model)
+#
+#     def set_params(self, **parameters):
+#         if hasattr(parameters, 'model'):
+#             self.model = parameters['model']
+#         elif self.model is not None:
+#             self.model.set_params(**parameters)
+#         return self
+#
+#     def fit(self, X, y=None):
+#         if self.model is None:
+#             raise ValueError("No Normalization selected")
+#         if self.model is not None:
+#             self.model.fit(X)
+#         self.is_fitted_ = True
+#         return self
+#
+#     def transform(self, X):
+#         if not self.is_fitted_:
+#             raise NotFittedError("This Normalizer instance is not fitted yet. Call 'fit' with appropriate arguments before using this method.")
+#         if self.model is None or type(self.model) is FunctionTransformer:
+#             return X
+#         return self.model.transform(X)
+
+
+
+    # def get_feature_names_out(self, input_features=None) -> None:
+    #     """Enables inheritance of the set_output() method so that output format can be set
+    #
+    #     Set the output format of a transformer to pd.DataFrame instead of np.array by
+    #     calling set_output(transform_output="pandas") on the transformer object.
+    #     """
+    #     return super().get_feature_names_out(self)
+
+
+
 # %% Main
 def main():
-    
-    
-    # %% Configuration
-    cleaned_data_path = 'cleaned_data.csv'
-    output_data_path = 'normalized_data.csv'
-    start_col = 11
-    
-    
-    # %% Data Initialization
-    
-    # Load the data
-    dataset = pd.read_csv(cleaned_data_path)
-    if VERBOSE:
-        print("Data loaded successfully.")
-    if VERBOSE > 1:
-        dataset.head()
-        
-    
-    # %% Data Normalization
-    
-    # columns_to_normalize = list(range(start_col, dataset.shape[1]))
-    
-    ## Run statistics part for normalization
-    stats = utils.summary_statistics(dataset, start_col)
-    min_values, max_values = stats
-    if VERBOSE > 2:
-        print(min_values)
-        print(max_values)
-    
-    # Perform Normalization
-    dataset_normalized = std_normalization(data=dataset, start_column=start_col)
+    from sklearn.utils.estimator_checks import check_estimator
 
-
-    # %% Export Normalized Data
-    
-    # Save the normalized data to a CSV file
-    dataset_normalized.to_csv(output_data_path, index=False)
-    if VERBOSE > 0:
-        dataset_normalized  # noqa
-
+    check_estimator(Normalizer(normalizer_type='StandardScaler'))
 
 # %%
 if __name__ == '__main__':

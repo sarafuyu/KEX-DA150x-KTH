@@ -349,7 +349,7 @@ def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col
         data_dict['add_indicator'] = imputer_dict['add_indicator']
 
     if VERBOSE and data_dict['type'] == 'IterativeImputer':
-        log('|--- IMPUTATION ---|')
+        log('/__ IMPUTATION ________________________________________________')
         log(f'Imputation Method: ------------------ {data_dict["type"]}')
         log(f'Estimator: -------------------------- {data_dict["estimator"]}')
         log(f'Estimator criterion: ---------------- {data_dict["estimator_criterion"]}')

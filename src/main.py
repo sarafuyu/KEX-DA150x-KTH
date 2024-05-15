@@ -56,7 +56,12 @@ from sklearn.feature_selection import f_classif, mutual_info_classif, chi2
 from sklearn.impute import MissingIndicator
 from sklearn.linear_model import BayesianRidge
 from sklearn.metrics import accuracy_score, r2_score
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, FunctionTransformer
+from sklearn import svm
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
+
+from model_selection._search import CustomCvGridSearch
 
 # %% Setup
 
@@ -167,7 +172,7 @@ COLUMN_TO_CATEGORIZE: str = 'FT5'
 SELECT_XGB: bool = True
 
 # Stop the pipeline after feature selection
-FEATURE_SELECT_ONLY: bool = False
+STOP_AFTER_FEATURE_SELECTION: bool = False
 
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
@@ -247,10 +252,12 @@ VERBOSE_ITER_IMP: int = 3
 
 # Use precomputed imputed dataset
 # Leave as None to use the imputed dataset generated in the pipeline
-PRECOMPUTED_ITERATIVE_IMPUTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'IterativeImputed-dataset-dict-minimal-test'/'TP꞉IterativeImputer_IT꞉200_TO꞉0.04_NF꞉None_IS꞉mean_IM꞉ascending_DT꞉2024-05-09-201931_Imputed_Datadict_using_23_features.pkl'
+# Note that PRECOMPUTED_ITERATIVE_IMPUTED_DF is the full un-imputed dataset that was used to generate the imputed dataset
+PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-0009-iter-131' / '2024-05-13-231235__IterativeImputer_X_imputed.csv'
+PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None
 
 # Stop the pipeline after imputation
-STOP_AFTER_IMPUTATION: bool = True
+STOP_AFTER_IMPUTATION: bool = False
 
 
 # --------------------------
@@ -282,6 +289,16 @@ DROP_COLS_NAN_ELIM = True
 # |                                   ~~ Data normalization ~~                                   | #
 # **********----------------------------------------------------------------------------********** #
 
+def identity(X): return X
+
+
+# Normalization modes to try in Grid search. Can be 'None', 'StandardScaler', 'MinMaxScaler'.
+NORMALIZATION_MODES_PARAMS = [
+    StandardScaler(copy=False, with_mean=True, with_std=True),
+    MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
+    FunctionTransformer(identity, validate=True), # No normalization
+]
+
 # First column to normalize. Will normalize all columns from this index and onwards.
 FIRST_COLUMN_TO_NORMALIZE: int = 11
 # We only normalize the antibody/protein intensity columns (cols 11 and up). Age, disease, FTs not normalized.
@@ -305,6 +322,9 @@ GRID_SEARCH_VERBOSITY: int = 0
 K_CV_FOLDS: int = 5
 # Calculate final accuracy for all models
 CALC_FINAL_SCORES: bool = True
+# Number of jobs to run in parallel, -1 means using all processors, 1 is the default
+N_JOBS_GRID_SEARCH: int = 7
+
 
 # ---------------
 # SVM Classifier
@@ -313,15 +333,31 @@ CALC_FINAL_SCORES: bool = True
 # Enable SVC
 SVC = True
 
+# # Hyperparameters:            # np.logspace(start, stop, num=50)
+# C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+# KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+# DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+# GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
+# COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+# SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
+# PROBABILITY_SVC: Sequence[bool] = [False]
+# TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1,]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+# CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
+# CLASS_WEIGHT_SVC: dict | None = None
+# VERB_SVC: int = VERBOSE
+# MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
+# DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
+# BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
+
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_001, 0.0001, 0.01, 1.0, 10.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30]
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [-1000_000.0, -100_000.0, -10_000.0, -1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10_000.0, 100_000.0, 1000_000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+COEF0_PARAMS_SVC: Sequence[float] = [-1000.0, -10.0, -1.0, -0.1, -0.01, 0.0, 0.01, 0.1, 1.0, 10.0, 1000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.00001, 0.0001, 0.001, 0.01, 0.1,]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
@@ -377,6 +413,17 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 # Get the logger
 log = logging.getLogger('LOGGER_NAME').info
 
+if VERBOSE:
+    log("======================= PIPELINE LOG ========================= |")
+    log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
+    log(f"Debug mode: {DEBUG}")
+if DEBUG:
+    # Import and unpack pipeline debug config from debug_config.py
+    from debug_config import pipeline_debug_config
+
+    for varname, value in pipeline_debug_config.items():
+        globals()[varname] = value  # Overwrite variables in this script with those from the debug config
+
 pipeline_config = {
     'DEBUG':                         DEBUG,
     'SEED':                          SEED,
@@ -416,38 +463,33 @@ pipeline_config = {
     'SVC':                           SVC,
     'START_TIME':                    START_TIME,
     'PRECOMPUTED_XGB_SELECTED_DATA': PRECOMPUTED_XGB_SELECTED_DATA,
+    'STOP_AFTER_FEATURE_SELECTION':  STOP_AFTER_FEATURE_SELECTION,
+    'PRECOMPUTED_IMPUTED_X':         PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA,
     'STOP_AFTER_IMPUTATION':         STOP_AFTER_IMPUTATION,
+    'N_JOBS_GRID_SEARCH':            N_JOBS_GRID_SEARCH,
 }
+
+
+# %% Load Data
+
+# Load the data
+dataset_dicts = []
+original_dataset = pd.read_csv(DATA_FILE)
+dataset = pd.read_csv(DATA_FILE)
+
+
+# %% Data Cleaning
+
+# Clean and preprocess the data
+verbose_cleaning = 0 if (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA) else VERBOSE
+dataset = cleaning.clean_data(dataset, verbose=verbose_cleaning, log=log, date=START_TIME, dataset_path=DATA_FILE)
 
 
 # %% Generate new XGB selected data
 
-dataset = None
-dataset_dicts = []
-if not PRECOMPUTED_XGB_SELECTED_DATA:
-
-
-    # %% Load Data
-
-    # Load the data
-    dataset = pd.read_csv(DATA_FILE)
-
+if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
     if VERBOSE:
-        log("|--- PIPELINE ---|")
-        log("Date: " + START_TIME.strftime("%Y-%m-%d %H:%M:%S"))
-        log(f"Debug mode: {DEBUG}")
-        log("Data loaded successfully.\n")
-    if DEBUG:
-        # Import and unpack pipeline debug config from debug_config.py
-        from debug_config import pipeline_debug_config
-        for varname, value in pipeline_debug_config.items():
-            globals()[varname] = value  # Overwrite variables in this script with those from the debug config
-
-
-    # %% Data Cleaning
-
-    # Clean and preprocess the data
-    dataset = cleaning.clean_data(dataset, verbose=VERBOSE, log=log, date=START_TIME, dataset_path=DATA_FILE)
+        log("Data loaded and cleaned successfully.\n")
 
     # Add NaN-eliminated and un-imputed datasets
     if NAN_ELIMINATION:
@@ -479,7 +521,7 @@ if not PRECOMPUTED_XGB_SELECTED_DATA:
             copy=COPY_SIMPLE_IMP,
             strategy=STRATEGY_SIMPLE_IMP
             )
-    if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
+    if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA:
         dataset_dicts = dataset_dicts + imputation.create_iterative_imputers(
             df=dataset,
             estimators=ESTIMATOR_ITER_IMP,
@@ -548,7 +590,12 @@ if not PRECOMPUTED_XGB_SELECTED_DATA:
 
     # %% Feature selection
 
-    if SPARSE_NO_IMPUTATION or SELECT_XGB:
+    if STOP_AFTER_FEATURE_SELECTION:
+        utils.log_results(
+            original_dataset=original_dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, data_dict=dataset_dicts[0], log=log
+        )
+
+    if SPARSE_NO_IMPUTATION or SELECT_XGB and not PRECOMPUTED_XGB_SELECTED_DATA:
         dataset_dicts = [
             features.select_XGB(
                 data_dict=data_dict,
@@ -574,18 +621,13 @@ if not PRECOMPUTED_XGB_SELECTED_DATA:
             for data_dict in dataset_dicts
         ]
 
-    if FEATURE_SELECT_ONLY:
-        utils.log_results(
-            original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
-        )
+    if STOP_AFTER_FEATURE_SELECTION:
         utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
-
         joblib.dump(
             dataset_dicts[0], PROJECT_ROOT / 'out' / Path(
                 utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
                 )
             )
-
         exit(0)
 
 
@@ -593,13 +635,14 @@ if not PRECOMPUTED_XGB_SELECTED_DATA:
 
 else:
     dataset_dicts = [joblib.load(PRECOMPUTED_XGB_SELECTED_DATA)]
+    original_dataset = deepcopy(dataset_dicts[0]['dataset'])
     dataset = dataset_dicts[0]['dataset']
 
 
 # %% Data Imputation
 
 imputer_dicts = []
-if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA and PRECOMPUTED_XGB_SELECTED_DATA:
+if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA:
     imputer_dicts = []
     imputer_dicts = imputer_dicts + imputation.create_iterative_imputers(
         df=dataset,
@@ -616,12 +659,29 @@ if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_DATA and PRECOMPUTED_
         verbose=VERBOSE_ITER_IMP,
     )
 
+if STOP_AFTER_IMPUTATION:
+    utils.log_results(
+        original_dataset=original_dataset,
+        original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
+        config=pipeline_config,
+        data_dict=dataset_dicts[0],
+        log=log
+    )
 
 # Impute data using generated imputers
-if ITERATIVE_IMPUTER and PRECOMPUTED_ITERATIVE_IMPUTED_DATA:
+if ITERATIVE_IMPUTER and PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA:
     # Unpickle the precomputed imputed data
     try:
-        dataset_dicts = dataset_dicts + [joblib.load(PRECOMPUTED_ITERATIVE_IMPUTED_DATA)]
+        dataset_dicts[0]['X_imputed'] = pd.read_csv(PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA)
+        if hasattr(dataset_dicts[0]['X_imputed'], 'Unnamed: 0'):
+            dataset_dicts[0]['X_imputed'] = dataset_dicts[0]['X_imputed'].drop(columns='Unnamed: 0')
+        if PRECOMPUTED_ITERATIVE_IMPUTED_DF:
+            dataset_dicts[0]['dataset'] = pd.read_csv(PRECOMPUTED_ITERATIVE_IMPUTED_DF)
+        else:
+            X_imputed_temp = deepcopy(dataset_dicts[0]['X_imputed'])
+            X_imputed_temp.index = dataset_dicts[0]['dataset'].iloc[:, 11:].index
+            dataset_dicts[0]['dataset'].drop(columns=[col for col in dataset_dicts[0]['dataset'].iloc[:, 11:].columns if col not in X_imputed_temp.columns], inplace=True)
+            dataset_dicts[0]['dataset'][X_imputed_temp.columns] = X_imputed_temp
     except Exception as e:
         log(f"Error: {e}")
         log("Could not load precomputed imputed data. Exiting.")
@@ -641,89 +701,165 @@ else:
         for data_dict, imp_dict in zip(dataset_dicts, imputer_dicts)
     ]
 
+
+# %% Report Summary Statistics
+
 if STOP_AFTER_IMPUTATION:
-    utils.log_results(
-        original_dataset=dataset,
-        original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
-        config=pipeline_config,
-        log=log
-    )
+    if VERBOSE:
+        # Report summary statistics for the imputed datasets
+        for data_dict in dataset_dicts:
+            utils.print_summary_statistics(data_dict, current_step='(POST-IMPUTATION) ', start_column=11)
     utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
     exit(0)
 
 
-# %% Report Summary Statistics
+# %% Train-test Split
 
-# Report summary statistics for the imputed datasets
-if VERBOSE:
-    for data_dict in dataset_dicts:
-        utils.print_summary_statistics(data_dict, start_column=11)
-
-
-# %% Data Normalization
-
-# Normalize the datasets
+# Split data
 dataset_dicts = [
-    normalization.std_normalization(
-        data=data_dict,
-        start_column=FIRST_COLUMN_TO_NORMALIZE,
+    features.split_data(
+        X=dataset_dict['X_imputed'],
+        y=dataset_dict['dataset']['FT5'],
+        data=dataset_dict,
+        test_size=TEST_PROPORTION,
+        random_state=SEED,
+        start_col=X_START_COLUMN_IDX,
+        y_col_label='FT5',
     )
-    for data_dict in dataset_dicts
+    for dataset_dict in dataset_dicts
 ]
 
 
-# %% Log results
+# %% Log Preprocessing Results
 
 utils.log_results(
-    original_dataset=dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, log=log
+    original_dataset=original_dataset, original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE, config=pipeline_config, data_dict=dataset_dicts[0], log=log
 )
 
+print(
+    """[LibSVM] From the documentation:
+    Q: What is the difference between "." and "*" outputed during training?
+    "." means every 1,000 iterations (or every #data iterations is your #data is less than 1,000). 
+    "*" means that after iterations of using a smaller shrunk problem, we reset to use the whole set. 
+    See: https://www.csie.ntu.edu.tw/~cjlin/libsvm/faq.html#f209
+    """
+)
 
-# %% Model Training & Fitting
+# %% Data Normalization and SVM Classifier Grid Search
 
-# Create Naive Bayes models
-# dataset_dicts = [classifier.add_naive_bayes_models(dataset_dict) for dataset_dict in dataset_dicts]
+# TODO: pipeline now assumes that we only have one dataset_dict up to this point.
+#       Refactor to clarify this fact. Remove the loops over dataset_dicts and use Pipeline with CV for
+#       normalization and SVC hyperparameter optimization instead.
+dataset_dict = dataset_dicts[0]
 
-# Find best SVM model
-if SVC:
-    dataset_dicts = [
-        classifier.find_best_svm_model(
-            pipeline_config=pipeline_config,
-            dataset_dict=dataset_dict,
-            C_params=C_PARAMS_SVC,
-            kernels=KERNEL_PARAMS_SVC,
-            degree_params=DEGREE_PARAMS_SVC,
-            gamma_params=GAMMA_PARAMS_SVC,
-            coef0_params=COEF0_PARAMS_SVC,
-            shrinking=SHRINKING_PARAMS_SVC,
-            probability=PROBABILITY_SVC,
-            tol_params=TOL_PARAMS_SVC,
-            cache_size_params=CACHE_SIZE_PARAMS_SVC,
-            class_weight=CLASS_WEIGHT_SVC,
-            verb=VERB_SVC,
-            max_iter_params=MAX_ITER_PARAMS_SVC,
-            decision_function_params=DECISION_FUNCTION_PARAMS_SVC,
-            break_ties=BREAK_TIES_PARAMS_SVC,
-            random_state=SEED,
-            grid_search_verbosity=GRID_SEARCH_VERBOSITY,
-            return_train_score=RETURN_TRAIN_SCORE_SVC,
-            grid_search_scoring=GRID_SEARCH_SCORING_SVC,
-            k_cv_folds=K_CV_FOLDS,
-            calc_final_scores=CALC_FINAL_SCORES,
-            log=log,
-        )
-        for dataset_dict in dataset_dicts
-    ]
+# Extract the training and testing data
+X = deepcopy(dataset_dict['X_imputed'])
+y = deepcopy(dataset_dict['dataset']['FT5'])
+X_training = deepcopy(dataset_dict['X_training'])
+X_testing = deepcopy(dataset_dict['X_testing'])
+y_training = deepcopy(dataset_dict['y_training'])
+y_testing = deepcopy(dataset_dict['y_testing'])
+
+param_grid_SVC = {
+    'classifier__C':                       C_PARAMS_SVC,
+    'classifier__kernel':                  KERNEL_PARAMS_SVC,
+    'classifier__degree':                  DEGREE_PARAMS_SVC,
+    'classifier__gamma':                   GAMMA_PARAMS_SVC,
+    'classifier__coef0':                   COEF0_PARAMS_SVC,
+    'classifier__shrinking':               SHRINKING_PARAMS_SVC,
+    'classifier__probability':             PROBABILITY_SVC,
+    'classifier__tol':                     TOL_PARAMS_SVC,
+    'classifier__cache_size':              CACHE_SIZE_PARAMS_SVC,
+    'classifier__verbose':                 [VERB_SVC],
+    'classifier__max_iter':                MAX_ITER_PARAMS_SVC,
+    'classifier__decision_function_shape': DECISION_FUNCTION_PARAMS_SVC,
+    'classifier__break_ties':              BREAK_TIES_PARAMS_SVC,
+    'classifier__random_state':            [SEED],
+    }
+# Construct parameter grid
+param_grid = []
+for i, normalizer in enumerate(NORMALIZATION_MODES_PARAMS):
+    param_grid.append(deepcopy(param_grid_SVC))
+    param_grid[i]['normalizer'] = [normalizer]
+
+if CLASS_WEIGHT_SVC is not None:
+    for param_set in param_grid:
+        param_set['classifier__class_weight'] = [CLASS_WEIGHT_SVC]
+
+pipeline = Pipeline([
+    ('normalizer', None),
+    ('classifier', svm.SVC())
+])
+
+# Perform grid search
+clf = GridSearchCV(
+    estimator=pipeline,
+    param_grid=param_grid,
+    scoring=GRID_SEARCH_SCORING_SVC,
+    cv=K_CV_FOLDS,
+    verbose=GRID_SEARCH_VERBOSITY,
+    return_train_score=CALC_FINAL_SCORES,
+    n_jobs=N_JOBS_GRID_SEARCH,
+)
+
+# Fit the model
+# if CALC_FINAL_SCORES:
+#     clf = clf.fit_calc_final_scores(X_training, y_training['FT5'], X_testing, y_testing['FT5'])
+# else:
+#     clf = clf.fit(X_training, y_training['FT5'])
+
+# clf = clf.fit(X_testing, y_testing['FT5'])
+clf = clf.fit(X, y)
+
+# With whole dataset StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
+# [0.85245902 0.85245902 0.85245902 0.85245902 0.85245902 0.85245902]
+# With train-test split StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
+# [0.85245902 0.85245902 0.85245902 0.85245902 0.85245902 0.85245902]
+
+# Calculate and log best score (accuracy)
+if hasattr(clf, 'score'):
+    test_accuracy = clf.score(deepcopy(X_testing), deepcopy(y_testing)['FT5'])
+else:
+    Warning("The classifier does not have a 'score' attribute. Was it fitted?")
+    test_accuracy = None
+
+if hasattr(clf, 'dual_coef_'):
+    log('yi * alpha_i: \n', clf.dual_coef_)
+
+if hasattr(clf, 'cv_results_'):
+    cv_results_ = clf.cv_results_
+    if CALC_FINAL_SCORES:
+        final_accuracies = []
+        if cv_results_ is not None:
+            # TODO: parallelize this loop
+            for params in cv_results_['params']:
+                if hasattr(clf, 'estimator'):
+                    estimator = clf.estimator.set_params(**params)
+                    estimator.fit(X_training, y_training['FT5'])
+                    final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
+                    final_accuracies.append(final_accuracy)
+
+        # Add final accuracy scores to cv_results
+        cv_results_['final_accuracy'] = np.array(final_accuracies)
+
+if VERBOSE:
+    utils.log_grid_search_results(
+        pipeline_config, dataset_dict, protein_start_col=11, clf=clf, accuracy=test_accuracy, log=log
+    )
+
+dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}
+
+joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dict, pipeline_config) + '_CLF꞉SVC.pkl'))
 
 
 # %% End Time
 
 joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
-log(f"Pickled dataset_dict saved to: ----------------------------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
+log(f"Pickled dataset_dict saved to: ------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
 
 utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
 
 
 # %% Breakpoint
 
-# breakpoint()
+breakpoint()
