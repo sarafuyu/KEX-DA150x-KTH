@@ -338,10 +338,10 @@ C_PARAMS_SVC: Sequence[float] = [0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001,
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
 DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [-1000.0, -100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+COEF0_PARAMS_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.000_01, 0.000_1, 0.001, 0.01, 0.1]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.000_01, 0.000_1, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
