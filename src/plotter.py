@@ -96,7 +96,7 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_s
             # Extract the values to plot
             x = varying_param_data[param]
             y = varying_param_data[test_score_column_name]
-            e = varying_param_data['std_test_score']
+            e = varying_param_data['std_test_score'] / 2  # error bars now represent the standard error (±1 standard deviation)
 
             # Create the plot
             fig, ax = plt.subplots(figsize=(10, 5))
