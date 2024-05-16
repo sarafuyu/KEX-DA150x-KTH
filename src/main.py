@@ -289,14 +289,14 @@ DROP_COLS_NAN_ELIM = True
 # |                                   ~~ Data normalization ~~                                   | #
 # **********----------------------------------------------------------------------------********** #
 
-def identity(X): return X
+def identity(x): return x
 
 
 # Normalization modes to try in Grid search. Can be 'None', 'StandardScaler', 'MinMaxScaler'.
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
     MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
-    FunctionTransformer(identity, validate=True), # No normalization
+    FunctionTransformer(identity, validate=True),  # No normalization
 ]
 
 # First column to normalize. Will normalize all columns from this index and onwards.
