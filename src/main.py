@@ -296,7 +296,7 @@ def identity(x): return x
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
     MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
-    FunctionTransformer(identity, validate=True),  # No normalization
+    # FunctionTransformer(identity, validate=True),  # No normalization
 ]
 
 # First column to normalize. Will normalize all columns from this index and onwards.
@@ -757,8 +757,8 @@ X = deepcopy(dataset_dict['X_imputed'])
 y = deepcopy(dataset_dict['dataset']['FT5'])
 X_training = deepcopy(dataset_dict['X_training'])
 X_testing = deepcopy(dataset_dict['X_testing'])
-y_training = deepcopy(dataset_dict['y_training'])
-y_testing = deepcopy(dataset_dict['y_testing'])
+y_training = deepcopy(dataset_dict['y_training']['FT5'])
+y_testing = deepcopy(dataset_dict['y_testing']['FT5'])
 
 param_grid_SVC = {
     'classifier__C':                       C_PARAMS_SVC,
@@ -804,12 +804,12 @@ clf = GridSearchCV(
 
 # Fit the model
 # if CALC_FINAL_SCORES:
-#     clf = clf.fit_calc_final_scores(X_training, y_training['FT5'], X_testing, y_testing['FT5'])
+#     clf = clf.fit_calc_final_scores(X_training, y_training, X_testing, y_testing)
 # else:
-#     clf = clf.fit(X_training, y_training['FT5'])
+#     clf = clf.fit(X_training, y_training)
 
-# clf = clf.fit(X_testing, y_testing['FT5'])
-clf = clf.fit(X_training, y_training)
+clf = clf.fit(X_testing, y_testing)
+# clf = clf.fit(X, y)
 
 # With whole dataset StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
 # [0.85245902 0.85245902 0.85245902 0.85245902 0.85245902 0.85245902]
@@ -818,7 +818,7 @@ clf = clf.fit(X_training, y_training)
 
 # Calculate and log best score (accuracy)
 if hasattr(clf, 'score'):
-    test_accuracy = clf.score(deepcopy(X_testing), deepcopy(y_testing)['FT5'])
+    test_accuracy = clf.score(deepcopy(X_testing), deepcopy(y_testing))
 else:
     Warning("The classifier does not have a 'score' attribute. Was it fitted?")
     test_accuracy = None
@@ -835,7 +835,7 @@ if hasattr(clf, 'cv_results_'):
             for params in cv_results_['params']:
                 if hasattr(clf, 'estimator'):
                     estimator = clf.estimator.set_params(**params)
-                    estimator.fit(X_training, y_training['FT5'])
+                    estimator.fit(X_training, y_training)
                     final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
                     final_accuracies.append(final_accuracy)
 
