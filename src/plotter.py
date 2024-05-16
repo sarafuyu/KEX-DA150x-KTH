@@ -160,7 +160,7 @@ def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_file
         plt.ylabel(varying_params[0])
         plt.show()
 
-        fig.savefig(CV_RESULTS_DIR/get_fig_filename(fixed_param, data_filename))
+        fig.savefig(CV_RESULTS_DIR/get_fig_filename(fixed_param, data_filename, suffix='heatmap'))
 
 
 def get_fig_filename(param: str, source_data_filename: Path, suffix: str = '') -> Path:
