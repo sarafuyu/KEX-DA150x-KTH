@@ -30,27 +30,25 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'out'  # PROJECT_ROOT/'data'/'results'
+CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'GridSearch-full-final-StdScaler-MinMaxScaler-2024-05-16-090908'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'TP꞉NAN_ELIMINATION_CL꞉17_KF꞉30_PR꞉0.2_RS꞉42_CF꞉SVC_DT꞉2024-05-04-153038.csv'
+CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-16-090908__cv_results.csv'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
 
-# Specify the column name for the test score (either 'mean_test_score' or 'final_accuracy')
+# Specify the column name for the test score
 TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
 
 # Specify parameters of interest
-PARAMS_OF_INTEREST = ['C', 'kernel', 'degree', 'coef0', 'tol']
-FIXED_PARAM = 'kernel'
-VARYING_PARAMS = ['C', 'degree']
-
-# TODO: Add information about the optimal values set constant to figure legends
-# TODO: Add information to figure titles
+PARAMS_OF_INTEREST = ['param_classifier__C', 'param_classifier__degree', 'param_classifier__coef0', 'param_classifier__tol']
+FIXED_PARAM = 'param_classifier__kernel'  # 'kernel'
+FIXED_NORMALIZATION = 'StandardScaler(copy=False)'  # 'param_normalizer'
+VARYING_PARAMS = ['param_classifier__coef0', 'param_classifier__tol']  # ['C', 'degree']
 
 
 # %% Plot functions
@@ -67,14 +65,14 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_co
     """
     # Find the best parameters
     best_index = cv_results_['rank_test_score'].idxmin()
-    best_params = cv_results_.loc[best_index, [f'param_{param}' for param in parameters]]
+    best_params = cv_results_.loc[best_index, [f'{param}' for param in parameters]]
 
     # Loop over each parameter and generate a plot
     for param_name in parameters:
-        full_param_name = f'param_{param_name}'
+        full_param_name = f'{param_name}'
 
         # Filter data for plots
-        mask = (cv_results_.loc[:, [f'param_{p}' for p in parameters if p != param_name]] == best_params.drop(
+        mask = (cv_results_.loc[:, [f'{p}' for p in parameters if p != param_name]] == best_params.drop(
             index=full_param_name
         )).all(axis=1)
         varying_param_data = cv_results_[mask]
@@ -93,7 +91,7 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_co
         ax.set_title(f'Effect of {param_name} on Model Performance')
 
         # Set log scale for specific parameters
-        if param_name in ['C', 'coef0', 'tol']:
+        if param_name in ['param_classifier__C', 'param_classifier__coef0', 'param_classifier__tol']:
             ax.set_xscale('log')
 
         # Set y-axis limits and labels if needed
@@ -106,7 +104,7 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_co
         fig.savefig(PROJECT_ROOT/'out'/get_fig_filename(param_name, data_filename))
 
 
-def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename):
+def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename: Path):
     """
     Plot the effects of varying two parameters on model performance while fixing another parameter at its best value.
 
@@ -121,31 +119,32 @@ def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_file
 
     # Find the best parameter value to fix
     # TODO(Sara): Need rewrite to work with the new final_accuracy column
-    best_index = cv_results_['rank_test_score'].idxmin()
-    best_value = cv_results_.loc[best_index, f'param_{fixed_param}']
+    # TODO: Check quick change
+    best_index = cv_results_['final_accuracy'].idxmax()
+    best_value = cv_results_.loc[best_index, f'{fixed_param}']
 
     # Filter the DataFrame to include only rows where the fixed parameter is at its best value
-    filtered_data = cv_results_[cv_results_[f'param_{fixed_param}'] == best_value]
+    filtered_data = cv_results_[cv_results_[f'{fixed_param}'] == best_value]
 
     # Pivot table for the heatmap
     pivot_table = filtered_data.pivot_table(
-        values='mean_test_score',
-        index=f'param_{varying_params[0]}',
-        columns=f'param_{varying_params[1]}'
+        values='final_accuracy',
+        index=f'{varying_params[0]}',
+        columns=f'{varying_params[1]}'
     )
 
     # Plotting
     fig = plt.figure(figsize=(10, 8))
-    sns.heatmap(pivot_table, annot=True, fmt=".3f", cmap="coolwarm", cbar_kws={'label': 'Mean Test Score'})
+    sns.heatmap(pivot_table, annot=True, fmt=".3f", cmap="coolwarm", cbar_kws={'label': 'Test Accuracy Score'})
     plt.title(f'Interaction of {varying_params[0]} and {varying_params[1]} \nwith {fixed_param} fixed at {best_value}')
     plt.xlabel(varying_params[1])
     plt.ylabel(varying_params[0])
     plt.show()
 
-    fig.savefig(PROJECT_ROOT/'out'/get_fig_filename(fixed_param, data_filename))
+    fig.savefig(get_fig_filename(fixed_param, data_filename))
 
 
-def get_fig_filename(param: str, source_data_filename: Path):
+def get_fig_filename(param: str, source_data_filename: Path): # source_data_filename: Path
     """
     Generate filename for figure based on main (e.g. fixed) parameter and source data filename.
 
@@ -153,15 +152,14 @@ def get_fig_filename(param: str, source_data_filename: Path):
     :param source_data_filename: Path to the source data file.
     :return: Path to the figure file.
     """
-    return Path(source_data_filename.stem + '_PLT꞉' + param + '.png')
+    return Path(source_data_filename.stem + 'PLT꞉' + param + '.png') # Path(source_data_filename.stem + 'PLT꞉' + param + '.png')
 
 
 # %% Generate plots
-
 cv_results = pd.read_csv(CV_RESULTS_PATH)
 
 # Call the plotting function
-plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH)
+#plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH)
 
 # Call the function with example parameters
-plot_interactive_effects(cv_results, 'kernel', ['C', 'degree'], data_filename=CV_RESULTS_PATH)
+plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
