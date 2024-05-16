@@ -15,6 +15,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 
 # Standard library imports
 from pathlib import Path
+from collections.abc import Sequence
 
 # External imports
 import pandas as pd
@@ -45,10 +46,12 @@ VERBOSE: int = 2  # Unused at the moment
 TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
 
 # Specify parameters of interest
-PARAMS_OF_INTEREST = ['param_classifier__C', 'param_classifier__degree', 'param_classifier__coef0', 'param_classifier__tol']
-FIXED_PARAM = 'param_classifier__kernel'  # 'kernel'
+PARAMS_OF_INTEREST = ['C', 'degree', 'coef0', 'tol']
+FIXED_PARAM = 'kernel'  # 'kernel'
 FIXED_NORMALIZATION = 'StandardScaler(copy=False)'  # 'param_normalizer'
-VARYING_PARAMS = ['param_classifier__coef0', 'param_classifier__tol']  # ['C', 'degree']
+VARYING_PARAMS = ['coef0', 'tol']  # ['C', 'degree']
+
+PARAM_PREFIX = 'param_'  # Prefix for the parameter columns in the cv_results_ DataFrame
 
 
 # %% Plot functions
@@ -91,7 +94,7 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_co
         ax.set_title(f'Effect of {param_name} on Model Performance')
 
         # Set log scale for specific parameters
-        if param_name in ['param_classifier__C', 'param_classifier__coef0', 'param_classifier__tol']:
+        if param_name in ['C', 'coef0', 'tol']:
             ax.set_xscale('log')
 
         # Set y-axis limits and labels if needed
@@ -101,7 +104,7 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_co
         plt.legend()
         plt.show()
 
-        fig.savefig(PROJECT_ROOT/'out'/get_fig_filename(param_name, data_filename))
+        fig.savefig(CV_RESULTS_DIR/get_fig_filename(param_name, data_filename))
 
 
 def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename: Path):
@@ -141,7 +144,7 @@ def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_file
     plt.ylabel(varying_params[0])
     plt.show()
 
-    fig.savefig(get_fig_filename(fixed_param, data_filename))
+    fig.savefig(CV_RESULTS_DIR/get_fig_filename(fixed_param, data_filename))
 
 
 def get_fig_filename(param: str, source_data_filename: Path): # source_data_filename: Path
@@ -152,14 +155,38 @@ def get_fig_filename(param: str, source_data_filename: Path): # source_data_file
     :param source_data_filename: Path to the source data file.
     :return: Path to the figure file.
     """
-    return Path(source_data_filename.stem + 'PLT꞉' + param + '.png') # Path(source_data_filename.stem + 'PLT꞉' + param + '.png')
+    return Path(source_data_filename.stem + 'PLT꞉' + param + '.png')  # Path(source_data_filename.stem + 'PLT꞉' + param + '.png')
+
+
+def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl='') -> pd.DataFrame:
+    """
+    Strip the 'param_' prefix from the column names in a DataFrame.
+
+    :param df: The DataFrame to process.
+    :param prefixes: The prefixes to remove from the column names.
+    :param repl: The replacement string.
+    :return: The DataFrame with the 'param_' prefix removed from the column names.
+    """
+    for prefix in prefixes:
+        df.columns = df.columns.str.replace(prefix, repl)
+    return df
 
 
 # %% Generate plots
+
+# Load the cross-validation results
 cv_results = pd.read_csv(CV_RESULTS_PATH)
 
+# Make all param prefixes the same
+cv_results = replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
+
+# Add prefix to the parameter names
+PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
+FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
+VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
+
 # Call the plotting function
-#plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH)
+plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH)
 
 # Call the function with example parameters
 plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
