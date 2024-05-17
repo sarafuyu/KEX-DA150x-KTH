@@ -37,7 +37,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # %% Data Splitting
 
-def split_data(data, X=None, y=None, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5'):
+def split_data(data, X=None, y=None, test_size=0.2, random_state=42, start_col=11, y_col_label='FT5', X_age_col_label=None):
     """
     Split the data into input and target variables.
 
@@ -49,6 +49,7 @@ def split_data(data, X=None, y=None, test_size=0.2, random_state=42, start_col=1
     :param random_state: The seed used by the random number generator.
     :param start_col: Column index to start from. Will split the data [cols:] into input and target variables.
     :param y_col_label: The label of the target variable column.
+    :param X_age_col_label: The label of the age column in the input variables. Leave as None to ignore.
     :return: A tuple of input and target variables.
     """
     from sklearn.model_selection import train_test_split
@@ -65,7 +66,10 @@ def split_data(data, X=None, y=None, test_size=0.2, random_state=42, start_col=1
         X_data = X
         y_data = y
     else:
-        X_data = df.iloc[:, start_col:]  # Matrix with variable input
+        if X_age_col_label:
+            X_data = df.loc[:, [X_age_col_label] + list(df.columns[start_col:])]  # Include age column
+        else:
+            X_data = df.iloc[:, start_col:]  # Matrix with variable input
         y_data = df[y_col_label]         # Vector for the target variable
 
 

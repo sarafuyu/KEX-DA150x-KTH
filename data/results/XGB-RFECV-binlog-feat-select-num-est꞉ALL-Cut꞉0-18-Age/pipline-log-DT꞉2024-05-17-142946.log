@@ -1,0 +1,34 @@
+[2024-05-17 14:29:47,056] {main.py      :417 } : INFO | ======================= PIPELINE LOG ========================= |
+[2024-05-17 14:29:47,056] {main.py      :418 } : INFO | Date: 2024-05-17 14:29:46
+[2024-05-17 14:29:47,056] {main.py      :419 } : INFO | Debug mode: False
+[2024-05-17 14:29:47,108] {cleaning.py  :55  } : INFO | /__ Data Cleaning _____________________________________________
+[2024-05-17 14:29:47,108] {cleaning.py  :61  } : INFO | Cleaning dataset: C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\data\dataset\normalised_data_all_w_clinical_kex_20240321.csv
+[2024-05-17 14:29:47,109] {cleaning.py  :62  } : INFO | Original dataset shape: (384, 1039)
+[2024-05-17 14:29:47,119] {cleaning.py  :120 } : INFO | We have 25 proteins with less than 1% datapoints
+[2024-05-17 14:29:47,120] {cleaning.py  :134 } : INFO | Dataset after low % column drop: (384, 1014)
+[2024-05-17 14:29:47,121] {cleaning.py  :146 } : INFO | Dropped calibration columns: ['TREAT', 'Plate', 'Location', 'Empty_SBA1_rep1', 'Rabbit.IgG_SBA1_rep1']
+[2024-05-17 14:29:47,121] {cleaning.py  :147 } : INFO | Dataset after calibration column drop: (384, 1009)
+[2024-05-17 14:29:47,124] {cleaning.py  :159 } : INFO | Dropped wrong ID rows: ['BLANK', 'POOL 1', 'POOL 2']
+[2024-05-17 14:29:47,125] {cleaning.py  :160 } : INFO | After wrong ID drop: (372, 1009)
+[2024-05-17 14:29:47,126] {cleaning.py  :171 } : INFO | After na ID/Disease drop: (363, 1009)
+[2024-05-17 14:29:47,154] {cleaning.py  :185 } : INFO | After sample duplicate drop: (348, 1009)
+[2024-05-17 14:29:47,156] {cleaning.py  :204 } : INFO | After FT5 na drop: (301, 1009)
+[2024-05-17 14:29:47,349] {cleaning.py  :218 } : INFO | Cleaned dataset shape: (301, 1009)
+
+[2024-05-17 14:29:47,351] {main.py      :492 } : INFO | Data loaded and cleaned successfully.
+
+[2024-05-17 14:29:50,894] {features.py  :294 } : INFO | /__ FEATURE SELECTION _________________________________________
+[2024-05-17 14:29:50,901] {features.py  :295 } : INFO | Mean std deviation X train: ---------------- 0.12838743052037568
+
+[2024-05-17 14:29:50,901] {features.py  :296 } : INFO | Feature Selection Method: ------------- XGB-RFECV
+[2024-05-17 14:29:50,901] {features.py  :297 } : INFO | Objective function: ------------------ binary:logistic
+[2024-05-17 14:29:50,901] {features.py  :298 } : INFO | Minimum features to select: ---------- 1
+[2024-05-17 14:29:50,901] {features.py  :299 } : INFO | Step size: --------------------------- 1
+[2024-05-17 14:29:50,901] {features.py  :300 } : INFO | Num estimators/trees: ---------------- 999 (1 per feature)
+[2024-05-17 14:29:50,901] {features.py  :301 } : INFO | Num CV folds: 5
+[2024-05-17 14:29:50,901] {features.py  :302 } : INFO | Starting XGB-RFE-CV Feature Selection ...
+[2024-05-17 15:36:24,754] {features.py  :313 } : INFO | Finished: ---------------------------- 2024-05-17 15:36:24
+[2024-05-17 15:36:24,754] {features.py  :314 } : INFO | Run time: ---------------------------- 1h:06m:36s 825.089ms to run.
+[2024-05-17 15:36:24,768] {features.py  :321 } : INFO | Classes: ----------------------------- [0 1]
+[2024-05-17 15:36:24,768] {features.py  :322 } : INFO | Accuracy score: ---------------------- 0.7377049180327869
+[2024-05-17 15:36:24,768] {features.py  :323 } : INFO | Num optimal features found: ---------- 70

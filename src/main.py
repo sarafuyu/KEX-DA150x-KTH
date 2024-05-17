@@ -257,7 +257,7 @@ PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = None  # PROJECT_ROOT / 'data
 PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None
 
 # Stop the pipeline after imputation
-STOP_AFTER_IMPUTATION: bool = True
+STOP_AFTER_IMPUTATION: bool = False
 
 
 # --------------------------
@@ -583,6 +583,7 @@ if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
             random_state=SEED,
             start_col=X_START_COLUMN_IDX,
             y_col_label='FT5',
+            X_age_col_label='Age',
         )
         for dataset_dict in dataset_dicts
     ]
@@ -621,14 +622,14 @@ if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
             for data_dict in dataset_dicts
         ]
 
-    if STOP_AFTER_FEATURE_SELECTION:
-        utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
-        joblib.dump(
-            dataset_dicts[0], PROJECT_ROOT / 'out' / Path(
-                utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
-                )
+    # if STOP_AFTER_FEATURE_SELECTION:
+    utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
+    joblib.dump(
+        dataset_dicts[0], PROJECT_ROOT / 'out' / Path(
+            utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
             )
-        exit(0)
+    )
+    # exit(0)
 
 
 # %% Load Precomputed XGB Selected Data
@@ -659,14 +660,14 @@ if ITERATIVE_IMPUTER and not PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA:
         verbose=VERBOSE_ITER_IMP,
     )
 
-if STOP_AFTER_IMPUTATION:
-    utils.log_results(
-        original_dataset=original_dataset,
-        original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
-        config=pipeline_config,
-        data_dict=dataset_dicts[0],
-        log=log
-    )
+# if STOP_AFTER_IMPUTATION:
+utils.log_results(
+    original_dataset=original_dataset,
+    original_protein_start_col=FIRST_COLUMN_TO_NORMALIZE,
+    config=pipeline_config,
+    data_dict=dataset_dicts[0],
+    log=log
+)
 
 # Impute data using generated imputers
 if ITERATIVE_IMPUTER and PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA:
@@ -704,13 +705,13 @@ else:
 
 # %% Report Summary Statistics
 
-if STOP_AFTER_IMPUTATION:
-    if VERBOSE:
-        # Report summary statistics for the imputed datasets
-        for data_dict in dataset_dicts:
-            utils.print_summary_statistics(data_dict, current_step='(POST-IMPUTATION) ', start_column=11)
-    utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
-    exit(0)
+# if STOP_AFTER_IMPUTATION:
+if VERBOSE:
+    # Report summary statistics for the imputed datasets
+    for data_dict in dataset_dicts:
+        utils.print_summary_statistics(data_dict, current_step='(POST-IMPUTATION) ', start_column=11)
+utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
+# exit(0)
 
 
 # %% Train-test Split

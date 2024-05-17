@@ -10,6 +10,7 @@ Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 import re
+import warnings
 # %% Imports
 
 # Standard library imports
@@ -139,11 +140,16 @@ def summary_statistics(data, cols):
         df = data['dataset']  # noqa
     elif type(data) is pd.DataFrame:
         df = data
-    
-    max_values = df.iloc[:, cols].max()
-    min_values = df.iloc[:, cols].min()
-    med_values = df.iloc[:, cols].median()
-    
+
+    if type(cols[0]) is int:
+        max_values = df.iloc[:, cols].max()
+        min_values = df.iloc[:, cols].min()
+        med_values = df.iloc[:, cols].median()
+    else:
+        max_values = df[cols].max()
+        min_values = df[cols].min()
+        med_values = df[cols].median()
+
     if VERBOSITY_LEVEL > 1:
         print(max_values)
         print(min_values)
@@ -273,7 +279,8 @@ def print_summary_statistics(data_dict, log=print, current_step='', start_column
     elif hasattr(data_dict, 'dataset'):
         X = data_dict['dataset'].iloc[:, start_column:]
     else:
-        raise ValueError("The data dictionary must contain a key 'X_imputed', 'X', 'X_selected', or 'dataset'.")
+        warnings.warn("The data dictionary must contain a key 'X_imputed', 'X', 'X_selected', or 'dataset'.")
+        return
     if VERBOSITY_LEVEL > 1:
         log(f"/__ SUMMARY STATISTICS {current_step}{'-'*(40-len(current_step))}")
         log(f"Dataset: ----------------------------- {get_file_name(data_dict)}")

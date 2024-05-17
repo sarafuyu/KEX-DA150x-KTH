@@ -124,7 +124,6 @@ def create_iterative_imputers(df, estimators=(BayesianRidge(),), estimator_crite
         # higher than the original data.
         max_value = 1.75 * utils.summary_statistics(df, range(11, df.shape[1]))[1].max()  # Ask Cristina for exact values
 
-
     ## Create imputers with different configurations
     iterative_imputers = []
     for estimator in estimators:
