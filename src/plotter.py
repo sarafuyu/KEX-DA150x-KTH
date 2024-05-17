@@ -15,6 +15,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 
 # Standard library imports
 from pathlib import Path
+from collections.abc import Sequence
 
 # External imports
 import pandas as pd
@@ -30,13 +31,13 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'GridSearch-full-final-StdScaler-MinMaxScaler-2024-05-16-090908'
+CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'GridSearch-full-final-StdScaler-MinMaxScaler-2024-05-16-112335'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-16-090908__cv_results.csv'
+CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-16-112335__cv_results.csv'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
@@ -45,63 +46,77 @@ VERBOSE: int = 2  # Unused at the moment
 TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
 
 # Specify parameters of interest
-PARAMS_OF_INTEREST = ['param_classifier__C', 'param_classifier__degree', 'param_classifier__coef0', 'param_classifier__tol']
-FIXED_PARAM = 'param_classifier__kernel'  # 'kernel'
+PARAMS_OF_INTEREST = ['C', 'degree', 'coef0', 'tol']
+FIXED_PARAM = 'kernel'  # 'kernel'
 FIXED_NORMALIZATION = 'StandardScaler(copy=False)'  # 'param_normalizer'
-VARYING_PARAMS = ['param_classifier__coef0', 'param_classifier__tol']  # ['C', 'degree']
+VARYING_PARAMS = ['coef0', 'tol']  # ['C', 'degree']
+
+PARAM_PREFIX = 'param_'  # Prefix for the parameter columns in the cv_results_ DataFrame
+
+# Plot x-axis scale
+SCALE_X = 'linear'  # 'linear' or 'log'
 
 
 # %% Plot functions
 
-def plot_parameter_effects(cv_results_, parameters, data_filename, test_score_column_name='mean_test_score'):
+def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_score_column_name='mean_test_score'):
     """
     Plot the effects of varying parameters on model performance.
 
     :param cv_results_: (pd.DataFrame) The DataFrame containing the cross-validation results.
-    :param parameters: (list of str) List of parameter names to plot.
+    :param parameters: (list[str]) List of parameter names to plot.
+    :param data_filename: (str) The filename of the data source.
+    :param scale: (str) The scale of the x-axis. Either 'linear' or 'log'.
     :param test_score_column_name: (str) The name of the column containing the test score.
         Either 'mean_test_score' or 'final_accuracy'.
-    :param data_filename: (str) The filename of the data source.
     """
     # Find the best parameters
     best_index = cv_results_['rank_test_score'].idxmin()
-    best_params = cv_results_.loc[best_index, [f'{param}' for param in parameters]]
+    best_param_vals = cv_results_.loc[best_index, parameters]
 
-    # Loop over each parameter and generate a plot
-    for param_name in parameters:
-        full_param_name = f'{param_name}'
+    # Loop over all unique normalizers, create plots for each
+    for fixed_normalizer in cv_results_['param_normalizer'].unique():
 
-        # Filter data for plots
-        mask = (cv_results_.loc[:, [f'{p}' for p in parameters if p != param_name]] == best_params.drop(
-            index=full_param_name
-        )).all(axis=1)
-        varying_param_data = cv_results_[mask]
-        varying_param_data = varying_param_data.drop_duplicates(subset=full_param_name)
+        # Loop over each parameter and generate a plot
+        for param in parameters:
 
-        # Extract the values to plot
-        x = varying_param_data[full_param_name]
-        y = varying_param_data[test_score_column_name]
-        e = varying_param_data['std_test_score']
+            # Get list of all the other parameters
+            other_params = [p for p in parameters if p != param]
 
-        # Create the plot
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.errorbar(x, y, e, linestyle='--', marker='o', label=param_name)
-        ax.set_xlabel(param_name)
-        ax.set_ylabel('Test Accuracy Score')
-        ax.set_title(f'Effect of {param_name} on Model Performance')
+            # Create mask to extract rows where all other parameters are at their best values
+            mask = pd.DataFrame(cv_results_[other_params] == best_param_vals.drop(index=param)).all(axis=1)
 
-        # Set log scale for specific parameters
-        if param_name in ['param_classifier__C', 'param_classifier__coef0', 'param_classifier__tol']:
-            ax.set_xscale('log')
+            # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
+            mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
 
-        # Set y-axis limits and labels if needed
-        ax.set_ylim([min(y) - 0.05, max(y) + 0.05])  # Adjust based on data range
-        ax.yaxis.set_major_locator(plt.MaxNLocator(10))  # Set the number of ticks on y-axis
+            # Apply mask and drop duplicates based on the current parameter
+            varying_param_data = cv_results_[mask]
+            varying_param_data = varying_param_data.drop_duplicates(subset=param)
 
-        plt.legend()
-        plt.show()
+            # Extract the values to plot
+            x = varying_param_data[param]
+            y = varying_param_data[test_score_column_name]
+            e = varying_param_data['std_test_score'] / 2  # error bars now represent the standard error (±1 standard deviation)
 
-        fig.savefig(PROJECT_ROOT/'out'/get_fig_filename(param_name, data_filename))
+            # Create the plot
+            fig, ax = plt.subplots(figsize=(10, 5))
+            ax.errorbar(x, y, e, linestyle='--', marker='o', label=param)
+            ax.set_xlabel(param)
+            ax.set_ylabel('Test Accuracy Score')
+            ax.set_title(f'Effect of {param} on Model Performance')
+
+            # Set log scale for specific parameters
+            if scale == 'log':
+                ax.set_xscale('log')
+
+            # Set y-axis limits and labels if needed
+            ax.set_ylim([min(y) - 0.05, max(y) + 0.05])  # Adjust based on data range
+            ax.yaxis.set_major_locator(plt.MaxNLocator(10))  # Set the number of ticks on y-axis
+
+            plt.legend()
+            plt.show()
+
+            fig.savefig(CV_RESULTS_DIR / get_fig_filename(param, data_filename, suffix=f'_{fixed_normalizer}_{scale}'))
 
 
 def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename: Path):
@@ -117,49 +132,81 @@ def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_file
     if len(varying_params) != 2:
         raise ValueError("Exactly two varying parameters must be specified.")
 
-    # Find the best parameter value to fix
-    # TODO(Sara): Need rewrite to work with the new final_accuracy column
-    # TODO: Check quick change
-    best_index = cv_results_['final_accuracy'].idxmax()
-    best_value = cv_results_.loc[best_index, f'{fixed_param}']
+    # Loop over all unique normalizers, create a plot for each
+    for fixed_normalizer in cv_results_['param_normalizer'].unique():
 
-    # Filter the DataFrame to include only rows where the fixed parameter is at its best value
-    filtered_data = cv_results_[cv_results_[f'{fixed_param}'] == best_value]
+        # Find the best parameter value to fix
+        best_index = cv_results_['final_accuracy'].idxmax()
+        best_value = cv_results_.loc[best_index, f'{fixed_param}']
 
-    # Pivot table for the heatmap
-    pivot_table = filtered_data.pivot_table(
-        values='final_accuracy',
-        index=f'{varying_params[0]}',
-        columns=f'{varying_params[1]}'
-    )
+        # Filter the DataFrame to include only rows where the fixed parameter is at its best value
+        filtered_data = cv_results_[cv_results_[f'{fixed_param}'] == best_value]
 
-    # Plotting
-    fig = plt.figure(figsize=(10, 8))
-    sns.heatmap(pivot_table, annot=True, fmt=".3f", cmap="coolwarm", cbar_kws={'label': 'Test Accuracy Score'})
-    plt.title(f'Interaction of {varying_params[0]} and {varying_params[1]} \nwith {fixed_param} fixed at {best_value}')
-    plt.xlabel(varying_params[1])
-    plt.ylabel(varying_params[0])
-    plt.show()
+        # Filter the DataFrame to include only rows where the fixed normalizer is the specified type
+        filtered_data = filtered_data[filtered_data['param_normalizer'] == fixed_normalizer]
 
-    fig.savefig(get_fig_filename(fixed_param, data_filename))
+        # Pivot table for the heatmap
+        pivot_table = filtered_data.pivot_table(
+            values='final_accuracy',
+            index=f'{varying_params[0]}',
+            columns=f'{varying_params[1]}'
+        )
+
+        # Plotting
+        fig = plt.figure(figsize=(10, 8))
+        sns.heatmap(pivot_table, annot=True, fmt=".3f", cmap="coolwarm", cbar_kws={'label': 'Test Accuracy Score'})
+        plt.title(f'Interaction of {varying_params[0]} and {varying_params[1]} \nwith {fixed_param} fixed at {best_value}')
+        plt.xlabel(varying_params[1])
+        plt.ylabel(varying_params[0])
+        plt.show()
+
+        fig.savefig(CV_RESULTS_DIR/get_fig_filename(fixed_param, data_filename, suffix='heatmap'))
 
 
-def get_fig_filename(param: str, source_data_filename: Path): # source_data_filename: Path
+def get_fig_filename(param: str, source_data_filename: Path, suffix: str = '') -> Path:
     """
     Generate filename for figure based on main (e.g. fixed) parameter and source data filename.
 
     :param param: Parameter to include in the filename.
     :param source_data_filename: Path to the source data file.
+    :param suffix: Suffix to add to the filename.
     :return: Path to the figure file.
     """
-    return Path(source_data_filename.stem + 'PLT꞉' + param + '.png') # Path(source_data_filename.stem + 'PLT꞉' + param + '.png')
+    return Path(source_data_filename.stem + 'PLT꞉' + param + suffix + '.png')
+
+
+def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl: str = '') -> pd.DataFrame:
+    """
+    Strip the 'param_' prefix from the column names in a DataFrame.
+
+    :param df: The DataFrame to process.
+    :param prefixes: The prefixes to remove from the column names.
+    :param repl: The replacement string.
+    :return: The DataFrame with the 'param_' prefix removed from the column names.
+    """
+    for prefix in prefixes:
+        df.columns = df.columns.str.replace(prefix, repl)
+    return df
 
 
 # %% Generate plots
+
+# Load the cross-validation results
 cv_results = pd.read_csv(CV_RESULTS_PATH)
 
+# Make all param prefixes the same
+cv_results = replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
+
+# Add prefix to the parameter names
+PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
+FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
+VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
+
+# Sanitize the normalization column
+cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
+
 # Call the plotting function
-#plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH)
+# plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
 
 # Call the function with example parameters
 plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
