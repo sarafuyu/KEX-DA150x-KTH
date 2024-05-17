@@ -264,12 +264,21 @@ def print_summary_statistics(data_dict, log=print, current_step='', start_column
     :param start_column: The index of the first protein column in the dataset.
     """
     y = data_dict['dataset']['FT5'].to_frame(name='FT5')
-    X_imputed = data_dict['X_imputed']
+    if hasattr(data_dict, 'X_imputed'):
+        X = data_dict['X_imputed']
+    elif hasattr(data_dict, 'X'):
+        X = data_dict['X']
+    elif hasattr(data_dict, 'X_selected'):
+        X = data_dict['X_selected']
+    elif hasattr(data_dict, 'dataset'):
+        X = data_dict['dataset'].iloc[:, start_column:]
+    else:
+        raise ValueError("The data dictionary must contain a key 'X_imputed', 'X', 'X_selected', or 'dataset'.")
     if VERBOSITY_LEVEL > 1:
         log(f"/__ SUMMARY STATISTICS {current_step}{'-'*(40-len(current_step))}")
         log(f"Dataset: ----------------------------- {get_file_name(data_dict)}")
-        log(f"Number of entries (N): --------------- {X_imputed.shape[0]}")
-        log(f"Number of features (X): -------------- {X_imputed.shape[1]}")
+        log(f"Number of entries (N): --------------- {X.shape[0]}")
+        log(f"Number of features (X): -------------- {X.shape[1]}")
         if y['FT5'].dtypes in (np.float64, np.float32, float):
             log(f"Interval (y): ------------------------ [{y.min().min()}, {y.max().max()}]")
         else:
@@ -281,12 +290,12 @@ def print_summary_statistics(data_dict, log=print, current_step='', start_column
         log(f"Median y: ---------------------------- {y.median()}")
         log(f"Variance y: -------------------------- {y.var()}")
         log(f"Std deviation y: --------------------- {y.std()}")
-        log(f"Min minimum X: ----------------------- {X_imputed.min().min()}\n")
-        log(f"Max maximum X: ----------------------- {X_imputed.max().max()}")
-        log(f"Mean mean X: ------------------------- {X_imputed.mean().mean()}")
-        log(f"Mean median X: ----------------------- {X_imputed.median().mean()}")
-        log(f"Mean variance X: --------------------- {X_imputed.var().mean()}")
-        log(f"Mean std deviation X: ---------------- {X_imputed.std().mean()}\n")
+        log(f"Min minimum X: ----------------------- {X.min().min()}\n")
+        log(f"Max maximum X: ----------------------- {X.max().max()}")
+        log(f"Mean mean X: ------------------------- {X.mean().mean()}")
+        log(f"Mean median X: ----------------------- {X.median().mean()}")
+        log(f"Mean variance X: --------------------- {X.var().mean()}")
+        log(f"Mean std deviation X: ---------------- {X.std().mean()}\n")
     # if VERBOSITY_LEVEL > 2:
     #     log(f"Mean values: ------------------------- {df.mean()}")
     #     log(f"Median values: ----------------------- {df.median()}\n")

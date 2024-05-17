@@ -160,7 +160,7 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 #   df.iloc[:, a:       ] == 0
 # i.e. the variable is 1 if (x < a) else 0.
 #
-CUTOFFS: Sequence[int] | bool = [23]  # False  # [17]  # break into classes at 17
+CUTOFFS: Sequence[int] | bool = [19]  # False  # [17]  # break into classes at 17
 COLUMN_TO_CATEGORIZE: str = 'FT5'
 
 
