@@ -48,13 +48,13 @@ TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
 # Specify parameters of interest
 PARAMS_OF_INTEREST = ['C', 'degree', 'coef0', 'tol']
 FIXED_PARAM = 'kernel'  # 'kernel'
-FIXED_NORMALIZATION = 'StandardScaler(copy=False)'  # 'param_normalizer'
+
 VARYING_PARAMS = ['coef0', 'tol']  # ['C', 'degree']
 
 PARAM_PREFIX = 'param_'  # Prefix for the parameter columns in the cv_results_ DataFrame
 
 # Plot x-axis scale
-SCALE_X = 'linear'  # 'linear' or 'log'
+SCALE_X = 'log'  # 'linear' or 'log'
 
 
 # %% Plot functions
@@ -74,49 +74,59 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_s
     best_index = cv_results_['rank_test_score'].idxmin()
     best_param_vals = cv_results_.loc[best_index, parameters]
 
-    # Loop over all unique normalizers, create plots for each
-    for fixed_normalizer in cv_results_['param_normalizer'].unique():
+    # Loop over all unique kernels, create plots for each
+    for fixed_kernel in cv_results_['param_kernel'].unique():
 
-        # Loop over each parameter and generate a plot
-        for param in parameters:
+        # Loop over all unique normalizers, create plots for each
+        for fixed_normalizer in cv_results_['param_normalizer'].unique():
 
-            # Get list of all the other parameters
-            other_params = [p for p in parameters if p != param]
+            # Loop over each parameter and generate a plot
+            for param in parameters:
 
-            # Create mask to extract rows where all other parameters are at their best values
-            mask = pd.DataFrame(cv_results_[other_params] == best_param_vals.drop(index=param)).all(axis=1)
+                # Get list of all the other parameters
+                other_params = [p for p in parameters if p != param]
 
-            # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
-            mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
+                # Create mask to extract rows where all other parameters are at their best values
+                mask = pd.DataFrame(cv_results_[other_params] == best_param_vals.drop(index=param)).all(axis=1)
 
-            # Apply mask and drop duplicates based on the current parameter
-            varying_param_data = cv_results_[mask]
-            varying_param_data = varying_param_data.drop_duplicates(subset=param)
+                # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
+                mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
 
-            # Extract the values to plot
-            x = varying_param_data[param]
-            y = varying_param_data[test_score_column_name]
-            e = varying_param_data['std_test_score'] / 2  # error bars now represent the standard error (±1 standard deviation)
+                # Apply mask and drop duplicates based on the current parameter
+                varying_param_data = cv_results_[mask]
+                varying_param_data = varying_param_data.drop_duplicates(subset=param)
 
-            # Create the plot
-            fig, ax = plt.subplots(figsize=(10, 5))
-            ax.errorbar(x, y, e, linestyle='--', marker='o', label=param)
-            ax.set_xlabel(param)
-            ax.set_ylabel('Test Accuracy Score')
-            ax.set_title(f'Effect of {param} on Model Performance')
+                # Extract the values to plot
+                x = varying_param_data[param]
+                y = varying_param_data[test_score_column_name]
+                e = varying_param_data['std_test_score'] / 2  # error bars now represent the standard error (±1 standard deviation)
 
-            # Set log scale for specific parameters
-            if scale == 'log':
-                ax.set_xscale('log')
+                # Create the plot
+                fig, ax = plt.subplots(figsize=(10, 5))
+                ax.errorbar(x, y, e, linestyle='--', marker='o', label=param)
+                ax.set_xlabel(param)
+                ax.set_ylabel('Test Accuracy Score')
+                ax.set_title(f'Effect of {param} on Model Performance')
 
-            # Set y-axis limits and labels if needed
-            ax.set_ylim([min(y) - 0.05, max(y) + 0.05])  # Adjust based on data range
-            ax.yaxis.set_major_locator(plt.MaxNLocator(10))  # Set the number of ticks on y-axis
+                fig, ax = plt.subplots(figsize=(10, 5))
+                ax.plot(x, y, linestyle='--', marker='o', label=param)
+                ax.fill_between(x, y - e, y + e, alpha=0.2, label=f'{param} ±1σ (SE)')
+                ax.set_xlabel(param)
+                ax.set_ylabel('Test Accuracy Score')
+                ax.set_title(f'Effect of {param} on Model Performance')
 
-            plt.legend()
-            plt.show()
+                # Set log scale for specific parameters
+                if scale == 'log':
+                    ax.set_xscale('log')
 
-            fig.savefig(CV_RESULTS_DIR / get_fig_filename(param, data_filename, suffix=f'_{fixed_normalizer}_{scale}'))
+                # Set y-axis limits and labels if needed
+                ax.set_ylim([min(y) - 0.05, max(y) + 0.05])  # Adjust based on data range
+                ax.yaxis.set_major_locator(plt.MaxNLocator(10))  # Set the number of ticks on y-axis
+
+                plt.legend()
+                plt.show()
+
+                fig.savefig(CV_RESULTS_DIR / get_fig_filename(param, data_filename, suffix=f'_{fixed_kernel}_{fixed_normalizer}_{scale}_test'))
 
 
 def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename: Path):
@@ -206,7 +216,7 @@ VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
 cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
 
 # Call the plotting function
-# plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
+plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
 
 # Call the function with example parameters
 plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)

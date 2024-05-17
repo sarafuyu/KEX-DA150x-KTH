@@ -10,6 +10,7 @@ Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
 from datetime import datetime
+from pathlib import Path
 
 # %% Configuration
 
@@ -25,7 +26,13 @@ verbose = 1
 seed = 42
 
 ## Data extraction
-path = 'normalised_data_all_w_clinical_kex_20240321.csv'
+# Path to dataset
+START_TIME = datetime.now()
+PROJECT_ROOT = Path(__file__).parents[1]
+DATA_FILE: Path = PROJECT_ROOT/'data'/'dataset'/'normalised_data_all_w_clinical_kex_20240321.csv'
+# Clean and preprocess the data
+
+path = DATA_FILE
 
 ## Data imputation (SimpleImputer)
 data_imputation = False  # If false, we skip imputation and remove rows with NaNs
@@ -120,8 +127,103 @@ if verbose:
 
 # %% Data Cleaning
 
-# Clean and preprocess the data
-dataset = cleaning.clean_data(dataset)
+dataset = cleaning.clean_data(dataset, verbose=1, log=logger.info, date=START_TIME, dataset_path=DATA_FILE)
+
+
+def make_binary(data, column_label, cutoffs, copy=True):
+    """
+    Bin the values in a column into a categorical variable based on cutoff values.
+    Values below the cutoff are assigned 1, and values equal and above the cutoff are assigned 0.
+    For N CUTOFFS, the data is divided into N+1 classes.
+
+    Example:
+    --------
+    ``CUTOFFS=[a]`` will create a binary variable with the two classes:
+        ``data.iloc[:,0:(a-1)]==1`` and
+        ``data.iloc[:,a:]==0``.
+
+    :param data: A pandas DataFrame containing the data.
+    :param column_label: The name of the column to convert to binary.
+    :param cutoffs: Values above which the binary value is 0, and below which the binary value is 1.
+    :param copy: Whether to create a copy of the DataFrame (True) or modify it in place (False).
+    :return: A pandas DataFrame with the specified column converted to binary.
+    """
+    # TODO: Add support for multiple cutoffs, only one cutoff supported for now. -- #
+    if len(cutoffs) != 1:  #
+        raise ValueError(
+            "not implemented yet! "  #
+            "For now the `CUTOFFS` parameter "  #
+            "must be a list with one element."
+            )  #
+    else:  #
+        cutoffs = cutoffs[0]  #
+    # TODO: ----------------------------------------------------------------------- #
+
+    if type(data) is pd.DataFrame:
+        df = data
+    elif type(data) is dict:
+        df = data['dataset']
+    else:
+        raise ValueError(
+            "Argument data must be a pandas DataFrame or a dictionary "
+            "with a 'dataset' key."
+            )
+
+    # Copy the data to avoid modifying the original DataFrame
+    if copy:
+        df_copy = df.copy()
+    else:
+        df_copy = df
+
+    # Convert the values in the specified column to binary based on the cutoff
+    df_copy[column_label] = df_copy[column_label].apply(lambda x: 1 if x < cutoffs else 0)
+
+    if type(data) is dict:
+        data['dataset'] = df_copy
+        return data
+    else:
+        Warning(f"The data in {make_binary.__name__} is not a dictionary. Returning a tuple.")
+        return df_copy
+
+
+dataset = make_binary(dataset, column_label='FT5', cutoffs=[22], copy=False)
+total_rows = len(dataset)
+nan_count = dataset['Age'].isna().sum()
+percentage_nan = (nan_count / total_rows) * 100
+
+print(f"The percentage of NaN values in the 'Age' column is {percentage_nan:.2f}%")
+
+
+
+
+x = 1
+
+def make_continuous(data, column_label, copy=True):
+    if type(data) is pd.DataFrame:
+        df = data
+    elif type(data) is dict:
+        df = data['dataset']
+    else:
+        raise ValueError(
+            "Argument data must be a pandas DataFrame or a dictionary "
+            "with a 'dataset' key."
+        )
+
+    # Copy the data to avoid modifying the original DataFrame
+    if copy:
+        df_copy = df.copy()
+    else:
+        df_copy = df
+
+    # Convert the values in the specified column float
+    df_copy[column_label] = df_copy[column_label].astype(float)
+
+    if type(data) is dict:
+        data['dataset'] = df_copy
+        return data
+    else:
+        Warning(f"The data in {make_binary.__name__} is not a dictionary. Returning a tuple.")
+        return df_copy
 
 
 # %% Data Imputation
