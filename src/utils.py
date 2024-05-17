@@ -86,7 +86,8 @@ def make_binary(data, column_label, cutoffs, copy=True):
         df_copy = df.copy()
     else:
         df_copy = df
-    
+
+    # [0, 21] [0, 22]
     # Convert the values in the specified column to binary
     df_copy[column_label] = df_copy[column_label].apply(lambda x: 1 if x < cutoffs else 0)
     

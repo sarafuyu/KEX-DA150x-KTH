@@ -160,7 +160,7 @@ Y_COLUMN_LABEL: str = 'FT5'   # y column label
 #   df.iloc[:, a:       ] == 0
 # i.e. the variable is 1 if (x < a) else 0.
 #
-CUTOFFS: Sequence[int] | bool = [17]  # False  # [17]  # break into classes at 17
+CUTOFFS: Sequence[int] | bool = [23]  # False  # [17]  # break into classes at 17
 COLUMN_TO_CATEGORIZE: str = 'FT5'
 
 
@@ -177,17 +177,17 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'
 
-# 37 specific features was found to be the best number of features using XGB feature selection.
+# 37 specific features were found to be the best number of features using XGB feature selection.
 
 # XGB-RFECV Config
-N_ESTIMATORS_XGB = -1,
-VERBOSITY_XGB = 0,
-USE_LABEL_ENCODER_XGB = False,
-VALIDATE_PARAMETERS_XGB = True,
-MISSING_XGB = np.nan,
-OBJECTIVE_XGB = 'binary:logistic',
+N_ESTIMATORS_XGB = -1
+VERBOSITY_XGB = 1
+USE_LABEL_ENCODER_XGB = False
+VALIDATE_PARAMETERS_XGB = True
+MISSING_XGB = np.nan
+OBJECTIVE_XGB = 'binary:logistic'
 N_JOBS_XGB = 6
 N_JOBS_RFECV = 2
 SCORING_RFECV = 'accuracy'
@@ -253,11 +253,11 @@ VERBOSE_ITER_IMP: int = 3
 # Use precomputed imputed dataset
 # Leave as None to use the imputed dataset generated in the pipeline
 # Note that PRECOMPUTED_ITERATIVE_IMPUTED_DF is the full un-imputed dataset that was used to generate the imputed dataset
-PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-0009-iter-131' / '2024-05-13-231235__IterativeImputer_X_imputed.csv'
+PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = None  # PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-0009-iter-131' / '2024-05-13-231235__IterativeImputer_X_imputed.csv'
 PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None
 
 # Stop the pipeline after imputation
-STOP_AFTER_IMPUTATION: bool = False
+STOP_AFTER_IMPUTATION: bool = True
 
 
 # --------------------------
@@ -296,7 +296,7 @@ def identity(x): return x
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
     MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
-    # FunctionTransformer(identity, validate=True),  # No normalization
+    # FunctionTransformer(identity, validate=True), # No normalization
 ]
 
 # First column to normalize. Will normalize all columns from this index and onwards.
@@ -474,7 +474,6 @@ pipeline_config = {
 
 # Load the data
 dataset_dicts = []
-original_dataset = pd.read_csv(DATA_FILE)
 dataset = pd.read_csv(DATA_FILE)
 
 
@@ -483,6 +482,7 @@ dataset = pd.read_csv(DATA_FILE)
 # Clean and preprocess the data
 verbose_cleaning = 0 if (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA) else VERBOSE
 dataset = cleaning.clean_data(dataset, verbose=verbose_cleaning, log=log, date=START_TIME, dataset_path=DATA_FILE)
+original_dataset = deepcopy(dataset)
 
 
 # %% Generate new XGB selected data

@@ -281,14 +281,14 @@ def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_enc
         missing=missing,
         objective=objective,
     )
-    xgbclf.fit(X_train, y_train)
+    xgbclf.fit(X_train, y_train['FT5'])
     rfecv = RFECV(estimator=xgbclf, step=step, min_features_to_select=min_features_to_select, cv=cv, scoring=scoring, verbose=verbosity, n_jobs=n_jobs_rfecv, importance_getter='auto')
     min_features_to_select = rfecv.min_features_to_select
     xgbclf = rfecv.estimator
 
     if VERBOSE:
         log('/__ FEATURE SELECTION _________________________________________')
-        log(f"Mean std deviation X: ---------------- {X_imputed.std().mean()}\n")
+        log(f"Mean std deviation X train: ---------------- {X_train.std().mean()}\n")
         log('Feature Selection Method: ------------- XGB-RFECV')
         log(f'Objective function: ------------------ {objective}')
         log(f'Minimum features to select: ---------- {min_features_to_select}')
@@ -298,7 +298,7 @@ def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_enc
         log(f'Starting XGB-RFE-CV Feature Selection ...')
 
     # Start the XGB feature selection
-    rfecv.fit(X_train, y_train)
+    rfecv.fit(X_train, y_train['FT5'])
     xgbclf = rfecv.estimator_
 
     # Log time taken to run
@@ -341,7 +341,7 @@ def select_XGB(data_dict, log=print, n_estimators=-1, verbosity=0, use_label_enc
                 log(f'CV Results: \n{cv_results_df}')
             cv_results_df.to_csv(PROJECT_ROOT/'out'/(utils.get_file_name(data_dict)+'_FeatureSelect꞉XGB-RFE-CV꞉cv_results_.csv'), index=False)
             # Try generating plot of optimal number of features
-            # Maybe even better looking plot: https://www.scikit-yb.org/en/latest/api/model_selection/rfecv.html
+            # Maybe even better-looking plot: https://www.scikit-yb.org/en/latest/api/model_selection/rfecv.html
             import matplotlib.pyplot as plt
             n_scores = len(rfecv.cv_results_["mean_test_score"])
             plt.figure()
