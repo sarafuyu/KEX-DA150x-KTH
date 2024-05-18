@@ -324,8 +324,11 @@ out/*/*
 # Ignore very large files
 2024-05-13-164419__IterativeImputer_imputed_data_dict.pkl
 2024-05-12-002355__IterativeImputer_imputed_data_dict.pkl
+2024-05-17-224957__dataset_dict.pkl
+2024-05-17-224957__IterativeImputer.pkl
 2024-05-13-231235__IterativeImputer.pkl
 2024-05-15-163036__cv_results.csv
 2024-05-15-163036__raw_console_output.log
 2024-05-15-213732__cv_results.csv
 2024-05-15-213732__raw_console_output.log
+2024-05-18-151154__dataset_dict.pkl
