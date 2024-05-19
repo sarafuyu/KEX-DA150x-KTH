@@ -392,9 +392,10 @@ def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col
 
     # Pickle imputation dict to disk
     try:
-        # breakpoint()
-        joblib.dump(imputer,
-                    (PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S") + f'__{data_dict['type']}.pkl')))
+        # TODO: we can prob remove this
+        pass
+        # joblib.dump(imputer,
+        #             (PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S") + f'__{data_dict['type']}.pkl')))
     except:
         pass
     try:

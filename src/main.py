@@ -295,7 +295,7 @@ def identity(x): return x
 # Normalization modes to try in Grid search. Can be 'None', 'StandardScaler', 'MinMaxScaler'.
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
-    MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
+    # MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
     # FunctionTransformer(identity, validate=True), # No normalization
 ]
 
@@ -856,7 +856,7 @@ joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_d
 # %% End Time
 
 joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
-log(f"Pickled dataset_dict saved to: ------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
+# log(f"Pickled dataset_dict saved to: ------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
 
 utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
 
