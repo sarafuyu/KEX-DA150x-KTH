@@ -177,7 +177,7 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
 
 # 37 specific features were found to be the best number of features using XGB feature selection.
 
@@ -237,8 +237,8 @@ ESTIMATOR_ITER_IMP = [RandomForestRegressor(
     monotonic_cst=None,
 )]  # TODO: Try more: , DecisionTreeRegressor(random_state=SEED), RandomForestRegressor(random_state=SEED)
 # Maximum number of imputation rounds to perform. The imputer will stop iterating after this many iterations.
-MAX_ITER_ITER_IMP: int = 600  # try low number of iterations first, see if converges, then try higher numbers
-TOL_ITER_IMP: float = 0.009  # might need to adjust
+MAX_ITER_ITER_IMP: int = 400  # try low number of iterations first, see if converges, then try higher numbers
+TOL_ITER_IMP: float = 0.0175  # might need to adjust
 # Number of other features to use to estimate the missing values of each feature column.
 # None means all features, which might be too many.
 N_NEAREST_FEATURES_ITER_IMP: Sequence[int | None] = [None]  # [15]  # [5, 10, 20, 50, None]  # [10, 100, 500, None]
@@ -336,12 +336,12 @@ SVC = True
 # Hyperparameters:            # np.logspace(start, stop, num=50)
 C_PARAMS_SVC: Sequence[float] = [0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
 COEF0_PARAMS_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.000_01, 0.000_1, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.01]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
@@ -863,4 +863,4 @@ utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=
 
 # %% Breakpoint
 
-breakpoint()
+# breakpoint()

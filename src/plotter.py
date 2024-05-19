@@ -34,13 +34,13 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'GridSearch-full-final-StdScaler-MinMaxScaler-2024-05-16-112335'
+CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-MinMax-Std'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-16-112335__cv_results.csv'
+CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-19-030548_GridSearch_cv_results.csv'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
@@ -452,7 +452,7 @@ VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
 cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
 
 # Call plotting functions
-# plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
-plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
-# with plt.rc_context({'font.size': 12}):
-#     plot_tol_ridge(cv_results_=cv_results, save_path=CV_RESULTS_DIR, accuracy_score_column_name='mean_test_score')
+plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
+# plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
+with plt.rc_context({'font.size': 12}):
+    plot_tol_ridge(cv_results_=cv_results, save_path=CV_RESULTS_DIR, accuracy_score_column_name='mean_test_score')
