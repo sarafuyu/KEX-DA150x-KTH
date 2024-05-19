@@ -11,6 +11,7 @@ This script is run separately from the main script to generate plots.
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
+from copy import deepcopy
 # %% Imports
 
 # Standard library imports
@@ -22,6 +23,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns  # For heatmap or advanced plotting
+from matplotlib.ticker import MaxNLocator
+from joypy import joyplot
 
 # Local imports
 import utils
@@ -59,7 +62,7 @@ SCALE_X = 'log'  # 'linear' or 'log'
 
 # %% Plot functions
 
-def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_score_column_name='mean_test_score'):
+def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, test_score_column_name='mean_test_score'):
     """
     Plot the effects of varying parameters on model performance.
 
@@ -82,6 +85,17 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_s
 
             # Loop over each parameter and generate a plot
             for param in parameters:
+                cv_results_filtered = deepcopy(cv_results_)
+                if param == 'param_tol':
+                    continue
+                if fixed_kernel != 'poly':
+                    # Drop duplicate rows that differ only by 'degree'
+                    cv_results_filtered = cv_results_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
+                    # Remove degree column
+                    # cv_results_filtered = cv_results_filtered.drop(columns=['param_degree'])
+
+                    # # Get list of all the other parameters
+                    # other_params = [p for p in parameters if p != param]
 
                 # Get list of all the other parameters
                 other_params = [p for p in parameters if p != param]
@@ -91,6 +105,9 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_s
 
                 # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
                 mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
+
+                # Additional filtering to include only rows where the kernel column is equal to fixed_kernel
+                mask &= (cv_results_['param_kernel'] == fixed_kernel)
 
                 # Apply mask and drop duplicates based on the current parameter
                 varying_param_data = cv_results_[mask]
@@ -102,31 +119,151 @@ def plot_parameter_effects(cv_results_, parameters, data_filename, scale, test_s
                 e = varying_param_data['std_test_score'] / 2  # error bars now represent the standard error (±1 standard deviation)
 
                 # Create the plot
+                param_label = param.split('_')[1]
                 fig, ax = plt.subplots(figsize=(10, 5))
-                ax.errorbar(x, y, e, linestyle='--', marker='o', label=param)
-                ax.set_xlabel(param)
-                ax.set_ylabel('Test Accuracy Score')
-                ax.set_title(f'Effect of {param} on Model Performance')
 
-                fig, ax = plt.subplots(figsize=(10, 5))
-                ax.plot(x, y, linestyle='--', marker='o', label=param)
-                ax.fill_between(x, y - e, y + e, alpha=0.2, label=f'{param} ±1σ (SE)')
-                ax.set_xlabel(param)
-                ax.set_ylabel('Test Accuracy Score')
-                ax.set_title(f'Effect of {param} on Model Performance')
+                if param == 'param_degree':
+                    # Point plot for ordinal categorical variable 'degree'
+                    ax.errorbar(x, y, yerr=e, fmt='o', capsize=5, elinewidth=1, markeredgewidth=1)
+                    ax.set_xticks(x)
+                    ax.set_xticklabels(x, rotation=0)
+
+                    # Find the degree with the highest accuracy
+                    max_accuracy_idx = y.idxmax()
+                    max_accuracy_degree = x[max_accuracy_idx]
+                    max_accuracy_value = y[max_accuracy_idx]
+                    max_accuracy_std = e[max_accuracy_idx]
+
+                    # Annotate the highest accuracy degree
+                    ax.annotate(f'{max_accuracy_value:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std),
+                                xytext=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
+                                arrowprops=dict(facecolor='black', shrink=0.05),
+                                ha='center', va='bottom', fontsize=10, color='black')
+
+                else:
+                    # Line plot for other parameters
+                    ax.plot(x, y, linestyle='--', marker='o', label=param_label)
+                    ax.fill_between(x, y - e, y + e, alpha=0.2, label=f'±1σ (SE)')
+
+                    # Find the parameter value with the highest accuracy
+                    max_accuracy_idx = y.idxmax()
+                    max_accuracy_value = x[max_accuracy_idx]
+                    max_accuracy_score = y[max_accuracy_idx]
+                    max_accuracy_std = e[max_accuracy_idx]
+
+                    # Annotate the highest accuracy parameter value
+                    ax.annotate(f'{max_accuracy_score:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std),
+                                xytext=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
+                                arrowprops=dict(facecolor='black', shrink=0.05),
+                                ha='center', va='bottom', fontsize=10, color='black')
+
+                if param == 'param_degree':
+                    ax.set_xlabel('Polynomial Kernel Degree')
+                    ax.set_ylabel('Mean CV Validation Accuracy')
+                    ax.set_title(f'Effect of {param_label} on Model Performance\n'
+                                 f'using {fixed_normalizer} Normalizer and {fixed_kernel} Kernel')
+                else:
+                    ax.set_xlabel(param_label)
+                    ax.set_ylabel('Mean CV Validation Accuracy')
+                    ax.set_title(f'Effect of {param_label} on Model Performance\n'
+                                 f'using {fixed_normalizer} Normalizer and {fixed_kernel} Kernel')
 
                 # Set log scale for specific parameters
-                if scale == 'log':
+                if param == 'param_degree':
+                    ax.set_xscale('linear')
+                elif scale == 'log':
                     ax.set_xscale('log')
 
-                # Set y-axis limits and labels if needed
-                ax.set_ylim([min(y) - 0.05, max(y) + 0.05])  # Adjust based on data range
-                ax.yaxis.set_major_locator(plt.MaxNLocator(10))  # Set the number of ticks on y-axis
+                # Dynamic y-axis limits with padding
+                y_min, y_max = min(y) - 0.05, max(y) + 0.05
+                padding = (y_max - y_min) * 0.1
+                ax.set_ylim([y_min - padding, y_max + padding])
+
+                # Dynamically set y-axis major ticks
+                ax.yaxis.set_major_locator(MaxNLocator(nbins=5))
 
                 plt.legend()
-                plt.show()
 
-                fig.savefig(CV_RESULTS_DIR / get_fig_filename(param, data_filename, suffix=f'_{fixed_kernel}_{fixed_normalizer}_{scale}_test'))
+                plt.show()
+                fig.savefig(CV_RESULTS_DIR / f'effect-param-{param_label}_fixed-{fixed_normalizer}_fixed-{fixed_kernel}.png', bbox_inches='tight')
+
+                plt.pause(0.5)
+                plt.close(fig)
+                # Wait for 0.5 seconds to avoid rate limiting in pycharm
+                plt.pause(0.5)
+
+
+import matplotlib.path as mpath
+import matplotlib.patches as mpatches
+
+
+def add_label_band(ax, top, bottom, label, *, spine_pos=-0.05, tip_pos=-0.02):
+    """
+    Helper function to add bracket around y-tick labels.
+
+    Author: @tacaswell
+    Source: https://stackoverflow.com/questions/67235301/vertical-grouping-of-labels-with-brackets-on-matplotlib
+
+    Parameters
+    ----------
+    ax : matplotlib.Axes
+        The axes to add the bracket to
+
+    top, bottom : floats
+        The positions in *data* space to bracket on the y-axis
+
+    label : str
+        The label to add to the bracket
+
+    spine_pos, tip_pos : float, optional
+        The position in *axes fraction* of the spine and tips of the bracket.
+        These will typically be negative
+
+    Returns
+    -------
+    bracket : matplotlib.patches.PathPatch
+        The "bracket" Aritst.  Modify this Artist to change the color etc of
+        the bracket from the defaults.
+
+    txt : matplotlib.text.Text
+        The label Artist.  Modify this to change the color etc of the label
+        from the defaults.
+
+    """
+    # grab the yaxis blended transform
+    transform = ax.get_yaxis_transform()
+
+    # add the bracket
+    bracket = mpatches.PathPatch(
+        mpath.Path(
+            [
+                [tip_pos, top],
+                [spine_pos, top],
+                [spine_pos, bottom],
+                [tip_pos, bottom],
+            ]
+        ),
+        transform=transform,
+        clip_on=False,
+        facecolor="none",
+        edgecolor="k",
+        linewidth=2,
+    )
+    ax.add_artist(bracket)
+
+    # add the label
+    txt = ax.text(
+        spine_pos - 0.01,
+        (top + bottom) / 2,
+        label,
+        ha="right",
+        va="center",
+        rotation="vertical",
+        clip_on=False,
+        transform=transform,
+    )
+
+    return bracket, txt
 
 
 def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_filename: Path):
@@ -165,12 +302,16 @@ def plot_interactive_effects(cv_results_, fixed_param, varying_params, data_file
         # Plotting
         fig = plt.figure(figsize=(10, 8))
         sns.heatmap(pivot_table, annot=True, fmt=".3f", cmap="coolwarm", cbar_kws={'label': 'Test Accuracy Score'})
-        plt.title(f'Interaction of {varying_params[0]} and {varying_params[1]} \nwith {fixed_param} fixed at {best_value}')
+        plt.title(f'Interaction of {varying_params[0]} and {varying_params[1]}\n'
+                  f'with {fixed_param} fixed at {best_value}\n'
+                  f'using {fixed_normalizer} Normalizer')
         plt.xlabel(varying_params[1])
         plt.ylabel(varying_params[0])
         plt.show()
 
-        fig.savefig(CV_RESULTS_DIR/get_fig_filename(fixed_param, data_filename, suffix='heatmap'))
+        fig.savefig(CV_RESULTS_DIR/f"heatmap-{varying_params[0]}-{varying_params[1]}_fixed-{fixed_normalizer}.png", bbox_inches='tight')
+        plt.pause(0.5)
+        plt.close(fig)
 
 
 def get_fig_filename(param: str, source_data_filename: Path, suffix: str = '') -> Path:
@@ -199,6 +340,101 @@ def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl: str =
     return df
 
 
+def plot_tol_ridge(cv_results_, save_path, accuracy_score_column_name='mean_test_score'):
+    # Filter out tolerance parameter values greater or equal to 1e-3
+    cv_results_ = cv_results_[cv_results_['param_tol'] >= 1e-3]
+
+    # Ensure the save path is a Path object
+    save_path = Path(save_path)
+    save_path.mkdir(parents=True, exist_ok=True)
+
+    normalizers = ['MinMaxScaler', 'StandardScaler']
+    kernels = ['poly', 'sigmoid', 'rbf']
+
+    # Iterate over each combination of normalizer and kernel
+    for normalizer in normalizers:
+        for kernel in kernels:
+            # Filter the dataframe for the current normalizer and kernel
+            df_filtered = cv_results_[(cv_results_['param_normalizer'] == normalizer) &
+                                      (cv_results_['param_kernel'] == kernel)]
+            if kernel != 'poly':
+                # Drop duplicate rows that differ only by 'degree'
+                df_filtered = df_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
+                plot_ridge(df_filtered, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}.png", accuracy_score_column_name, kernel, normalizer)
+            else:
+                for degree in df_filtered['param_degree'].unique():
+                    # Filter the dataframe for the current degree
+                    df_degree = df_filtered[df_filtered['param_degree'] == degree]
+                    plot_ridge(df_degree, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}-deg{degree}.png", accuracy_score_column_name, kernel, normalizer)
+
+def plot_ridge(df, save_file, accuracy_score_column_name, kernel, normalizer):
+
+    # Group by the combination of hyperparameters excluding 'tol'
+    hyperparams = ['param_C', 'param_coef0']
+    degree = df['param_degree'].iloc[0] if kernel == 'poly' else None
+    df = df.copy()  # Ensure we are working on a copy
+    df['hyperparams'] = df[hyperparams].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
+
+    # Sort the dataframe by 'tol'
+    df_sorted = df.sort_values(by='param_tol')
+
+    # Create a new dataframe for ridgeline plot
+    df_ridge = df_sorted.pivot(index='param_tol', columns='hyperparams', values=accuracy_score_column_name)
+
+    # Create the ridgeline plot manually using Matplotlib
+    fig, ax = plt.subplots(figsize=(3, 12))  # Adjusted size for better visualization
+
+    # Reduce the vertical offset to allow for more overlap
+    vertical_offset = 0.2
+
+    # Colors for lines
+    colors = sns.color_palette(palette='husl', n_colors=len(df_ridge.columns))
+
+    # Plot each line
+    for i, col in enumerate(df_ridge.columns):
+        y = df_ridge[col].values
+        x = df_ridge.index.values
+        y_offset = y + i * vertical_offset
+        ax.plot(x, y_offset, color=colors[i], alpha=1, linewidth=1)
+
+    # Set axis labels and title
+    yaxis = ax.yaxis
+    yaxis.set_label_text('Mean CV Validation Accuracy')
+    yaxis.set_label_position('left')
+    yaxis.set_label('Mean CV Validation Accuracy')
+    yaxis_sec = ax.secondary_yaxis('right')
+    yaxis_sec.set_ylabel('Hyperparameter Combinations', rotation=-90, labelpad=20)
+    yaxis_sec.set_yticks([])
+
+    ax.set_xlabel('Tolerance')
+    ax.set_title('Effect of Tolerance on CV Validation Accuracy\n'
+                 'for Different Hyperparameter Combinations\n'
+                 f'using {f'a Deg{degree}-' if degree else ''}{kernel} Kernel and {normalizer} Normalizer')
+
+    # Set x-axis to log scale
+    ax.set_xscale('log')
+
+    # Remove y-axis ticks and labels
+    ax.yaxis.set_major_locator(plt.NullLocator())
+    ax.yaxis.set_major_formatter(plt.NullFormatter())
+
+    # Create a small scale bar with a bracket to indicate the y-axis values
+    yaxis.set_ticks([0, 1])
+    yaxis.set_ticklabels([0, 1])
+    x_axis_start, x_axis_end = ax.get_xlim()
+    bracket_x = -0.12 + x_axis_start  # x position for the indicator bracket
+    bracket = add_label_band(ax, 0, 1, "Accuracy", spine_pos=bracket_x, tip_pos=bracket_x + 0.02)
+
+    yaxis.set_label_coords(x=-0.04, y=0.5)
+
+    plt.show()
+
+    # Save the plot
+    fig.savefig(save_file, bbox_inches='tight')
+    plt.pause(0.5)
+    plt.close(fig)
+
+
 # %% Generate plots
 
 # Load the cross-validation results
@@ -215,8 +451,8 @@ VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
 # Sanitize the normalization column
 cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
 
-# Call the plotting function
-plot_parameter_effects(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
-
-# Call the function with example parameters
+# Call plotting functions
+# plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X)
 plot_interactive_effects(cv_results, FIXED_PARAM, VARYING_PARAMS, data_filename=CV_RESULTS_PATH)
+# with plt.rc_context({'font.size': 12}):
+#     plot_tol_ridge(cv_results_=cv_results, save_path=CV_RESULTS_DIR, accuracy_score_column_name='mean_test_score')

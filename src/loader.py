@@ -55,17 +55,53 @@ import normalization
 import features
 import classifier
 
+def print_missing_values(X=None):
+    if X is None:
+        print("No DataFrame provided.")
+        return
+
+    # Get the total number of missing values
+    total_missing = X.isnull().sum().sum()
+
+    # Get the total number of cells in the DataFrame
+    total_cells = X.size
+
+    # Calculate the percentage of missing values
+    percent_missing = (total_missing / total_cells) * 100
+
+    # Get the variable name of X
+    var_name = [k for k, v in globals().items() if v is X][0]
+
+    # Print the results
+    print(f"Total number of missing values for {var_name}: {total_missing}")
+    print(f"Percentage of missing values for {var_name}: {percent_missing:.2f}%")
 
 # %% Setup
 
 START_TIME = datetime.now()
 PROJECT_ROOT = Path(__file__).parents[1]
 
+DATA_DIR = 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'
+DATA_FILE = '2024-05-17-154927__dataset_dict.pkl'
 
-DATA_DIR = 'XGB-RFECV-binlog-feat-select-num-est꞉ALL'
-DATA_FILE = '2024-05-11-041302__FeatureSelect__RFECV.pkl'
+d = joblib.load(PROJECT_ROOT / 'data' / 'results' / DATA_DIR / DATA_FILE)
 
-rfecv = joblib.load(PROJECT_ROOT / 'data' / 'results' / DATA_DIR / DATA_FILE)
 
+# Concatenate the training and testing data
+X = pd.concat([d['X_training'], d['X_testing']], axis=0)
+X_prot = X.iloc[:, 1:]
+X_age = X.iloc[:, 0]
+# X_test_prot = d['X_testing'].iloc[:, 1:]
+# X_train_prot = d['X_training'].iloc[:, 1:]
+# X_train_age = d['X_training'].iloc[:, 0]
+# X_test_age = d['X_testing'].iloc[:, 0]
+
+# print_missing_values(X=X)
+# print_missing_values(X=X_train_prot)
+# print_missing_values(X=X_test_prot)
+# print_missing_values(X=X_train_age)
+# print_missing_values(X=X_test_age)
+print_missing_values(X=X_prot)
+print_missing_values(X=X_age)
 
 breakpoint()
