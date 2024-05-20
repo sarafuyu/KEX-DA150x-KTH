@@ -156,7 +156,7 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
                     max_accuracy_std = se[max_accuracy_idx]
 
                     # Annotate the highest accuracy degree
-                    ax.annotate(f'{max_accuracy_value:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std),
+                    ax.annotate(f'{param_label}={max_accuracy_value:.2f}\n{max_accuracy_value:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std),
                                 xytext=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
                                 arrowprops=dict(facecolor='black', shrink=0.05),
                                 ha='center', va='bottom', fontsize=10, color='black')
@@ -173,7 +173,7 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
                     max_accuracy_std = se[max_accuracy_idx]
 
                     # Annotate the highest accuracy parameter value
-                    ax.annotate(f'{max_accuracy_score:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std),
+                    ax.annotate(f'{param_label}={max_accuracy_value:.2f}\n{max_accuracy_score:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std),
                                 xytext=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
                                 arrowprops=dict(facecolor='black', shrink=0.05),
                                 ha='center', va='bottom', fontsize=10, color='black')
