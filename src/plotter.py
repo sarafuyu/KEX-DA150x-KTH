@@ -197,7 +197,12 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
                 if param == 'param_degree':
                     ax.set_xscale('linear')
                 elif scale == 'log':
-                    ax.set_xscale('log')
+                    if param == 'param_coef0':
+                        linthresh = 1e-3  # should be set to pos coef0 value closest to zero
+                        ax.set_xscale('symlog', linthresh=linthresh)
+                        ax.xaxis.set_major_locator(SymmetricalLogLocator(base=10, linthresh=linthresh))
+                    else:
+                        ax.set_xscale('log')
 
                 # Dynamic y-axis limits with padding
                 y_min, y_max = min(y) - 0.05, max(y) + 0.05
