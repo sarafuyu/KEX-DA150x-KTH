@@ -448,7 +448,7 @@ cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').s
 
 
 def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric='mean_test_score', default_params=False):
-    # Filter the results based on fixed_params
+    # Filter results based on fixed_params
     mask = np.ones(len(cv_results_), dtype=bool)
     for param, value in fixed_params.items():
         mask = mask & (cv_results_[param] == value)
@@ -543,8 +543,9 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
 
 # Find the best kernel (excluding 'rbf')
 best_kernel_row = cv_results[cv_results['param_kernel'] != 'rbf'].sort_values(by='mean_test_score', ascending=False).iloc[0]
-best_kernel = best_kernel_row['param_kernel']
-best_degree = best_kernel_row['param_degree'] if best_kernel == 'poly' else None
+best_kernel = BEST_PARAMS['param_kernel'] if BEST_PARAMS['param_kernel'] != 'rbf' else best_kernel_row['param_kernel']
+best_kernel_row = cv_results[cv_results['param_kernel'] == best_kernel].sort_values(by='mean_test_score', ascending=False).iloc[0]
+best_degree = BEST_PARAMS['param_degree'] if best_kernel == 'poly' else None
 
 # Set fixed params for the first heatmap
 fixed_parameters = {'param_kernel': best_kernel}
@@ -557,7 +558,7 @@ create_heatmap(deepcopy(cv_results), 'param_C', 'param_coef0', fixed_parameters,
 # %% 2. param_C vs param_degree (kernel 'poly') with param_coef0 fixed
 
 # Find the best param_coef0 value to fix
-best_coef0 = cv_results[cv_results['param_kernel'] == 'poly'].sort_values(by='mean_test_score', ascending=False).iloc[0]['param_coef0']
+best_coef0 = BEST_PARAMS['param_coef0']
 
 # Set fixed params for the second heatmap
 fixed_parameters = {'param_kernel': 'poly', 'param_coef0': best_coef0}
@@ -579,7 +580,7 @@ create_heatmap(deepcopy(cv_results), 'param_C', 'param_kernel', {'param_coef0': 
 # %% 4. param_coef0 vs kernel ('rbf' excluded; so sigmoid, poly deg1, poly deg2, ... poly deg10) with param_C fixed
 
 # Find the best param_C value to fix
-best_C = cv_results[cv_results['param_kernel'] != 'rbf'].sort_values(by='mean_test_score', ascending=False).iloc[0]['param_C']
+best_C = BEST_PARAMS['param_C']
 
 create_heatmap(
     deepcopy(cv_results[cv_results['param_kernel'] != 'rbf']), 'param_coef0', 'param_kernel', {'param_C': best_C},
@@ -590,7 +591,7 @@ create_heatmap(
 # %% 5. param_degree vs coef0 (only for kernel = 'poly') with param_C fixed
 
 # Find the best param_C value to fix
-best_C = cv_results[cv_results['param_kernel'].str.startswith('poly')].sort_values(by='mean_test_score', ascending=False).iloc[0]['param_C']
+best_C = BEST_PARAMS['param_C']
 
 # Set fixed params for the fifth heatmap
 fixed_parameters = {'param_C': best_C}
