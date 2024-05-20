@@ -177,7 +177,7 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
 
 # 37 specific features were found to be the best number of features using XGB feature selection.
 
@@ -407,7 +407,7 @@ logging.basicConfig(level=logging.DEBUG,
                             '%(message)s'),
                     handlers=handlers)
 
-# Suppress matplotlib logs
+# Suppress matplotlib warning logs
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 # Get the logger
@@ -824,18 +824,21 @@ else:
     Warning("The classifier does not have a 'score' attribute. Was it fitted?")
     test_accuracy = None
 
+dataset_dict['svm'] = {'clf': deepcopy(clf), 'test_accuracy': test_accuracy}
+
 if hasattr(clf, 'dual_coef_'):
     log('yi * alpha_i: \n', clf.dual_coef_)
 
 if hasattr(clf, 'cv_results_'):
+    clf_ = deepcopy(clf)
     cv_results_ = clf.cv_results_
     if CALC_FINAL_SCORES:
         final_accuracies = []
         if cv_results_ is not None:
             # TODO: parallelize this loop
             for params in cv_results_['params']:
-                if hasattr(clf, 'estimator'):
-                    estimator = clf.estimator.set_params(**params)
+                if hasattr(clf_, 'estimator'):
+                    estimator = clf_.estimator.set_params(**params)
                     estimator.fit(X_training, y_training)
                     final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
                     final_accuracies.append(final_accuracy)
@@ -847,8 +850,6 @@ if VERBOSE:
     utils.log_grid_search_results(
         pipeline_config, dataset_dict, protein_start_col=11, clf=clf, accuracy=test_accuracy, log=log
     )
-
-dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}
 
 joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dict, pipeline_config) + '_CLF꞉SVC.pkl'))
 
