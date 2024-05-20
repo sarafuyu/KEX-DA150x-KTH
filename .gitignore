@@ -307,9 +307,6 @@ hs_err_pid*
 .idea/file.template.settings.xml
 .idea/csv-editor.xml
 
-# Ignore Excel temp files
-~$*
-
 # For compiling the project into a windowless .exe using auto-py-to-exe
 output
 _internal
@@ -342,3 +339,8 @@ out/*/*
 2024-05-19-151330__dataset_dict.pkl
 2024-05-19-151330__IterativeImputer.pkl
 2024-05-19-170030__dataset_dict.pkl
+
+# Ignore Excel temp files
+**/~*.xlsx
+**/~*.xls
+
