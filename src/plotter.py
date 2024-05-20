@@ -95,12 +95,20 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
             # Loop over each parameter and generate a plot
             for param in parameters:
                 cv_results_filtered = deepcopy(cv_results_)
+                if param == 'param_degree' and fixed_kernel != 'poly':
+                    # Skip the 'degree' parameter if the kernel is not 'poly'
+                    continue
+                if param == 'param_coef0' and fixed_kernel == 'rbf':
+                    # Skip the 'coef0' parameter if the kernel is 'rbf'
+                    continue
                 if param == 'param_tol':
+                    # Skip the 'tol' parameter as it is not a hyperparameter anymore
                     continue
                 if default_params and param not in default_params:
+                    # If we are plotting with default parameters, skip the parameter if it is not in the default parameters
                     continue
                 if fixed_kernel != 'poly':
-                    # Drop duplicate rows that differ only by 'degree'
+                    # If param is poly, drop duplicate rows that differ only by 'degree'
                     cv_results_filtered = cv_results_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
                     # Remove degree column
                     # cv_results_filtered = cv_results_filtered.drop(columns=['param_degree'])
