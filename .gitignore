@@ -301,12 +301,14 @@ hs_err_pid*
 
 !.idea
 
-
 ## DMD Project
 
 # Additional .idea/ files
 .idea/file.template.settings.xml
 .idea/csv-editor.xml
+
+# Ignore Excel temp files
+~$*
 
 # For compiling the project into a windowless .exe using auto-py-to-exe
 output
