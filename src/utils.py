@@ -270,13 +270,13 @@ def print_summary_statistics(data_dict, log=print, current_step='', start_column
     :param start_column: The index of the first protein column in the dataset.
     """
     y = data_dict['dataset']['FT5'].to_frame(name='FT5')
-    if hasattr(data_dict, 'X_imputed'):
+    if 'X_imputed' in data_dict:
         X = data_dict['X_imputed']
-    elif hasattr(data_dict, 'X'):
+    elif 'X' in data_dict:
         X = data_dict['X']
-    elif hasattr(data_dict, 'X_selected'):
+    elif 'X_selected' in data_dict:
         X = data_dict['X_selected']
-    elif hasattr(data_dict, 'dataset'):
+    elif 'dataset' in data_dict:
         X = data_dict['dataset'].iloc[:, start_column:]
     else:
         warnings.warn("The data dictionary must contain a key 'X_imputed', 'X', 'X_selected', or 'dataset'.")
