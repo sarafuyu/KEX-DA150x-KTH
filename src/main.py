@@ -334,21 +334,65 @@ N_JOBS_GRID_SEARCH: int = 7
 SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = [0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
+    np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+    np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
+    np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
+])))
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
+    -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+    -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    -np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    -np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    -np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    -np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+    -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
+    np.linspace(0, 0, 1),              # 0
+    np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
+    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+])))
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.01]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.001]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_SVC: dict | None = None
 VERB_SVC: int = VERBOSE
-MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
+MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]
 DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
 BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 
+#### OLD SVC PARAMS from 2024-05-21
+# # Hyperparameters:            # np.logspace(start, stop, num=50)
+# C_PARAMS_SVC: Sequence[float] = [0.000_0001, 0.000_001, 0.000_01, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
+# KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
+# DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+# GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
+# COEF0_PARAMS_SVC: Sequence[float] = [-100.0, -10.0, -1.0, -0.1, -0.01, -0.001, 0.0, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(-2, 4, num=10)  # np.linspace(-10, 10, num=60)
+# SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
+# PROBABILITY_SVC: Sequence[bool] = [False]
+# TOL_PARAMS_SVC: Sequence[float] = [0.01]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+# CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
+# CLASS_WEIGHT_SVC: dict | None = None
+# VERB_SVC: int = VERBOSE
+# MAX_ITER_PARAMS_SVC: Sequence[int] = [1_000_000,]  # [-1]
+# DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
+# BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
+
+#### OLD SVC PARAMS
 # # Hyperparameters:            # np.logspace(start, stop, num=50)
 # C_PARAMS_SVC: Sequence[float] = [0.0000_0001, 0.000_001, 0.0001, 0.01, 1.0, 10.0]  # np.linspace(0.00001, 3, num=10)  # np.linspace(0.001, 100, num=60)
 # KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'sigmoid', 'rbf']  # 'linear', 'rbf', 'precomputed'
@@ -824,40 +868,38 @@ else:
     Warning("The classifier does not have a 'score' attribute. Was it fitted?")
     test_accuracy = None
 
-dataset_dict['svm'] = {'clf': deepcopy(clf), 'test_accuracy': test_accuracy}
-
 if hasattr(clf, 'dual_coef_'):
     log('yi * alpha_i: \n', clf.dual_coef_)
 
 if hasattr(clf, 'cv_results_'):
-    clf_ = deepcopy(clf)
-    cv_results_ = clf.cv_results_
+    clf_ = deepcopy(clf)  # make a copy of the classifier to use for calculating final scores
+    cv_results_ = clf.cv_results_  # but add final accuracies to cv_results_ of the original classifier
     if CALC_FINAL_SCORES:
         final_accuracies = []
         if cv_results_ is not None:
             # TODO: parallelize this loop
             for params in cv_results_['params']:
                 if hasattr(clf_, 'estimator'):
-                    estimator = clf_.estimator.set_params(**params)
-                    estimator.fit(X_training, y_training)
+                    estimator = clf_.estimator.set_params(**params)  # set the parameters of the copied estimator to the best parameters
+                    estimator.fit(X_training, y_training)            # fit the copied estimator
                     final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
                     final_accuracies.append(final_accuracy)
 
-        # Add final accuracy scores to cv_results
-        cv_results_['final_accuracy'] = np.array(final_accuracies)
+        # Add final accuracy scores to cv_results of the original classifier
+        clf.cv_results_['final_accuracy'] = np.array(final_accuracies)
+
+dataset_dict['svm'] = {'clf': deepcopy(clf), 'test_accuracy': test_accuracy} # save original classifier and final test accuracy to the dataset_dict
 
 if VERBOSE:
     utils.log_grid_search_results(
-        pipeline_config, dataset_dict, protein_start_col=11, clf=clf, accuracy=test_accuracy, log=log
+        pipeline_config, dataset_dict, clf=clf, accuracy=test_accuracy, log=log,  # log the original classifier and final test accuracy
     )
 
-joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/Path(utils.get_file_name(dataset_dict, pipeline_config) + '_CLF꞉SVC.pkl'))
+joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearchCV.pkl')
+joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
 
 
 # %% End Time
-
-joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
-# log(f"Pickled dataset_dict saved to: ------- {PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl'}")
 
 utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
 

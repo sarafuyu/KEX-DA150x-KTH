@@ -133,7 +133,7 @@ def find_best_svm_model(pipeline_config,
         test_accuracy = None
     if verb:
         utils.log_grid_search_results(
-            pipeline_config, dataset_dict, protein_start_col=11, clf=clf, accuracy=test_accuracy, log=log
+            pipeline_config, dataset_dict, clf=clf, accuracy=test_accuracy, log=log
             )
 
     dataset_dict['svm'] = {'clf': clf, 'test_accuracy': test_accuracy}

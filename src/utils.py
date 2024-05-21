@@ -14,8 +14,11 @@ import warnings
 # %% Imports
 
 # Standard library imports
+import re
+import warnings
 from functools import reduce
 from pathlib import Path
+from collections.abc import Sequence
 
 import numpy as np
 ## External library imports
@@ -488,7 +491,7 @@ def log_results(original_dataset, original_protein_start_col, config, data_dict,
     return
 
 
-def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, clf, accuracy, log=print):
+def log_grid_search_results(pipeline_config, dataset_dict, clf, accuracy, log=print):
     """
     Log the results of the grid search.
 
@@ -572,7 +575,7 @@ def log_grid_search_results(pipeline_config, dataset_dict, protein_start_col, cl
         cv_results = pd.DataFrame(clf.cv_results_)
         # cv_results = cv_results['final_accuracy'] = accuracy  # TODO: fix with individual accuracy scores from custom model
         # Save cross-validation results as CSV file
-        grid_search_file_name = get_file_name(dataset_dict, pipeline_config) + '.csv'
+        grid_search_file_name = f'{pipeline_config['START_TIME'].strftime("%Y-%m-%d-%H%M%S")}__GridSearch_cv_results.csv'
         cv_results.to_csv(PROJECT_ROOT/'out'/grid_search_file_name, index=False)
         # Also log cross-validation results
         if VERBOSITY_LEVEL > 2:
