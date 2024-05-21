@@ -14,6 +14,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 # Standard library imports
 import re
 import warnings
+from decimal import Decimal
 from functools import reduce
 from pathlib import Path
 from collections.abc import Sequence
@@ -634,3 +635,35 @@ def is_power_of_10(n):
     log10_n = np.log10(n)
     return log10_n == int(log10_n)
 
+def round_to_1(x):
+    if x == 0:
+        return x
+    try:
+        return round(x, -int(np.floor(np.log10(abs(x)))))
+    except (OverflowError, RuntimeWarning, ZeroDivisionError) as e:
+        if x != 0:
+            print(f'Error successfully caught and handled in utils.round_to_1({x}):\n', e)
+        return f"{x}"
+
+def round_to_n(x, n):
+    if x == 0:
+        return x
+    try:
+        return round(x, -int(np.floor(np.log10(abs(x)))) + n)
+    except (OverflowError, RuntimeWarning, ZeroDivisionError) as e:
+        if x != 0:
+            print(f'Error successfully caught and handled in utils.round_to_1({x}):\n', e)
+        return f"{x}"
+
+def scientific_notation_formatter(val, pos):
+    """Formatter for scientific notation with superscript."""
+    if val == 0:
+        return "$0$"
+    if val < 0:
+        return f"-{scientific_notation_formatter(-val, pos)}"
+    exponent = int(np.log10(val))
+    coefficient = val / 10**exponent
+    if coefficient == 1:
+        return f"$10^{{{exponent}}}$"
+    else:
+        return f"${coefficient:.1f} \\cdot 10^{{{exponent}}}$"

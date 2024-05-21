@@ -24,7 +24,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns  # For heatmap or advanced plotting
-from matplotlib.ticker import MaxNLocator, SymmetricalLogLocator
+from matplotlib.ticker import MaxNLocator, SymmetricalLogLocator, FuncFormatter
 from joypy import joyplot
 
 # Local imports
@@ -37,6 +37,7 @@ SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL-coef0-fix'
 CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL-poly-detailed'
+# CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL-poly-detailed-seed420'
 
 
 # %% Configuration
@@ -45,12 +46,13 @@ CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-i
 # CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-20-213155__GridSearch_cv_results.csv'
 # GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-21-000645__GridSearchCV.pkl'
 GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-21-023215__GridSearchCV.pkl'
+# GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-21-155708__GridSearchCV.pkl'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
 
 # Specify the column name for the test score
-TEST_SCORE_COLUMN_NAME: str = 'final_accuracy'
+TEST_SCORE_COLUMN_NAME: str = 'mean_test_score'
 
 # Specify parameters of interest
 PARAMS_OF_INTEREST = ['C', 'degree', 'coef0']
@@ -110,12 +112,13 @@ def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column
         Either 'mean_test_score' or 'final_accuracy'.
     :param default_params: (dict) The default parameters for the model. If None, comparison is made
         against optimal parameters.
-    :param default_kernel: (str) The default kernel for the SVC model.
     """
+    global best_params
     if default_params is None:
         # Find the best parameters
-        best_index = cv_results_['rank_test_score'].idxmin()
-        best_param_vals = cv_results_.loc[best_index, parameters]
+        # best_index = cv_results_['rank_test_score'].idxmin()
+        # best_param_vals = cv_results_.loc[best_index, parameters]
+        best_param_vals = pd.Series({'param_C': best_params['param_C'], 'param_degree': best_params['param_degree'], 'param_coef0': best_params['param_coef0']})
     else:
         best_param_vals = pd.Series(default_params)
 
@@ -127,8 +130,8 @@ def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column
 
             # Loop over each parameter and generate a plot
             for param in parameters:
-                # if param != 'param_coef0':
-                #     continue  # TODO: for debugging, remove later
+                if param == 'param_C' or param == 'param_coef0' or not default_params:
+                    continue  # TODO: for debugging, remove later
                 cv_results_filtered = deepcopy(cv_results_)
                 if param == 'param_degree' and fixed_kernel != 'poly':
                     # Skip the 'degree' parameter if the kernel is not 'poly'
@@ -143,29 +146,32 @@ def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column
                     # If we are plotting with default parameters, skip the parameter if it is not in the default parameters
                     continue
                 if fixed_kernel != 'poly':
-                    # If param is poly, drop duplicate rows that differ only by 'degree'
-                    cv_results_filtered = cv_results_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
-                    # Remove degree column
-                    # cv_results_filtered = cv_results_filtered.drop(columns=['param_degree'])
+                    # # If param is poly, drop duplicate rows that differ only by 'degree'
+                    # cv_results_filtered = cv_results_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
+                    # # Remove degree column
+                    # # cv_results_filtered = cv_results_filtered.drop(columns=['param_degree'])
+                    #
+                    # # # Get list of all the other parameters
+                    # # other_params = [p for p in parameters if p != param]
+                    continue  # Skip the 'degree' parameter if the kernel is not 'poly' since we have limited our search to poly kernels for now
 
-                    # # Get list of all the other parameters
-                    # other_params = [p for p in parameters if p != param]
 
                 # Get list of all the other parameters
-                other_params = [p for p in parameters if p != param]
+                fixed_params_ = [p for p in parameters if p != param]
 
                 # Create mask to extract rows where all other parameters are at their best values
-                mask = pd.DataFrame(cv_results_[other_params] == best_param_vals.drop(index=param)).all(axis=1)
+                mask = pd.DataFrame(cv_results_[fixed_params_] == best_param_vals.drop(index=param)).all(axis=1)
 
-                # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
-                mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
-
-                # Additional filtering to include only rows where the kernel column is equal to fixed_kernel
-                mask &= (cv_results_['param_kernel'] == fixed_kernel)
+                # Since we have limited ourselves to only StandardScaler and poly kernels, we can skip this step for now
+                # # Additional filtering to include only rows where the normalizer column is equal to fixed_normalizer
+                # mask &= (cv_results_['param_normalizer'] == fixed_normalizer)
+                #
+                # # Additional filtering to include only rows where the kernel column is equal to fixed_kernel
+                # mask &= (cv_results_['param_kernel'] == fixed_kernel)
 
                 # Apply mask and drop duplicates based on the current parameter
-                varying_param_data = cv_results_[mask]
-                varying_param_data = varying_param_data.drop_duplicates(subset=param)
+                varying_param_data = deepcopy(cv_results_[mask])
+                # varying_param_data = varying_param_data.drop_duplicates(subset=param)
 
                 # Extract the values to plot
                 x = varying_param_data[param]
@@ -176,51 +182,29 @@ def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column
 
                 # Create the plot
                 param_label = param.split('_')[1]
-                fig, ax = plt.subplots(figsize=(10, 5))
+                fig, ax = plt.subplots(figsize=(7, 5))
 
                 if param == 'param_degree':
                     # Point plot for ordinal categorical variable 'degree'
-                    ax.errorbar(x, y, yerr=se, fmt='o', capsize=5, elinewidth=1, markeredgewidth=1)
+                    ax.errorbar(x, y, yerr=se, fmt='o', capsize=5, elinewidth=1, markeredgewidth=1)  # , ecolor='blue')
                     ax.set_xticks(x)
                     ax.set_xticklabels(x, rotation=0)
-
-                    # Find the degree with the highest accuracy
-                    max_accuracy_idx = y.idxmax()
-                    max_accuracy_degree = x[max_accuracy_idx]
-                    max_accuracy_value = y[max_accuracy_idx]
-                    max_accuracy_std = se[max_accuracy_idx]
-
-                    # Annotate the highest accuracy degree
-                    ax.annotate(f'{param_label}={max_accuracy_value:.2f}\n{max_accuracy_value:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std),
-                                xytext=(max_accuracy_degree, max_accuracy_value + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
-                                arrowprops=dict(facecolor='black', shrink=0.05),
-                                ha='center', va='bottom', fontsize=10, color='black')
-
                 else:
                     # Line plot for other parameters
                     ax.plot(x, y, linestyle='--', marker='o', label=param_label)
-                    ax.fill_between(x, y - se, y + se, alpha=0.2, label=f'±1σ (SE)')
+                    ax.fill_between(x, y - se, y + se, alpha=0.2, label=f'SE')  # , color='red')
 
-                    # Find the parameter value with the highest accuracy
-                    max_accuracy_idx = y.idxmax()
-                    max_accuracy_value = x[max_accuracy_idx]
-                    max_accuracy_score = y[max_accuracy_idx]
-                    max_accuracy_std = se[max_accuracy_idx]
-
-                    # Annotate the highest accuracy parameter value
-                    ax.annotate(f'{param_label}={max_accuracy_value:.2f}\n{max_accuracy_score:.2f}±{max_accuracy_std:.2f}', xy=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std),
-                                xytext=(max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05*max_accuracy_std + 0.02),
-                                arrowprops=dict(facecolor='black', shrink=0.05),
-                                ha='center', va='bottom', fontsize=10, color='black')
-
+                # Set the labels other_params  best_param_vals
+                fixed_param_label = ''
+                for fixed_param in fixed_params_:
+                    best_param_val = best_param_vals[fixed_param]
+                    fixed_param_label += f'{fixed_param.replace("param_", "")}={f'{utils.round_to_1(best_param_val) if (utils.is_power_of_10(best_param_val) or best_param_val == 0 or best_param_val == 3) else f'{best_param_val:4f}'}' if type(best_param_val) is not str else best_param_val}, '
+                fixed_param_label = fixed_param_label[:-2]
+                param_label = param_label.replace('param_', '')
                 title = (
                     f'Effect of {param_label} on Model Performance\n'
-                    f'using {fixed_normalizer} Normalizer with SVC {fixed_kernel} Kernel'
+                    f'using {f"Default" if default_params else "Optimal"} Parameters ({fixed_param_label})'
                 )
-                if default_params:
-                    title += f' and Default Parameters'
-                else:
-                    title += f' and Optimal Parameters'
                 if param == 'param_degree':
                     ax.set_xlabel('Polynomial Kernel Degree')
                 else:
@@ -241,12 +225,59 @@ def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column
                         ax.set_xscale('log')
 
                 # Dynamic y-axis limits with padding
-                y_min, y_max = min(y) - 0.05, max(y) + 0.05
-                padding = (y_max - y_min) * 0.1
-                ax.set_ylim([y_min - padding, y_max + padding])
+                y_min, y_max = ax.get_ylim()[0], ax.get_ylim()[1]
+                x_min, x_max = ax.get_xlim()[0], ax.get_xlim()[1]
+
+                # Find the degree value with the highest accuracy using optimal parameters
+                max_accuracy_value = best_params[param]
+                max_accuracy_idx = x[x == max_accuracy_value].index[-1]
+                max_accuracy_score = y[max_accuracy_idx]
+                max_accuracy_std = se[max_accuracy_idx]
+
+                arrow_pos = (max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.05 * max_accuracy_std)
+                arrow_length = 0.02
+                padding = (y_max - y_min)
+                if param == 'param_degree':
+                    ax.set_xlim([x_min - 1, x_max + 1])
+                    if default_params:
+                        ax.set_ylim([y_min - padding * 0.4, y_max + padding * 0.4])
+                        arrow_pos = (max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.02 * max_accuracy_std)
+                        arrow_length = 0.0045
+                    else:
+                        ax.set_ylim([y_min - padding * 0.1, y_max + padding * 0.4])
+                elif param == 'param_coef0':
+                    ax.set_ylim([y_min - padding * 0.1, y_max + padding * 0.37])
+                elif param == 'param_C':
+                    if default_params:
+                        ax.set_ylim([y_min - padding * 0.25, y_max + padding * 0.95])
+                        arrow_pos = (max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.02 * max_accuracy_std)
+                        arrow_length = 0.007
+                    else:
+                        ax.set_ylim([y_min - padding * 0.2, y_max + padding * 0.8])
+                        arrow_pos = (max_accuracy_value, max_accuracy_score + max_accuracy_std + 0.02 * max_accuracy_std)
+                        arrow_length = 0.011
 
                 # Dynamically set y-axis major ticks
                 ax.yaxis.set_major_locator(MaxNLocator(nbins=5))
+
+                if param == 'param_degree':
+                    # Annotate the highest accuracy degree  # TODO: fix fallback option
+                    ax.annotate(
+                        f'{param_label}={utils.round_to_n(max_accuracy_value, 2)}\n{utils.round_to_n(max_accuracy_score, 2)}±{utils.round_to_n(max_accuracy_std, 2)}',
+                        xy=arrow_pos,
+                        xytext=(arrow_pos[0], arrow_pos[1] + arrow_length),
+                        arrowprops=dict(facecolor='black', shrink=0.05),
+                        ha='center', va='bottom', fontsize=10, color='black'
+                    )
+                else:
+                    # Annotate the highest accuracy parameter value  # TODO: fix fallback option
+                    ax.annotate(
+                        f'{param_label}={utils.round_to_n(max_accuracy_value, 2)}\n{utils.round_to_n(max_accuracy_score, 2)}±{utils.round_to_n(max_accuracy_std, 2)}',
+                        xy=arrow_pos,
+                        xytext=(arrow_pos[0], arrow_pos[1] + arrow_length),
+                        arrowprops=dict(facecolor='black'),
+                        ha='center', va='bottom', fontsize=10, color='black'
+                    )
 
                 plt.legend()
 
@@ -442,7 +473,10 @@ def plot_ridge(df, save_file, accuracy_score_column_name, kernel, normalizer):
     plt.close(fig)
 
 
-def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric='mean_test_score', default_params=False):
+def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric='mean_test_score', default_params=False, use_default_params=None):
+    if default is None:
+        raise ValueError("Default parameter must be specified")
+
     # Filter results based on fixed_params
     mask = np.ones(len(cv_results_), dtype=bool)
     for param, value in fixed_params.items():
@@ -494,7 +528,10 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
     std_error_data = std_error_data.dropna(axis=1, how='all')
 
     # Set fig size and proportion based on the x and y data size
-    fig, ax = plt.subplots(figsize=(min(10, 1 * heatmap_data.shape[1]), min(10, 1 * heatmap_data.shape[0])))
+    if x_param == 'param_degree':
+        fig, ax = plt.subplots(figsize=(min(10, 2 * heatmap_data.shape[1]), min(10, 2 * heatmap_data.shape[0])))
+    else:
+        fig, ax = plt.subplots(figsize=(min(10, 1 * heatmap_data.shape[1]), min(10, 1 * heatmap_data.shape[0])))
     # Ensure the cells are square-shaped
     ax.set_aspect('equal', adjustable='box')
 
@@ -520,30 +557,42 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
         shrink_val = 0.4
 
     # Create the heatmap
-    fig = plt.figure(figsize=(14, 10))  # Adjusted size for more space
     sns.heatmap(
         heatmap_data, annot=labels, fmt="", cmap="coolwarm",
-        annot_kws={"size": 10}, cbar_kws={'label': 'Mean CV Validation Accuracy (±SE)'},
+        annot_kws={"size": 10}, cbar_kws={'label': f'Mean CV Validation Accuracy {'' if labels is None else '(±SE)'}', 'shrink': shrink_val},
         linecolor='lightgrey', linewidths=0.5  # Lighter cell borders
     )
+
+    # #  Set axis labels to scientific notation unless the parameter is 'degree' which is ordinal
+    # if x_param != 'param_degree':
+    #     ax.xaxis.set_major_formatter(FuncFormatter(utils.scientific_notation_formatter))
+    # if y_param != 'param_degree':
+    #     ax.yaxis.set_major_formatter(FuncFormatter(utils.scientific_notation_formatter))
 
     # Set the ticks and labels
     if x_param != 'param_degree' and x_param != 'param_kernel':
         ax.set_xticks([heatmap_data.columns.get_loc(i) + 0.5 for i in xticks])
-        ax.set_xticklabels(xticks)
+        ax.set_xticklabels(list(utils.scientific_notation_formatter(xtick, pos=None) for xtick in xticks))
     if y_param != 'param_degree' and y_param != 'param_kernel':
         ax.set_yticks([heatmap_data.index.get_loc(i) + 0.5 for i in yticks])
-        ax.set_yticklabels(yticks)
+        ax.set_yticklabels(list(utils.scientific_notation_formatter(ytick, pos=None) for ytick in yticks))
 
+    # Adjust the tick parameters to make labels horizontal
+    # ax.tick_params(axis='x', labelrotation=0)
+    # ax.tick_params(axis='y', labelrotation=0)
+
+    # Set the labels
     fixed_param_label = ''
     for fixed_param, best_param_val in fixed_params.items():
-        fixed_param_label += f'{fixed_param.replace("param_", "")}={best_param_val}, '
+        if fixed_param == 'param_kernel':
+            continue
+        fixed_param_label += f'{fixed_param.replace("param_", "")}={f'{utils.round_to_1(best_param_val) if (utils.is_power_of_10(best_param_val) or best_param_val == 0 or best_param_val == 3) else f'{best_param_val:4f}'}' if type(best_param_val) is not str else best_param_val}, '
     fixed_param_label = fixed_param_label[:-2]
     x_param_label = x_param.replace('param_', '')
     y_param_label = y_param.replace('param_', '')
     title = (
         f'Interaction of {x_param_label} and {y_param_label}\n'
-        f'with Other Hyperparameters Set to {"Defaults" if default_params else "Optimal"} ({fixed_param_label})\n'
+        f'using {f"Default" if use_default_params else "Optimal"} Parameters ({fixed_param_label})\n'
     )
     plt.title(title)
     plt.xlabel(x_param_label)
@@ -553,7 +602,7 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
 
     fixed_param_label = fixed_param_label.replace(', ', '_')
     fig.savefig(
-        CV_RESULTS_DIR / f"heatmap-{x_param_label}-{y_param_label}_fixed-{'defaults' if default_params else 'opt'}-{fixed_param_label}.png",
+        CV_RESULTS_DIR / f"heatmap-{x_param_label}-{y_param_label}_fixed-{'defaults' if use_default_params else 'opt'}-{fixed_param_label}.png",
         bbox_inches='tight'
     )
     plt.pause(0.5)
@@ -564,7 +613,8 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
 
 # Call plotting functions
 plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, scale=SCALE_X, test_score_column_name=TEST_SCORE_COLUMN_NAME, default_params=None)  # SVC_DEFAULT_PARAMS)
-
+plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, scale=SCALE_X, test_score_column_name=TEST_SCORE_COLUMN_NAME, default_params=SVC_DEFAULT_PARAMS)
+exit(0)
 
 # %% Plot the effect of 'tol' on the mean test score (ridgeline plot)
 
@@ -575,7 +625,12 @@ plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, scale=SCALE_X, test_s
 
 # %% Create heatmaps
 SVC_DEFAULT_PARAMS['param_kernel'] = SVC_DEFAULT_KERNEL
+default = None
 for fixed_params in [best_params, SVC_DEFAULT_PARAMS]:
+    if fixed_params == SVC_DEFAULT_PARAMS:
+        default = True
+    else:
+        default = False
 
     # %% 1. param_C vs param_coef0 with the best non-rbf kernel fixed
 
@@ -590,10 +645,10 @@ for fixed_params in [best_params, SVC_DEFAULT_PARAMS]:
         fixed_parameters['param_degree'] = best_degree
 
     # Skip the first heatmap if we are plotting with default parameters since default kernel is 'rbf' which is not compatible with 'coef0'
-    if best_kernel == 'rbf' and fixed_params == SVC_DEFAULT_PARAMS:
+    if best_kernel == 'rbf' or fixed_params == SVC_DEFAULT_PARAMS:
         pass
     else:
-        create_heatmap(deepcopy(cv_results), 'param_C', 'param_coef0', fixed_parameters, 'mean_test_score')
+        create_heatmap(deepcopy(cv_results), 'param_C', 'param_coef0', fixed_parameters, 'mean_test_score', use_default_params=default)
 
 
     # %% 2. param_C vs param_degree (kernel 'poly') with param_coef0 fixed
@@ -604,29 +659,35 @@ for fixed_params in [best_params, SVC_DEFAULT_PARAMS]:
     # Set fixed params for the second heatmap
     fixed_parameters = {'param_kernel': 'poly', 'param_coef0': best_coef0}
 
-create_heatmap(deepcopy(cv_results), 'param_C', 'param_degree', fixed_parameters, 'mean_test_score')
+    create_heatmap(deepcopy(cv_results), 'param_C', 'param_degree', fixed_parameters, 'mean_test_score', use_default_params=default)
 
 
     # %% 3. param_C vs kernel (rbf, sigmoid, poly deg1, poly deg2, ... poly deg10) with param_coef0 fixed
 
-    # Modify param_kernel to include poly degrees
-    cv_results['param_kernel'] = cv_results.apply(
-        lambda row: f"{row['param_kernel']} deg{row['param_degree']}" if row['param_kernel'] == 'poly' else row[
-            'param_kernel'], axis=1
-    )
+    if fixed_params['param_kernel']:
+        pass  # Skip the third heatmap if the fixed param is kernel since we have limited ourselves to poly and already plotted the effect of 'degree' on 'C'
+    else:
+        # Modify param_kernel to include poly degrees
+        cv_results['param_kernel'] = cv_results.apply(
+            lambda row: f"{row['param_kernel']} deg{row['param_degree']}" if row['param_kernel'] == 'poly' else row[
+                'param_kernel'], axis=1
+        )
 
-    create_heatmap(deepcopy(cv_results), 'param_C', 'param_kernel', {'param_coef0': best_coef0}, 'mean_test_score')
+        create_heatmap(deepcopy(cv_results), 'param_C', 'param_kernel', {'param_coef0': best_coef0}, 'mean_test_score', use_default_params=default)
 
 
     # %% 4. param_coef0 vs kernel ('rbf' excluded; so sigmoid, poly deg1, poly deg2, ... poly deg10) with param_C fixed
 
-    # Find the best param_C value to fix
-    best_C = fixed_params['param_C']
+    if fixed_params['param_kernel']:
+        pass   # Skip the fourth heatmap if the fixed param is kernel since we have limited ourselves to poly and already plotted the effect of 'degree' on 'C'
+    else:
+        # Find the best param_C value to fix
+        best_C = fixed_params['param_C']
 
-    create_heatmap(
-        deepcopy(cv_results[cv_results['param_kernel'] != 'rbf']), 'param_coef0', 'param_kernel', {'param_C': best_C},
-        'mean_test_score'
-    )
+        create_heatmap(
+            deepcopy(cv_results[cv_results['param_kernel'] != 'rbf']), 'param_coef0', 'param_kernel', {'param_C': best_C},
+            'mean_test_score'
+        )
 
 
     # %% 5. param_degree vs coef0 (only for kernel = 'poly') with param_C fixed
@@ -639,5 +700,5 @@ create_heatmap(deepcopy(cv_results), 'param_C', 'param_degree', fixed_parameters
 
     create_heatmap(
         deepcopy(cv_results[cv_results['param_kernel'].str.startswith('poly')]), 'param_coef0', 'param_degree', fixed_parameters,
-        'mean_test_score'
+        'mean_test_score', use_default_params=default
     )

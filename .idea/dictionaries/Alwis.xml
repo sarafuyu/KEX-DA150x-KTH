@@ -21,6 +21,9 @@
       <w>succesivt</w>
       <w>symlog</w>
       <w>xgbclf</w>
+      <w>xticks</w>
+      <w>ytick</w>
+      <w>yticks</w>
     </words>
   </dictionary>
 </component>
