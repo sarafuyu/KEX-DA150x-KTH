@@ -9,8 +9,6 @@ Utilities for Data Analysis
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
-import re
-import warnings
 # %% Imports
 
 # Standard library imports
@@ -609,3 +607,30 @@ def log_time(start_time, end_time, log=print, logfile: Path = None):
         f"Pipeline finished {end_time.strftime('%Y-%m-%d %H:%M:%S')}, "
         f"and took {hms[0]}h:{hms[1]}m:{hms[2]}s {timedelta[1][:3]}.{timedelta[1][3:]}ms to run.\n"
     )
+
+
+def replace_column_prefix(d: pd.DataFrame | dict, prefixes: Sequence[str], repl: str = '') -> pd.DataFrame:
+    """
+    Strip the 'param_' prefix from the column names in a DataFrame or dict.
+
+    :param d: The DataFrame or dict to process.
+    :param prefixes: The prefixes to remove from the column names.
+    :param repl: The replacement string.
+    :return: The DataFrame with the 'param_' prefix removed from the column names.
+    """
+    for prefix in prefixes:
+        if type(d) is dict:
+            d = {k.replace(prefix, repl): v for k, v in d.items()}
+        else:
+            d.columns = d.columns.str.replace(prefix, repl)
+    return d
+
+
+def is_power_of_10(n):
+    """Check if a number is a power of 10, considering the absolute value for negative numbers."""
+    n = abs(n)  # Take the absolute value to handle negative numbers
+    if n <= 0:
+        return False
+    log10_n = np.log10(n)
+    return log10_n == int(log10_n)
+

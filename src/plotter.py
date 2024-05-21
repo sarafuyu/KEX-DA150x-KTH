@@ -18,12 +18,13 @@ from pathlib import Path
 from collections.abc import Sequence
 from copy import deepcopy
 
+import joblib
 # External imports
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns  # For heatmap or advanced plotting
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, SymmetricalLogLocator
 from joypy import joyplot
 
 # Local imports
@@ -34,13 +35,16 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL'
+# CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL-coef0-fix'
+CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol001-Std-FINAL-poly-detailed'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-19-170030__GridSearch_cv_results.csv'
+# CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-20-213155__GridSearch_cv_results.csv'
+# GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-21-000645__GridSearchCV.pkl'
+GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-21-023215__GridSearchCV.pkl'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
@@ -62,16 +66,45 @@ SCALE_X = 'log'  # 'linear' or 'log'
 SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
 SVC_DEFAULT_KERNEL = 'rbf'
 
+# # Load the cross-validation results
+gridsearch_cv = joblib.load(GRID_SEARCH_RESULTS_PATH)
+
+# Extract the optimal parameters from the cv_results_ DataFrame
+best_params = gridsearch_cv.best_params_
+cv_results = pd.DataFrame(gridsearch_cv.cv_results_)
+
+# Make all param prefixes the same
+cv_results = utils.replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
+best_params = utils.replace_column_prefix(best_params, ['classifier__'],  'param_')
+best_params['param_normalizer'] = best_params.pop('normalizer')
+
+# Add prefix to the parameter names
+PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
+FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
+VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
+
+# Sanitize the normalizer repr
+cv_results['param_normalizer'] = cv_results['param_normalizer'].astype(str).str.split('(').str[0]
+best_params['param_normalizer'].__repr__ = lambda *self: print(best_params['param_normalizer'].__str__().split('(')[0])
+
+# Set dtype for the parameters of interest
+cv_results['param_kernel'] = cv_results['param_kernel'].astype(str)
+cv_results['param_normalizer'] = cv_results['param_normalizer'].astype(str)
+cv_results['param_C'] = cv_results['param_C'].astype(np.float64)
+cv_results['param_degree'] = cv_results['param_degree'].astype(int)
+cv_results['param_coef0'] = cv_results['param_coef0'].astype(np.float64)
+cv_results['param_tol'] = cv_results['param_tol'].astype(np.float64)
+
 
 # %% Plot functions
 
-def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, test_score_column_name='mean_test_score', default_params=None, default_kernel='rbf'):
+
+def plot_parameter_effects_opt(cv_results_, parameters, scale, test_score_column_name='mean_test_score', default_params=None):
     """
     Plot the effects of varying parameters on model performance.
 
     :param cv_results_: (pd.DataFrame) The DataFrame containing the cross-validation results.
     :param parameters: (list[str]) List of parameter names to plot.
-    :param data_filename: (str) The filename of the data source.
     :param scale: (str) The scale of the x-axis. Either 'linear' or 'log'.
     :param test_score_column_name: (str) The name of the column containing the test score.
         Either 'mean_test_score' or 'final_accuracy'.
@@ -94,6 +127,8 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
 
             # Loop over each parameter and generate a plot
             for param in parameters:
+                # if param != 'param_coef0':
+                #     continue  # TODO: for debugging, remove later
                 cv_results_filtered = deepcopy(cv_results_)
                 if param == 'param_degree' and fixed_kernel != 'poly':
                     # Skip the 'degree' parameter if the kernel is not 'poly'
@@ -198,7 +233,8 @@ def plot_parameter_effects_opt(cv_results_, parameters, data_filename, scale, te
                     ax.set_xscale('linear')
                 elif scale == 'log':
                     if param == 'param_coef0':
-                        linthresh = 1e-3  # should be set to pos coef0 value closest to zero
+                        # set linthresh to the positive value of coef0 value closest to zero
+                        linthresh = np.abs(x[x > 0].min())
                         ax.set_xscale('symlog', linthresh=linthresh)
                         ax.xaxis.set_major_locator(SymmetricalLogLocator(base=10, linthresh=linthresh))
                     else:
@@ -311,20 +347,6 @@ def get_fig_filename(param: str, source_data_filename: Path, suffix: str = '') -
     return Path(source_data_filename.stem + 'PLT꞉' + param + suffix + '.png')
 
 
-def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl: str = '') -> pd.DataFrame:
-    """
-    Strip the 'param_' prefix from the column names in a DataFrame.
-
-    :param df: The DataFrame to process.
-    :param prefixes: The prefixes to remove from the column names.
-    :param repl: The replacement string.
-    :return: The DataFrame with the 'param_' prefix removed from the column names.
-    """
-    for prefix in prefixes:
-        df.columns = df.columns.str.replace(prefix, repl)
-    return df
-
-
 def plot_tol_ridge(cv_results_, save_path, accuracy_score_column_name='mean_test_score'):
     # Filter out tolerance parameter values greater or equal to 1e-3
     cv_results_ = cv_results_[cv_results_['param_tol'] >= 1e-3]
@@ -420,33 +442,6 @@ def plot_ridge(df, save_file, accuracy_score_column_name, kernel, normalizer):
     plt.close(fig)
 
 
-# %% Generate plots
-
-# Load the cross-validation results
-cv_results = pd.read_csv(CV_RESULTS_PATH)
-
-# Make all param prefixes the same
-cv_results = replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
-
-# Add prefix to the parameter names
-PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
-FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
-VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
-
-# Sanitize the normalization column
-cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
-
-# Call plotting functions
-# plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, data_filename=CV_RESULTS_PATH, scale=SCALE_X, test_score_column_name=TEST_SCORE_COLUMN_NAME, default_params=None)  # SVC_DEFAULT_PARAMS)
-# with plt.rc_context({'font.size': 12}):
-#     plot_tol_ridge(cv_results_=cv_results, save_path=CV_RESULTS_DIR, accuracy_score_column_name='mean_test_score')
-
-# for param in PARAMS_OF_INTEREST:
-#     varying_params = [p for p in PARAMS_OF_INTEREST if p != param]
-#     plot_interactive_effects(cv_results, param, varying_params, CV_RESULTS_PATH, default_params=None)  # SVC_DEFAULT_PARAMS)
-#     plot_interactive_effects(cv_results, param, varying_params, CV_RESULTS_PATH, default_params=SVC_DEFAULT_PARAMS)
-
-
 def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric='mean_test_score', default_params=False):
     # Filter results based on fixed_params
     mask = np.ones(len(cv_results_), dtype=bool)
@@ -498,6 +493,11 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
     heatmap_data = heatmap_data.dropna(axis=1, how='all')
     std_error_data = std_error_data.dropna(axis=1, how='all')
 
+    # Set fig size and proportion based on the x and y data size
+    fig, ax = plt.subplots(figsize=(min(10, 1 * heatmap_data.shape[1]), min(10, 1 * heatmap_data.shape[0])))
+    # Ensure the cells are square-shaped
+    ax.set_aspect('equal', adjustable='box')
+
     # Format annotations with standard error in parentheses
     labels = (
         np.asarray([f"{x:.2f}\n({y:.2f})" for x, y in zip(heatmap_data.values.flatten(), std_error_data.values.flatten())])
@@ -506,6 +506,19 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
     # Add back column and index names
     labels = pd.DataFrame(labels, index=heatmap_data.index, columns=heatmap_data.columns)
 
+    # Don't show annotations if the number of columns is too large
+    if heatmap_data.shape[1] > 15:
+        labels = None
+
+    # Filter ticks to only show powers of 10
+    shrink_val = 1  # Set length of colorbar
+    if x_param != 'param_degree' and x_param != 'param_kernel':
+        xticks = [i for i in heatmap_data.columns if type(i) is not str and utils.is_power_of_10(i)]
+    if y_param != 'param_degree' and y_param != 'param_kernel':
+        yticks = [i for i in heatmap_data.index if type(i) is not str and utils.is_power_of_10(i)]
+    else:
+        shrink_val = 0.4
+
     # Create the heatmap
     fig = plt.figure(figsize=(14, 10))  # Adjusted size for more space
     sns.heatmap(
@@ -513,6 +526,14 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
         annot_kws={"size": 10}, cbar_kws={'label': 'Mean CV Validation Accuracy (±SE)'},
         linecolor='lightgrey', linewidths=0.5  # Lighter cell borders
     )
+
+    # Set the ticks and labels
+    if x_param != 'param_degree' and x_param != 'param_kernel':
+        ax.set_xticks([heatmap_data.columns.get_loc(i) + 0.5 for i in xticks])
+        ax.set_xticklabels(xticks)
+    if y_param != 'param_degree' and y_param != 'param_kernel':
+        ax.set_yticks([heatmap_data.index.get_loc(i) + 0.5 for i in yticks])
+        ax.set_yticklabels(yticks)
 
     fixed_param_label = ''
     for fixed_param, best_param_val in fixed_params.items():
@@ -539,64 +560,84 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, accuracy_metric=
     plt.close(fig)
 
 
-# %% 1. param_C vs param_coef0 with the best non-rbf kernel fixed
+# %% Generate parameter effect line plots
 
-# Find the best kernel (excluding 'rbf')
-best_kernel_row = cv_results[cv_results['param_kernel'] != 'rbf'].sort_values(by='mean_test_score', ascending=False).iloc[0]
-best_kernel = BEST_PARAMS['param_kernel'] if BEST_PARAMS['param_kernel'] != 'rbf' else best_kernel_row['param_kernel']
-best_kernel_row = cv_results[cv_results['param_kernel'] == best_kernel].sort_values(by='mean_test_score', ascending=False).iloc[0]
-best_degree = BEST_PARAMS['param_degree'] if best_kernel == 'poly' else None
-
-# Set fixed params for the first heatmap
-fixed_parameters = {'param_kernel': best_kernel}
-if best_kernel == 'poly':
-    fixed_parameters['param_degree'] = best_degree
-
-create_heatmap(deepcopy(cv_results), 'param_C', 'param_coef0', fixed_parameters, 'mean_test_score')
+# Call plotting functions
+plot_parameter_effects_opt(cv_results, PARAMS_OF_INTEREST, scale=SCALE_X, test_score_column_name=TEST_SCORE_COLUMN_NAME, default_params=None)  # SVC_DEFAULT_PARAMS)
 
 
-# %% 2. param_C vs param_degree (kernel 'poly') with param_coef0 fixed
+# %% Plot the effect of 'tol' on the mean test score (ridgeline plot)
 
-# Find the best param_coef0 value to fix
-best_coef0 = BEST_PARAMS['param_coef0']
+# Only plot the effect of 'tol' if it is a hyperparameter
+# with plt.rc_context({'font.size': 12}):
+#     plot_tol_ridge(cv_results_=cv_results, save_path=CV_RESULTS_DIR, accuracy_score_column_name='mean_test_score')
 
-# Set fixed params for the second heatmap
-fixed_parameters = {'param_kernel': 'poly', 'param_coef0': best_coef0}
+
+# %% Create heatmaps
+SVC_DEFAULT_PARAMS['param_kernel'] = SVC_DEFAULT_KERNEL
+for fixed_params in [best_params, SVC_DEFAULT_PARAMS]:
+
+    # %% 1. param_C vs param_coef0 with the best non-rbf kernel fixed
+
+    # Find the best kernel (excluding 'rbf')
+    best_kernel_row = cv_results[cv_results['param_kernel'] != 'rbf'].sort_values(by='mean_test_score', ascending=False).iloc[0]
+    best_kernel = fixed_params['param_kernel'] if fixed_params['param_kernel'] != 'rbf' else best_kernel_row['param_kernel']
+    best_degree = fixed_params['param_degree'] if best_kernel == 'poly' else None
+
+    # Set fixed params for the first heatmap
+    fixed_parameters = {'param_kernel': best_kernel}
+    if best_kernel == 'poly':
+        fixed_parameters['param_degree'] = best_degree
+
+    # Skip the first heatmap if we are plotting with default parameters since default kernel is 'rbf' which is not compatible with 'coef0'
+    if best_kernel == 'rbf' and fixed_params == SVC_DEFAULT_PARAMS:
+        pass
+    else:
+        create_heatmap(deepcopy(cv_results), 'param_C', 'param_coef0', fixed_parameters, 'mean_test_score')
+
+
+    # %% 2. param_C vs param_degree (kernel 'poly') with param_coef0 fixed
+
+    # Find the best param_coef0 value to fix
+    best_coef0 = fixed_params['param_coef0']
+
+    # Set fixed params for the second heatmap
+    fixed_parameters = {'param_kernel': 'poly', 'param_coef0': best_coef0}
 
 create_heatmap(deepcopy(cv_results), 'param_C', 'param_degree', fixed_parameters, 'mean_test_score')
 
 
-# %% 3. param_C vs kernel (rbf, sigmoid, poly deg1, poly deg2, ... poly deg10) with param_coef0 fixed
+    # %% 3. param_C vs kernel (rbf, sigmoid, poly deg1, poly deg2, ... poly deg10) with param_coef0 fixed
 
-# Modify param_kernel to include poly degrees
-cv_results['param_kernel'] = cv_results.apply(
-    lambda row: f"{row['param_kernel']} deg{row['param_degree']}" if row['param_kernel'] == 'poly' else row[
-        'param_kernel'], axis=1
-)
+    # Modify param_kernel to include poly degrees
+    cv_results['param_kernel'] = cv_results.apply(
+        lambda row: f"{row['param_kernel']} deg{row['param_degree']}" if row['param_kernel'] == 'poly' else row[
+            'param_kernel'], axis=1
+    )
 
-create_heatmap(deepcopy(cv_results), 'param_C', 'param_kernel', {'param_coef0': best_coef0}, 'mean_test_score')
-
-
-# %% 4. param_coef0 vs kernel ('rbf' excluded; so sigmoid, poly deg1, poly deg2, ... poly deg10) with param_C fixed
-
-# Find the best param_C value to fix
-best_C = BEST_PARAMS['param_C']
-
-create_heatmap(
-    deepcopy(cv_results[cv_results['param_kernel'] != 'rbf']), 'param_coef0', 'param_kernel', {'param_C': best_C},
-    'mean_test_score'
-)
+    create_heatmap(deepcopy(cv_results), 'param_C', 'param_kernel', {'param_coef0': best_coef0}, 'mean_test_score')
 
 
-# %% 5. param_degree vs coef0 (only for kernel = 'poly') with param_C fixed
+    # %% 4. param_coef0 vs kernel ('rbf' excluded; so sigmoid, poly deg1, poly deg2, ... poly deg10) with param_C fixed
 
-# Find the best param_C value to fix
-best_C = BEST_PARAMS['param_C']
+    # Find the best param_C value to fix
+    best_C = fixed_params['param_C']
 
-# Set fixed params for the fifth heatmap
-fixed_parameters = {'param_C': best_C}
+    create_heatmap(
+        deepcopy(cv_results[cv_results['param_kernel'] != 'rbf']), 'param_coef0', 'param_kernel', {'param_C': best_C},
+        'mean_test_score'
+    )
 
-create_heatmap(
-    deepcopy(cv_results[cv_results['param_kernel'].str.startswith('poly')]), 'param_coef0', 'param_degree', fixed_parameters,
-    'mean_test_score'
-)
+
+    # %% 5. param_degree vs coef0 (only for kernel = 'poly') with param_C fixed
+
+    # Find the best param_C value to fix
+    best_C = fixed_params['param_C']
+
+    # Set fixed params for the fifth heatmap
+    fixed_parameters = {'param_C': best_C}
+
+    create_heatmap(
+        deepcopy(cv_results[cv_results['param_kernel'].str.startswith('poly')]), 'param_coef0', 'param_degree', fixed_parameters,
+        'mean_test_score'
+    )
