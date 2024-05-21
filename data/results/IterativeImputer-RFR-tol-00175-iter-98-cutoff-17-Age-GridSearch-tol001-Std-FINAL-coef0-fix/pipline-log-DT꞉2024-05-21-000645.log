@@ -1,0 +1,221 @@
+[2024-05-21 00:06:45,488] {main.py      :417 } : INFO | ======================= PIPELINE LOG ========================= |
+[2024-05-21 00:06:45,488] {main.py      :418 } : INFO | Date: 2024-05-21 00:06:45
+[2024-05-21 00:06:45,489] {main.py      :419 } : INFO | Debug mode: False
+[2024-05-21 00:06:45,982] {utils.py     :379 } : INFO | ====================== PRE-PROCESSING ======================== |
+[2024-05-21 00:06:45,983] {utils.py     :380 } : INFO | /__ ORIGINAL DATASET __________________________________________
+[2024-05-21 00:06:45,983] {utils.py     :381 } : INFO | Missing indicators: ------------------ False
+[2024-05-21 00:06:45,993] {utils.py     :382 } : INFO | Shape (incl. misc columns): ---------- (301, 1009)
+[2024-05-21 00:06:45,993] {utils.py     :383 } : INFO | X start column index: ---------------- 11
+[2024-05-21 00:06:45,993] {utils.py     :384 } : INFO | Number of entries (N): --------------- 301
+[2024-05-21 00:06:45,993] {utils.py     :385 } : INFO | Number of features (X): -------------- 998
+[2024-05-21 00:06:45,993] {utils.py     :386 } : INFO | Number of classes (y): --------------- 2
+[2024-05-21 00:06:45,993] {utils.py     :387 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-05-21 00:06:45,994] {utils.py     :388 } : INFO | Min y: ------------------------------- 0.0
+[2024-05-21 00:06:45,994] {utils.py     :389 } : INFO | Max y: ------------------------------- 1.0
+[2024-05-21 00:06:45,994] {utils.py     :390 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-05-21 00:06:45,994] {utils.py     :391 } : INFO | Median y: ---------------------------- 0.0
+[2024-05-21 00:06:45,996] {utils.py     :392 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-05-21 00:06:45,996] {utils.py     :393 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-05-21 00:06:45,998] {utils.py     :394 } : INFO | Min minimum X: ----------------------- 8.72125121808696
+[2024-05-21 00:06:46,000] {utils.py     :395 } : INFO | Max maximum X: ----------------------- 16.6934712065454
+[2024-05-21 00:06:46,003] {utils.py     :396 } : INFO | Mean mean X: ------------------------- 12.331256538045068
+[2024-05-21 00:06:46,023] {utils.py     :397 } : INFO | Mean median X: ----------------------- 12.32640037713433
+[2024-05-21 00:06:46,026] {utils.py     :398 } : INFO | Mean variance X: --------------------- 0.026574325939378692
+[2024-05-21 00:06:46,032] {utils.py     :399 } : INFO | Mean std deviation X: ---------------- 0.12609969268146295
+
+[2024-05-21 00:06:46,032] {utils.py     :402 } : INFO | /__ CATEGORIZATION ____________________________________________
+[2024-05-21 00:06:46,032] {utils.py     :404 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:46,032] {utils.py     :405 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+[2024-05-21 00:06:46,032] {utils.py     :409 } : INFO | Cut-offs: ---------------------------- [17]
+[2024-05-21 00:06:46,032] {utils.py     :410 } : INFO | Number of classes: ------------------- 2
+
+[2024-05-21 00:06:46,032] {utils.py     :413 } : INFO | /__ TRAINING SPLIT (FOR FEATURE SELECTION) ____________________
+[2024-05-21 00:06:46,032] {utils.py     :415 } : INFO | Seed: -------------------------------- 42
+[2024-05-21 00:06:46,032] {utils.py     :416 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:46,032] {utils.py     :417 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+
+[2024-05-21 00:06:46,032] {utils.py     :420 } : INFO | /__ FEATURE SELECTION _________________________________________
+[2024-05-21 00:06:46,032] {utils.py     :421 } : INFO | Feature selection: ------------------- XGB-RFECV
+[2024-05-21 00:06:46,032] {utils.py     :423 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:46,032] {utils.py     :424 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+
+[2024-05-21 00:06:46,033] {utils.py     :433 } : INFO | /__ IMPUTATION ________________________________________________
+[2024-05-21 00:06:46,033] {utils.py     :440 } : INFO | Imputer: ----------------------------- IterativeImputer
+[2024-05-21 00:06:46,033] {utils.py     :445 } : INFO | Sparse: ------------------------------ False
+[2024-05-21 00:06:46,033] {utils.py     :450 } : INFO | NaN Elimination: --------------------- False
+
+[2024-05-21 00:06:46,033] {utils.py     :453 } : INFO | Date: ------------------------------- 2024-05-11 04:13:02.915827
+[2024-05-21 00:06:46,033] {utils.py     :454 } : INFO | Imputer type: ----------------------- IterativeImputer
+[2024-05-21 00:06:46,033] {utils.py     :460 } : INFO | ESTIMATOR_ITER_IMP: ------------------ [RandomForestRegressor(max_features='sqrt', n_jobs=7,
+                      oob_score=<function r2_score at 0x000001E0402CA7A0>,
+                      random_state=42)]
+[2024-05-21 00:06:46,033] {utils.py     :461 } : INFO | MAX_ITER_ITER_IMP: ------------------- 400
+[2024-05-21 00:06:46,033] {utils.py     :462 } : INFO | TOL_ITER_IMP: ------------------------ 0.0175
+[2024-05-21 00:06:46,033] {utils.py     :463 } : INFO | INITIAL_STRATEGY_ITER_IMP: ----------- ['mean']
+[2024-05-21 00:06:46,033] {utils.py     :464 } : INFO | N_NEAREST_FEATURES_ITER_IMP: --------- [None]
+[2024-05-21 00:06:46,033] {utils.py     :465 } : INFO | IMPUTATION_ORDER_ITER_IMP: ----------- ['ascending']
+[2024-05-21 00:06:46,035] {utils.py     :466 } : INFO | MIN_VALUE_ITER_IMP: ------------------ stat
+[2024-05-21 00:06:46,035] {utils.py     :467 } : INFO | MAX_VALUE_ITER_IMP: ------------------ stat
+[2024-05-21 00:06:46,035] {utils.py     :475 } : INFO | Shape: ------------------------------- (301, 1009)
+
+[2024-05-21 00:06:46,035] {utils.py     :481 } : INFO | /__ TRAINING SPLIT (FOR GRID SEARCH) __________________________
+[2024-05-21 00:06:46,035] {utils.py     :482 } : INFO | Pre-computed: ------------------------ False
+[2024-05-21 00:06:46,035] {utils.py     :483 } : INFO | Seed: -------------------------------- 42
+[2024-05-21 00:06:46,035] {utils.py     :484 } : INFO | Test proportion: --------------------- 0.2
+[2024-05-21 00:06:46,035] {utils.py     :485 } : INFO | Training proportion: ----------------- 0.8
+[2024-05-21 00:06:46,035] {utils.py     :486 } : INFO | X start column index: ---------------- 11
+[2024-05-21 00:06:46,035] {utils.py     :487 } : INFO | y column label: ---------------------- 'FT5'
+
+[2024-05-21 00:06:46,038] {imputation.py:351 } : INFO | /__ IMPUTATION ________________________________________________
+[2024-05-21 00:06:46,038] {imputation.py:352 } : INFO | Imputation Method: ------------------ IterativeImputer
+[2024-05-21 00:06:46,038] {imputation.py:353 } : INFO | Estimator: -------------------------- RandomForestRegressor(max_features='sqrt', n_jobs=7,
+                      oob_score=<function r2_score at 0x000001E0402CA7A0>,
+                      random_state=42)
+[2024-05-21 00:06:46,039] {imputation.py:354 } : INFO | Estimator criterion: ---------------- squared_error
+[2024-05-21 00:06:46,039] {imputation.py:355 } : INFO | Random State (seed): ---------------- 42
+[2024-05-21 00:06:46,039] {imputation.py:356 } : INFO | Missing Indicator Method: ----------- False
+[2024-05-21 00:06:46,039] {imputation.py:357 } : INFO | Sample Posterior: ------------------- False
+[2024-05-21 00:06:46,039] {imputation.py:358 } : INFO | Imputation order: ------------------- ascending
+[2024-05-21 00:06:46,039] {imputation.py:359 } : INFO | Initial imputation strategy: -------- mean
+[2024-05-21 00:06:46,039] {imputation.py:360 } : INFO | Max iterations: --------------------- 400
+[2024-05-21 00:06:46,039] {imputation.py:361 } : INFO | Tolerance: -------------------------- 0.0175
+[2024-05-21 00:06:46,039] {imputation.py:362 } : INFO | Num nearest features to consider: --- None
+[2024-05-21 00:06:46,039] {imputation.py:363 } : INFO | Starting IterativeImputer Imputation ...
+[2024-05-21 00:06:59,668] {imputation.py:388 } : INFO | Imputation with IterativeImputer using a RandomForestRegressor estimator finished 2024-05-21 00:06:59, and took 0 days 00h:00m:13s 0 days 00:00:13s 632.452ms to run.
+
+[2024-05-21 00:06:59,687] {utils.py     :605 } : INFO | Logs saved to: ----------------------- C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\out\pipline-log-DT꞉2024-05-21-000645.log
+
+[2024-05-21 00:06:59,687] {utils.py     :606 } : INFO | Pipeline finished 2024-05-21 00:06:59, and took 0h:00m:14s 626.209ms to run.
+
+[2024-05-21 00:06:59,688] {utils.py     :379 } : INFO | ====================== PRE-PROCESSING ======================== |
+[2024-05-21 00:06:59,689] {utils.py     :380 } : INFO | /__ ORIGINAL DATASET __________________________________________
+[2024-05-21 00:06:59,689] {utils.py     :381 } : INFO | Missing indicators: ------------------ False
+[2024-05-21 00:06:59,689] {utils.py     :382 } : INFO | Shape (incl. misc columns): ---------- (301, 1009)
+[2024-05-21 00:06:59,689] {utils.py     :383 } : INFO | X start column index: ---------------- 11
+[2024-05-21 00:06:59,689] {utils.py     :384 } : INFO | Number of entries (N): --------------- 301
+[2024-05-21 00:06:59,689] {utils.py     :385 } : INFO | Number of features (X): -------------- 998
+[2024-05-21 00:06:59,689] {utils.py     :386 } : INFO | Number of classes (y): --------------- 2
+[2024-05-21 00:06:59,689] {utils.py     :387 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-05-21 00:06:59,689] {utils.py     :388 } : INFO | Min y: ------------------------------- 0.0
+[2024-05-21 00:06:59,690] {utils.py     :389 } : INFO | Max y: ------------------------------- 1.0
+[2024-05-21 00:06:59,690] {utils.py     :390 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-05-21 00:06:59,690] {utils.py     :391 } : INFO | Median y: ---------------------------- 0.0
+[2024-05-21 00:06:59,690] {utils.py     :392 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-05-21 00:06:59,691] {utils.py     :393 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-05-21 00:06:59,692] {utils.py     :394 } : INFO | Min minimum X: ----------------------- 8.72125121808696
+[2024-05-21 00:06:59,695] {utils.py     :395 } : INFO | Max maximum X: ----------------------- 16.6934712065454
+[2024-05-21 00:06:59,696] {utils.py     :396 } : INFO | Mean mean X: ------------------------- 12.331256538045068
+[2024-05-21 00:06:59,711] {utils.py     :397 } : INFO | Mean median X: ----------------------- 12.32640037713433
+[2024-05-21 00:06:59,714] {utils.py     :398 } : INFO | Mean variance X: --------------------- 0.026574325939378692
+[2024-05-21 00:06:59,719] {utils.py     :399 } : INFO | Mean std deviation X: ---------------- 0.12609969268146295
+
+[2024-05-21 00:06:59,719] {utils.py     :402 } : INFO | /__ CATEGORIZATION ____________________________________________
+[2024-05-21 00:06:59,719] {utils.py     :404 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:59,719] {utils.py     :405 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+[2024-05-21 00:06:59,719] {utils.py     :409 } : INFO | Cut-offs: ---------------------------- [17]
+[2024-05-21 00:06:59,719] {utils.py     :410 } : INFO | Number of classes: ------------------- 2
+
+[2024-05-21 00:06:59,719] {utils.py     :413 } : INFO | /__ TRAINING SPLIT (FOR FEATURE SELECTION) ____________________
+[2024-05-21 00:06:59,719] {utils.py     :415 } : INFO | Seed: -------------------------------- 42
+[2024-05-21 00:06:59,719] {utils.py     :416 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:59,719] {utils.py     :417 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+
+[2024-05-21 00:06:59,719] {utils.py     :420 } : INFO | /__ FEATURE SELECTION _________________________________________
+[2024-05-21 00:06:59,719] {utils.py     :421 } : INFO | Feature selection: ------------------- XGB-RFECV
+[2024-05-21 00:06:59,719] {utils.py     :423 } : INFO | Pre-computed: ------------------------ True
+[2024-05-21 00:06:59,719] {utils.py     :424 } : INFO | Pre-computed file: ------------------- KEX-DA150x-KTH\data\results\XGB-RFECV-binlog-feat-select-num-est꞉ALL\2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl
+
+[2024-05-21 00:06:59,719] {utils.py     :433 } : INFO | /__ IMPUTATION ________________________________________________
+[2024-05-21 00:06:59,719] {utils.py     :440 } : INFO | Imputer: ----------------------------- IterativeImputer
+[2024-05-21 00:06:59,719] {utils.py     :445 } : INFO | Sparse: ------------------------------ False
+[2024-05-21 00:06:59,719] {utils.py     :450 } : INFO | NaN Elimination: --------------------- False
+
+[2024-05-21 00:06:59,720] {utils.py     :453 } : INFO | Date: ------------------------------- 2024-05-21 00:06:59.667807
+[2024-05-21 00:06:59,720] {utils.py     :454 } : INFO | Imputer type: ----------------------- IterativeImputer
+[2024-05-21 00:06:59,720] {utils.py     :460 } : INFO | ESTIMATOR_ITER_IMP: ------------------ [RandomForestRegressor(max_features='sqrt', n_jobs=7,
+                      oob_score=<function r2_score at 0x000001E0402CA7A0>,
+                      random_state=42)]
+[2024-05-21 00:06:59,720] {utils.py     :461 } : INFO | MAX_ITER_ITER_IMP: ------------------- 400
+[2024-05-21 00:06:59,720] {utils.py     :462 } : INFO | TOL_ITER_IMP: ------------------------ 0.0175
+[2024-05-21 00:06:59,720] {utils.py     :463 } : INFO | INITIAL_STRATEGY_ITER_IMP: ----------- ['mean']
+[2024-05-21 00:06:59,720] {utils.py     :464 } : INFO | N_NEAREST_FEATURES_ITER_IMP: --------- [None]
+[2024-05-21 00:06:59,720] {utils.py     :465 } : INFO | IMPUTATION_ORDER_ITER_IMP: ----------- ['ascending']
+[2024-05-21 00:06:59,720] {utils.py     :466 } : INFO | MIN_VALUE_ITER_IMP: ------------------ stat
+[2024-05-21 00:06:59,720] {utils.py     :467 } : INFO | MAX_VALUE_ITER_IMP: ------------------ stat
+[2024-05-21 00:06:59,720] {utils.py     :475 } : INFO | Shape: ------------------------------- (301, 1009)
+
+[2024-05-21 00:06:59,720] {utils.py     :481 } : INFO | /__ TRAINING SPLIT (FOR GRID SEARCH) __________________________
+[2024-05-21 00:06:59,720] {utils.py     :482 } : INFO | Pre-computed: ------------------------ False
+[2024-05-21 00:06:59,720] {utils.py     :483 } : INFO | Seed: -------------------------------- 42
+[2024-05-21 00:06:59,720] {utils.py     :484 } : INFO | Test proportion: --------------------- 0.2
+[2024-05-21 00:06:59,720] {utils.py     :485 } : INFO | Training proportion: ----------------- 0.8
+[2024-05-21 00:06:59,722] {utils.py     :486 } : INFO | X start column index: ---------------- 11
+[2024-05-21 00:06:59,722] {utils.py     :487 } : INFO | y column label: ---------------------- 'FT5'
+
+[2024-05-21 00:07:46,774] {utils.py     :505 } : INFO | /__ SUMMARY STATISTICS FINAL DATASET (UN-NORMALIZED) __________
+[2024-05-21 00:07:46,774] {utils.py     :506 } : INFO | Number of entries (N): --------------- 301
+[2024-05-21 00:07:46,774] {utils.py     :507 } : INFO | Number of features (X): -------------- 37
+[2024-05-21 00:07:46,774] {utils.py     :508 } : INFO | Number of classes (y): --------------- 2
+[2024-05-21 00:07:46,774] {utils.py     :509 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-05-21 00:07:46,774] {utils.py     :510 } : INFO | Min y: ------------------------------- 0
+[2024-05-21 00:07:46,774] {utils.py     :511 } : INFO | Max y: ------------------------------- 1
+[2024-05-21 00:07:46,774] {utils.py     :512 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-05-21 00:07:46,775] {utils.py     :513 } : INFO | Median y: ---------------------------- 0.0
+[2024-05-21 00:07:46,775] {utils.py     :514 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-05-21 00:07:46,775] {utils.py     :515 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-05-21 00:07:46,775] {utils.py     :516 } : INFO | Min minimum X: ----------------------- 10.7399165420877
+[2024-05-21 00:07:46,776] {utils.py     :517 } : INFO | Max maximum X: ----------------------- 13.42594134
+[2024-05-21 00:07:46,776] {utils.py     :518 } : INFO | Mean mean X: ------------------------- 12.298453516191985
+[2024-05-21 00:07:46,777] {utils.py     :519 } : INFO | Mean median X: ----------------------- 12.294793489261592
+[2024-05-21 00:07:46,777] {utils.py     :520 } : INFO | Mean variance X: --------------------- 0.009393632502913234
+[2024-05-21 00:07:46,777] {utils.py     :521 } : INFO | Mean std deviation X: ---------------- 0.09056823853975558
+
+[2024-05-21 00:07:46,778] {utils.py     :523 } : INFO | ======================== GRID SEARCH ========================= |
+[2024-05-21 00:07:46,778] {utils.py     :524 } : INFO | Grid search finished: ----- 2024-05-21 00:07:46
+
+[2024-05-21 00:07:46,778] {utils.py     :528 } : INFO | /__ BEST PARAMETER COMBINATION FOUND __________________________
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__C: ----------------------- 100.0
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__break_ties: -------------- False
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__cache_size: -------------- 500
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__coef0: ------------------- 0.01
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__decision_function_shape: - ovr
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__degree: ------------------ 3
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__gamma: ------------------- auto
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__kernel: ------------------ poly
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__max_iter: ---------------- 1000000
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__probability: ------------- False
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__random_state: ------------ 42
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__shrinking: --------------- True
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__tol: --------------------- 0.01
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | classifier__verbose: ----------------- 1
+[2024-05-21 00:07:46,778] {utils.py     :532 } : INFO | normalizer: -------------------------- StandardScaler(copy=False)
+
+[2024-05-21 00:07:46,779] {utils.py     :540 } : INFO | /__ BEST CLASSIFIER ___________________________________________
+[2024-05-21 00:07:46,779] {utils.py     :541 } : INFO | Classifier: -------------------------- SVC(C=100.0, cache_size=500, coef0=0.01, gamma='auto', kernel='poly', max_iter=1000000, random_state=42, tol=0.01, verbose=1)
+[2024-05-21 00:07:46,779] {utils.py     :542 } : INFO | Test accuracy: ----------------------- 0.8524590163934426
+
+[2024-05-21 00:07:46,780] {utils.py     :548 } : INFO | /__ BEST NORMALIZER & FINAL NORMALIZED DATA ___________________
+[2024-05-21 00:07:46,781] {utils.py     :550 } : INFO | Normalizer: -------------------------- StandardScaler(copy=False)
+[2024-05-21 00:07:46,781] {utils.py     :551 } : INFO | Number of entries (N): --------------- 301
+[2024-05-21 00:07:46,781] {utils.py     :552 } : INFO | Number of features (X): -------------- 37
+[2024-05-21 00:07:46,781] {utils.py     :553 } : INFO | Number of classes (y): --------------- 2
+[2024-05-21 00:07:46,781] {utils.py     :554 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-05-21 00:07:46,781] {utils.py     :555 } : INFO | Min y: ------------------------------- 0
+[2024-05-21 00:07:46,781] {utils.py     :556 } : INFO | Max y: ------------------------------- 1
+[2024-05-21 00:07:46,781] {utils.py     :557 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-05-21 00:07:46,782] {utils.py     :558 } : INFO | Median y: ---------------------------- 0.0
+[2024-05-21 00:07:46,782] {utils.py     :559 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-05-21 00:07:46,782] {utils.py     :560 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-05-21 00:07:46,782] {utils.py     :561 } : INFO | Min minimum X: ----------------------- -19.518911018440342
+[2024-05-21 00:07:46,783] {utils.py     :562 } : INFO | Max maximum X: ----------------------- 9.519307871803399
+[2024-05-21 00:07:46,783] {utils.py     :563 } : INFO | Mean mean X: ------------------------- 0.0019486783577385132
+[2024-05-21 00:07:46,784] {utils.py     :564 } : INFO | Mean median X: ----------------------- -0.029629874679555242
+[2024-05-21 00:07:46,784] {utils.py     :565 } : INFO | Mean variance X: --------------------- 1.2562890047642763
+[2024-05-21 00:07:46,784] {utils.py     :566 } : INFO | Mean std deviation X: ---------------- 1.1088680353631015
+
+[2024-05-21 00:07:47,224] {utils.py     :589 } : INFO | CV results saved to: ----------------- 2024-05-21-000645__GridSearch_cv_results.csv
+
+[2024-05-21 00:07:49,635] {utils.py     :605 } : INFO | Logs saved to: ----------------------- C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\out\pipline-log-DT꞉2024-05-21-000645.log
+
+[2024-05-21 00:07:49,635] {utils.py     :606 } : INFO | Pipeline finished 2024-05-21 00:07:49, and took 0h:01m:04s 574.299ms to run.
+
