@@ -524,50 +524,51 @@ def log_grid_search_results(pipeline_config, dataset_dict, clf, accuracy, log=pr
     log(f"======================== GRID SEARCH ========================= |")
     log(f"Grid search finished: ----- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
-    # Log best parameters
-    if hasattr(clf, 'best_params_'):
-        log("/__ BEST PARAMETER COMBINATION FOUND __________________________")
-        best_parameters = clf.best_params_
-        n = len(best_parameters)
-        for i, param_name in enumerate(sorted(best_parameters.keys())):
-            log(f"{param_name}: {'-'*(36-len(param_name))} {best_parameters[param_name]}{'\n' if i == n-1 else ''}")
+    if accuracy is not None:
+        # Log best parameters
+        if hasattr(clf, 'best_params_'):
+            log("/__ BEST PARAMETER COMBINATION FOUND __________________________")
+            best_parameters = clf.best_params_
+            n = len(best_parameters)
+            for i, param_name in enumerate(sorted(best_parameters.keys())):
+                log(f"{param_name}: {'-'*(36-len(param_name))} {best_parameters[param_name]}{'\n' if i == n-1 else ''}")
 
-    # Print classifier information
-    if hasattr(clf.best_estimator_, '_final_estimator'):
-        final_clf = repr(clf.best_estimator_._final_estimator).replace("\n", "")  # noqa
-    else:
-        final_clf = repr(clf.best_estimator_).replace("\n", "")
-    final_clf = re.sub(pattern=' +', repl=' ', string=final_clf)
-    log(f"/__ BEST CLASSIFIER ___________________________________________")
-    log(f"Classifier: -------------------------- {final_clf}")
-    log(f"Test accuracy: ----------------------- {accuracy}\n")
-
-    # Print normalized data with chosen best normalization strategy
-    if hasattr(clf.best_estimator_.named_steps, 'normalizer'):
-        normalizer = clf.best_estimator_.named_steps['normalizer']
-        if normalizer and type(normalizer) is not FunctionTransformer:
-            log(f"/__ BEST NORMALIZER & FINAL NORMALIZED DATA ___________________")
-            X_normalized = pd.DataFrame(normalizer.transform(X_imputed), columns=X_imputed.columns)
-            log(f"Normalizer: -------------------------- {repr(normalizer).replace("\n", "")}")
-            log(f"Number of entries (N): --------------- {X_normalized.shape[0]}")
-            log(f"Number of features (X): -------------- {X_normalized.shape[1]}")
-            log(f"Number of classes (y): --------------- {len(pipeline_config['CUTOFFS']) + 1}")
-            log(f"Classes: ----------------------------- {list(range(len(pipeline_config['CUTOFFS']) + 1))}")
-            log(f"Min y: ------------------------------- {y.min().min()}")
-            log(f"Max y: ------------------------------- {y.max().max()}")
-            log(f"Mean y: ------------------------------ {y.mean().mean()}")
-            log(f"Median y: ---------------------------- {y.median().mean()}")
-            log(f"Variance y: -------------------------- {y.var().mean()}")
-            log(f"Std deviation y: --------------------- {y.std().mean()}")
-            log(f"Min minimum X: ----------------------- {X_normalized.min().min()}")
-            log(f"Max maximum X: ----------------------- {X_normalized.max().max()}")
-            log(f"Mean mean X: ------------------------- {X_normalized.mean().mean()}")
-            log(f"Mean median X: ----------------------- {X_normalized.median().mean()}")
-            log(f"Mean variance X: --------------------- {X_normalized.var().mean()}")
-            log(f"Mean std deviation X: ---------------- {X_normalized.std().mean()}\n")
+        # Print classifier information
+        if hasattr(clf.best_estimator_, '_final_estimator'):
+            final_clf = repr(clf.best_estimator_._final_estimator).replace("\n", "")  # noqa
         else:
-            log(f"/__ BEST NORMALIZER ___________________________________________ ")
-            log(f"Normalizer: -------------------------- None (best without)\n")
+            final_clf = repr(clf.best_estimator_).replace("\n", "")
+        final_clf = re.sub(pattern=' +', repl=' ', string=final_clf)
+        log(f"/__ BEST CLASSIFIER ___________________________________________")
+        log(f"Classifier: -------------------------- {final_clf}")
+        log(f"Test accuracy: ----------------------- {accuracy}\n")
+
+        # Print normalized data with chosen best normalization strategy
+        if hasattr(clf.best_estimator_.named_steps, 'normalizer'):
+            normalizer = clf.best_estimator_.named_steps['normalizer']
+            if normalizer and type(normalizer) is not FunctionTransformer:
+                log(f"/__ BEST NORMALIZER & FINAL NORMALIZED DATA ___________________")
+                X_normalized = pd.DataFrame(normalizer.transform(X_imputed), columns=X_imputed.columns)
+                log(f"Normalizer: -------------------------- {repr(normalizer).replace("\n", "")}")
+                log(f"Number of entries (N): --------------- {X_normalized.shape[0]}")
+                log(f"Number of features (X): -------------- {X_normalized.shape[1]}")
+                log(f"Number of classes (y): --------------- {len(pipeline_config['CUTOFFS']) + 1}")
+                log(f"Classes: ----------------------------- {list(range(len(pipeline_config['CUTOFFS']) + 1))}")
+                log(f"Min y: ------------------------------- {y.min().min()}")
+                log(f"Max y: ------------------------------- {y.max().max()}")
+                log(f"Mean y: ------------------------------ {y.mean().mean()}")
+                log(f"Median y: ---------------------------- {y.median().mean()}")
+                log(f"Variance y: -------------------------- {y.var().mean()}")
+                log(f"Std deviation y: --------------------- {y.std().mean()}")
+                log(f"Min minimum X: ----------------------- {X_normalized.min().min()}")
+                log(f"Max maximum X: ----------------------- {X_normalized.max().max()}")
+                log(f"Mean mean X: ------------------------- {X_normalized.mean().mean()}")
+                log(f"Mean median X: ----------------------- {X_normalized.median().mean()}")
+                log(f"Mean variance X: --------------------- {X_normalized.var().mean()}")
+                log(f"Mean std deviation X: ---------------- {X_normalized.std().mean()}\n")
+            else:
+                log(f"/__ BEST NORMALIZER ___________________________________________ ")
+                log(f"Normalizer: -------------------------- None (best without)\n")
 
     # Save cross-validation results
     if clf and hasattr(clf, 'cv_results_'):

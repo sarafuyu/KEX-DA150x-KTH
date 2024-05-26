@@ -42,12 +42,12 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 ## Standard library imports
 import sys
 import logging
+import joblib
 from collections.abc import Sequence, Callable
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
-import joblib
 ## External library imports
 # noinspection PyUnresolvedReferences
 import numpy as np  # needed for np.linspace/logspace in config
@@ -61,7 +61,10 @@ from sklearn import svm
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 
-from model_selection._search import CustomCvGridSearch
+# Local imports
+# noinspection PyUnresolvedReferences
+from model_selection._search import CustomCvGridSearch  # noqa
+
 
 # %% Setup
 
@@ -104,7 +107,7 @@ LOG_FILE: Path = PROJECT_ROOT/'out'/('pipline-log-DT꞉'+START_TIME.strftime("%Y
 # -----------
 
 # Randomness seed for all methods that take a seed in all files of the project
-SEED: int = 42
+SEED: int = 42  # 42
 
 # ----------------
 # Data Extraction
@@ -177,7 +180,7 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
 
 # 37 specific features were found to be the best number of features using XGB feature selection.
 
@@ -190,7 +193,7 @@ MISSING_XGB = np.nan
 OBJECTIVE_XGB = 'binary:logistic'
 N_JOBS_XGB = 6
 N_JOBS_RFECV = 2
-SCORING_RFECV = 'accuracy'
+SCORING_RFECV = 'roc_auc'  # 'f1'  # 'accuracy'
 CV_RFE = 5
 MIN_FEATURES_TO_SELECT_XGB = 1
 STEP_XGB = 1
@@ -415,7 +418,7 @@ BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 # computationally expensive and is not strictly required to select the parameters that yield the best generalization
 # performance.
 RETURN_TRAIN_SCORE_SVC: bool = True
-GRID_SEARCH_SCORING_SVC: str = 'accuracy'
+GRID_SEARCH_SCORING_SVC: str | list[str] = ['roc_auc', 'accuracy', 'f1', 'precision', 'recall']
 
 
 # %% Local imports
@@ -673,6 +676,8 @@ if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
             utils.get_file_name(deepcopy(dataset_dicts[0]), pipeline_config) + '__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
             )
     )
+    del dataset_dicts[0]['feature_selection_rfecv']
+    del dataset_dicts[0]['feature_selection_xgb']
     # exit(0)
 
 
@@ -841,6 +846,7 @@ clf = GridSearchCV(
     estimator=pipeline,
     param_grid=param_grid,
     scoring=GRID_SEARCH_SCORING_SVC,
+    refit=GRID_SEARCH_SCORING_SVC[0],
     cv=K_CV_FOLDS,
     verbose=GRID_SEARCH_VERBOSITY,
     return_train_score=CALC_FINAL_SCORES,
@@ -853,7 +859,12 @@ clf = GridSearchCV(
 # else:
 #     clf = clf.fit(X_training, y_training)
 
-clf = clf.fit(X_testing, y_testing)
+try:
+    clf = clf.fit(X_testing, y_testing)
+except Exception as e:
+    log(e)
+
+
 # clf = clf.fit(X, y)
 
 # With whole dataset StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
@@ -861,42 +872,44 @@ clf = clf.fit(X_testing, y_testing)
 # With train-test split StandardScaler(copy=False) is the best normalizer with 0.8524590163934426 accuracy
 # [0.85245902 0.85245902 0.85245902 0.85245902 0.85245902 0.85245902]
 
-# Calculate and log best score (accuracy)
-if hasattr(clf, 'score'):
-    test_accuracy = clf.score(deepcopy(X_testing), deepcopy(y_testing))
-else:
-    Warning("The classifier does not have a 'score' attribute. Was it fitted?")
-    test_accuracy = None
+# # Calculate and log best score (accuracy)
+# if hasattr(clf, 'score'):
+#     test_accuracy = clf.score(deepcopy(X_testing), deepcopy(y_testing))
+# else:
+#     Warning("The classifier does not have a 'score' attribute. Was it fitted?")
+#     test_accuracy = None
+#
+# if hasattr(clf, 'dual_coef_'):
+#     log('yi * alpha_i: \n', clf.dual_coef_)
 
-if hasattr(clf, 'dual_coef_'):
-    log('yi * alpha_i: \n', clf.dual_coef_)
+# if hasattr(clf, 'cv_results_'):
+#     clf_ = deepcopy(clf)  # make a copy of the classifier to use for calculating final scores
+#     cv_results_ = clf.cv_results_  # but add final accuracies to cv_results_ of the original classifier
+#     if CALC_FINAL_SCORES:
+#         final_accuracies = []
+#         if cv_results_ is not None:
+#             # TODO: parallelize this loop
+#             for params in cv_results_['params']:
+#                 if hasattr(clf_, 'estimator'):
+#                     estimator = clf_.estimator.set_params(**params)  # set the parameters of the copied estimator to the best parameters
+#                     estimator.fit(X_training, y_training)            # fit the copied estimator
+#                     final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
+#                     final_accuracies.append(final_accuracy)
+#
+#        # Add final accuracy scores to cv_results of the original classifier
+#        # clf.cv_results_['final_accuracy'] = np.array(final_accuracies)
+#
+# dataset_dict['svm'] = {'clf': deepcopy(clf), 'test_accuracy': test_accuracy} # save original classifier and final test accuracy to the dataset_dict
 
-if hasattr(clf, 'cv_results_'):
-    clf_ = deepcopy(clf)  # make a copy of the classifier to use for calculating final scores
-    cv_results_ = clf.cv_results_  # but add final accuracies to cv_results_ of the original classifier
-    if CALC_FINAL_SCORES:
-        final_accuracies = []
-        if cv_results_ is not None:
-            # TODO: parallelize this loop
-            for params in cv_results_['params']:
-                if hasattr(clf_, 'estimator'):
-                    estimator = clf_.estimator.set_params(**params)  # set the parameters of the copied estimator to the best parameters
-                    estimator.fit(X_training, y_training)            # fit the copied estimator
-                    final_accuracy = accuracy_score(y_testing.copy(), estimator.predict(X_testing.copy()))
-                    final_accuracies.append(final_accuracy)
-
-        # Add final accuracy scores to cv_results of the original classifier
-        clf.cv_results_['final_accuracy'] = np.array(final_accuracies)
-
-dataset_dict['svm'] = {'clf': deepcopy(clf), 'test_accuracy': test_accuracy} # save original classifier and final test accuracy to the dataset_dict
+dataset_dict['svm'] = {'clf': deepcopy(clf)} # save original classifier and final test accuracy to the dataset_dict
 
 if VERBOSE:
     utils.log_grid_search_results(
-        pipeline_config, dataset_dict, clf=clf, accuracy=test_accuracy, log=log,  # log the original classifier and final test accuracy
+        pipeline_config, dataset_dict, clf=clf, accuracy=None, log=log,  # log the original classifier and final test accuracy
     )
 
 joblib.dump(deepcopy(clf), PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearchCV.pkl')
-joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__dataset_dict.pkl')
+joblib.dump(dataset_dicts[0], PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearch_dataset_dict.pkl')
 
 
 # %% End Time

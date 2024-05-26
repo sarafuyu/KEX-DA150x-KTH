@@ -363,7 +363,7 @@ def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col
         log(f'Starting {data_dict["type"]} Imputation ...')
 
     X_imputed_arr = imputer.fit_transform(X)
-    data_dict['imputer'] = imputer  # save the imputer object
+    # data_dict['imputer'] = imputer  # save the imputer object
 
     # Convert the imputed values separately back to a dataframe
     X_imputed = pd.DataFrame(X_imputed_arr, columns=X.columns)
@@ -402,7 +402,7 @@ def impute_data(data_dict, df, pipeline_start_time, imputer_dict=None, start_col
         # breakpoint()
         pass
         X_imputed.to_csv(PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_X_imputed.csv'))
-        # joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
+        joblib.dump((data_dict), PROJECT_ROOT/'out'/(pipeline_start_time.strftime("%Y-%m-%d-%H%M%S")+f'__{data_dict['type']}_imputed_data_dict.pkl'))
     except:
         pass
     try:
