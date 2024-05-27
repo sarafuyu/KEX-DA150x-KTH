@@ -342,6 +342,14 @@ out/*/*
 2024-05-20-203455__dataset_dict.pkl
 2024-05-21-000645__dataset_dict.pkl
 2024-05-21-023215__dataset_dict.pkl
+2024-05-25-235159__IterativeImputer_imputed_data_dict.pkl
+2024-05-25-235159__raw_console_output.log
+2024-05-25-235159__GridSearch_dataset_dict.pkl
+2024-05-26-204907__GridSearch_dataset_dict.pkl
+2024-05-26-204907__IterativeImputer_imputed_data_dict.pkl
+2024-05-26-204907__raw_console_output.log
+2024-05-27-073726__GridSearch_dataset_dict.pkl
+2024-05-27-073726__IterativeImputer_imputed_data_dict.pkl
 
 # Ignore Excel temp files
 **/~*.xlsx
