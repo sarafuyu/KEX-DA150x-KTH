@@ -76,16 +76,20 @@ def print_missing_values(X=None):
     print(f"Total number of missing values for {var_name}: {total_missing}")
     print(f"Percentage of missing values for {var_name}: {percent_missing:.2f}%")
 
+
 # %% Setup
 
 
 START_TIME = datetime.now()
 PROJECT_ROOT = Path(__file__).parents[1]
 
-DATA_DIR = 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'
-DATA_FILE = '2024-05-17-154927__dataset_dict.pkl'
+# DATA_DIR = 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'
+DATA_DIR = 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-f1'
+DATA_FILE = '2024-05-26-204907__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
 
-d = joblib.load(PROJECT_ROOT / 'data' / 'results' / DATA_DIR / DATA_FILE)
+# Load the pickled object
+data_path = PROJECT_ROOT / 'data' / 'results' / DATA_DIR
+d = joblib.load(data_path / DATA_FILE)
 
 
 # # Concatenate the training and testing data
@@ -132,7 +136,7 @@ df.loc[selected_features, "Feature Importance"] = feature_importances
 df_sorted = df.sort_values(by=["Feature Importance", "Feature Rank"], ascending=[False, True])
 
 # Save the DataFrame to a CSV file
-OUTPUT_DIR = PROJECT_ROOT / 'out'
+OUTPUT_DIR = data_path
 OUTPUT_FILE = 'feature_ranking_info.csv'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  # Ensure the output directory exists
 df_sorted.to_csv(OUTPUT_DIR / OUTPUT_FILE, index=False)
