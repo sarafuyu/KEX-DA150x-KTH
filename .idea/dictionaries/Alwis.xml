@@ -3,6 +3,7 @@
     <words>
       <w>alwis</w>
       <w>binarylogistic</w>
+      <w>clsweights</w>
       <w>coef</w>
       <w>coeff</w>
       <w>coolwarm</w>
@@ -10,6 +11,8 @@
       <w>idxs</w>
       <w>iloc</w>
       <w>importances</w>
+      <w>labelsize</w>
+      <w>linestyle</w>
       <w>linspace</w>
       <w>linthresh</w>
       <w>missingness</w>
@@ -20,6 +23,7 @@
       <w>strat</w>
       <w>succesivt</w>
       <w>symlog</w>
+      <w>titlesize</w>
       <w>xgbclf</w>
       <w>xticks</w>
       <w>ytick</w>

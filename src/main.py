@@ -172,7 +172,7 @@ COLUMN_TO_CATEGORIZE: str = 'FT5'
 # **********----------------------------------------------------------------------------********** #
 
 # Use XGB feature selection
-SELECT_XGB: bool = True
+SELECT_XGB: bool = False
 
 # Stop the pipeline after feature selection
 STOP_AFTER_FEATURE_SELECTION: bool = False
@@ -180,7 +180,7 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy'/'2024-05-27-073726__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'  #None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
 
 # 37 specific features were found to be the best number of features using XGB feature selection.
 
@@ -256,8 +256,8 @@ VERBOSE_ITER_IMP: int = 3
 # Use precomputed imputed dataset
 # Leave as None to use the imputed dataset generated in the pipeline
 # Note that PRECOMPUTED_ITERATIVE_IMPUTED_DF is the full un-imputed dataset that was used to generate the imputed dataset
-PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = None  # PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-0009-iter-131' / '2024-05-13-231235__IterativeImputer_X_imputed.csv'
-PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None
+PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_X_imputed.csv'
+PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None # PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_df.csv'
 
 # Stop the pipeline after imputation
 STOP_AFTER_IMPUTATION: bool = False
@@ -337,8 +337,27 @@ N_JOBS_GRID_SEARCH: int = 7
 SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
+# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
+#     np.logspace(start=-9, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5  # TODO: larger space
+#     np.logspace(start=-9, stop=-8, num=5, base=10)[1:-1],
+#     np.logspace(start=-8, stop=-7, num=5, base=10)[1:-1],
+#     np.logspace(start=-7, stop=-6, num=5, base=10)[1:-1],
+#     np.logspace(start=-6, stop=-5, num=5, base=10)[1:-1],
+#     np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
+#     np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
+#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+#     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
+#     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
+# ])))
+C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: little bit larger
     np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+    np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
+    np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
@@ -348,9 +367,27 @@ C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
 ])))
+# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: current space
+#     np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+#     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
+#     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
+# ])))
+# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller space
+#     np.logspace(start=-8, stop=-5, num=7+5+1, base=10),  # 10^-7 to 10^5
+#     np.logspace(start=-8, stop=-7, num=5, base=10)[1:-1],
+#     np.logspace(start=-7, stop=-6, num=5, base=10)[1:-1],
+#     np.logspace(start=-6, stop=-5, num=5, base=10)[1:-1],
+#     np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
+# ])))
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
 DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-GAMMA_PARAMS_SVC: Sequence[str] = ['auto']  # scale not needed since normalization X_var
+GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale']  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
 COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
     -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
     -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
@@ -372,9 +409,9 @@ SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
 TOL_PARAMS_SVC: Sequence[float] = [0.001]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
-CLASS_WEIGHT_SVC: dict | None = None
+CLASS_WEIGHT_SVC: str | None = 'balanced'  # TODO
 VERB_SVC: int = VERBOSE
-MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]
+MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]  # TODO CHANGE BACK TO 10M
 DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
 BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 
