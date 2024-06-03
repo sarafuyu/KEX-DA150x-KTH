@@ -41,44 +41,16 @@ SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 RESULTS_SETS = {
-    'accuracy-2': {  # Rerun (89 features), has refit with 'accuracy' metric
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy-2',
-        'cv_results_':       '2024-05-27-172747__GridSearchCV.pkl',
-    },
-    'accuracy': {  # Original run (89 features), dataset dict corrupted, has refit with 'roc_auc' metric
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy',
-        'cv_results_': '2024-05-27-073726__GridSearchCV.pkl',
-    },
-    'roc_auc': {
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-roc',
-        'cv_results_': '2024-05-25-235159__GridSearchCV.pkl',
-    },
-    'f1': {
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-f1',
-        'cv_results_': '2024-05-26-204907__GridSearchCV.pkl',
-    },
-    'accuracy_tol001': {  # Has higher tol
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-001-FINAL-poly-detailed-accuracy',
-        'cv_results_':       '2024-05-27-140932__GridSearchCV.pkl',
-    },
-    'roc_auc_clsweights': {  # Has higher tol
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-iters-FINAL-poly-detailed-accuracy-3-clsweights',
-        'cv_results_': '2024-05-29-013159__GridSearchCV.pkl',
-    },
-    'roc_auc_clsweights_gamma': {  # Has higher tol
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-iters-FINAL-poly-detailed-accuracy-clsweights-gamma',
-        'cv_results_': '2024-05-29-034825__GridSearchCV.pkl',
-    },
-    'toc_auc_clsweights_gamma_scale': {  # Has higher tol
-        'results_directory': 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-iters-FINAL-poly-detailed-accuracy-clsweights-gamma-scale',
-        'cv_results_': '2024-05-29-104346__GridSearchCV.pkl',
+    'final-prestudy': {  # Rerun (89 features), has refit with 'accuracy' metric
+        'results_directory': 'final-prestudy',
+        'cv_results_':       '2024-06-02-223758__GridSearchCV.pkl',
     },
 }
 
 
 # %% Configuration
 
-FEATURE_SELECTION_METRIC = 'roc_auc_clsweights'  # 'accuracy', 'roc_auc', 'f1'
+FEATURE_SELECTION_METRIC = 'final-prestudy'  # 'accuracy', 'roc_auc', 'f1'
 GRIDSEARCH_METRIC = 'roc_auc'  # 'accuracy', 'roc_auc', 'f1'
 PLOT_METRIC: str = 'roc_auc'
 
