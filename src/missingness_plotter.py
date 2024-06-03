@@ -11,64 +11,81 @@ This script is run separately from the main script to generate missingness plots
 Co-authored-by: Sara Rydell <sara.hanfuyu@gmail.com>
 Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 """
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import joblib
 from pathlib import Path
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-# Load the misingness data
-missing_csv = PROJECT_ROOT/'data'/'results'/'final-prestudy'/'2024-06-02-223758__X_missingness_after_select.csv'
-summary = pd.read_csv(missing_csv)
+# %% Data Setup
 
-# Set the index to HPA ID if it's not already set
-# summary.set_index('HPA ID', inplace=True)
+PROJECT_ROOT = Path(__file__).parents[1]
+DATA_DIR = 'final-prestudy'
+
+# Load feature related ranking and importances
+importance_csv = PROJECT_ROOT / 'data' / 'results' / DATA_DIR / 'feature_ranking_info.csv'
+feature_importances = pd.read_csv(importance_csv)
+
+# Load the missingness data
+missing_csv = PROJECT_ROOT / 'data' / 'results' / DATA_DIR / '2024-06-02-223758__X_missingness_after_select.csv'
+stats_missing = pd.read_csv(missing_csv)
+
+# %% Merged data on feature name
+stats_importance = pd.merge(stats_missing, feature_importances, on='Feature_Name', how='inner')
+summary = stats_importance.sort_values(by=["Feature Importance", "Feature Rank"], ascending=[False, True])
+
+print(stats_importance.head())
+print(stats_importance.shape)
+print(stats_importance.columns)
 
 # %% Plotting missingness
 
-plot_bar_missing = False
+plot_bar_missing = True
 plot_box_stats = True
-pair_plot = False
 
-# %% Bar Plot for missing count and percentage
+# %% Bar Plot for missing count and feature importance
 if plot_bar_missing:
 
     fig, ax1 = plt.subplots(figsize=(15, 7))
 
-    # TODO: order df after feature importance
-    color = 'tab:blue'
-    ax1.set_xlabel('Feature importance (ascending order)')
-    ax1.set_ylabel('Number of Missing Instances', color=color)
-    ax1.bar(summary.index, summary['Num_Missing'], color=color, label='Missing Count')
-    ax1.tick_params(axis='y', labelcolor=color) 
+    bar_width = 0.4  # Set a bar width
+    x = np.arange(len(summary))  # X axis
 
-    #ax2 = ax1.twinx()
-    #color = 'tab:green'
-    #ax2.set_ylabel('Percentage of Missing Instances', color=color)
-    #ax2.plot(summary.index, summary['Percentage_Missing'], color=color, marker='o', label='Missing Percentage')
-    #ax2.tick_params(axis='y', labelcolor=color)
+    ax1.set_xlabel('Feature')
+    ax1.set_ylabel('Number of Missing Instances', color='tab:blue')
+    bars = ax1.bar(x - bar_width / 2, summary['Num_Missing'], color='tab:blue', width=bar_width, label='Missing Count')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+    ax2 = ax1.twinx()
+    color = 'tab:green'
+    ax2.set_ylabel('Feature Importance (accuracy)', color='tab:green')
+    dots = ax2.scatter(x + bar_width / 2, summary['Feature Importance'], color=color, label='Feature Importance')
+    ax2.tick_params(axis='y', labelcolor='tab:green')
+
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(
+        summary['Feature_Name'], rotation=90, ha='center'
+        )  # Rotate x-axis labels by 90 degrees and align center
 
     fig.tight_layout()
-    plt.title('Missing Data: Count and Percentage per HPA ID')
-    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3, top=0.9)  # Adjust the bottom and top margins
+    plt.title('Missing Data: Count and Feature Importance per Feature')
     fig.legend(loc="upper right", bbox_to_anchor=(1, 1), bbox_transform=ax1.transAxes)
     plt.show()
 
-# %% Box Plot for data distribution (median, min, max)
+# %% Box Plot for data distribution (mean, variance, min, max)
 
 # Filter out the 'Age' feature
-summary = summary[summary['Feature_Name'] != 'Age']
+box_data = summary[summary['Feature_Name'] != 'Age']
 
 if plot_box_stats:
 
     num_hpa_per_plot = 30
-    num_plots = (len(summary) // num_hpa_per_plot) + 1  # Split into multiple plots if necessary
+    num_plots = (len(box_data) // num_hpa_per_plot) + 1  # Split into multiple plots if necessary
 
     for i in range(num_plots):
-        subset = summary.iloc[i * num_hpa_per_plot:(i + 1) * num_hpa_per_plot]
+        subset = box_data.iloc[i * num_hpa_per_plot:(i + 1) * num_hpa_per_plot]
         plt.figure(figsize=(20, 7))  # Reduced height
         width = 0.4  # Width of the box and mean line
 
@@ -92,14 +109,10 @@ if plot_box_stats:
                 [idx - width / 2, idx + width / 2], [mean_val, mean_val], color='blue', linewidth=1, zorder=3
                 )  # Mean line
 
-        plt.xticks(ticks=np.arange(len(subset)), labels=subset['Feature_Name'], rotation=90)
+        plt.xticks(ticks=np.arange(len(subset)), labels=subset['Feature_Name'], rotation=90, ha='center')
+        plt.subplots_adjust(bottom=0.35)  # Adjust the bottom margin to fit the labels
         plt.title(f'Distribution of Data per Feature (Mean, Variance, Min, Max) - Plot {i + 1}')
         plt.xlabel('Feature')
         plt.ylabel('Values')
         plt.tight_layout()  # Adjust layout to fit everything
         plt.show()
-
-if pair_plot:
-    sns.pairplot(summary[['mean', 'variance', 'median', 'min', 'max']])
-    plt.suptitle('Pairwise Relationships of Summary Statistics', y=1.02)
-    plt.show()
