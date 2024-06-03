@@ -100,7 +100,7 @@ VERBOSE: int = 1
 # Set to True to log the output to a file.
 LOGGER: bool = True
 # Set the name of the log file.
-LOG_FILE: Path = PROJECT_ROOT/'out'/('pipline-log-DT꞉'+START_TIME.strftime("%Y-%m-%d-%H%M%S")+'.log')
+LOG_FILE: Path = PROJECT_ROOT/'out'/(START_TIME.strftime("%Y-%m-%d-%H%M%S")+'__pipline-log.log')
 
 # -----------
 # Randomness
@@ -172,7 +172,7 @@ COLUMN_TO_CATEGORIZE: str = 'FT5'
 # **********----------------------------------------------------------------------------********** #
 
 # Use XGB feature selection
-SELECT_XGB: bool = False
+SELECT_XGB: bool = True
 
 # Stop the pipeline after feature selection
 STOP_AFTER_FEATURE_SELECTION: bool = False
@@ -180,7 +180,7 @@ STOP_AFTER_FEATURE_SELECTION: bool = False
 # Use precomputed XGB selected data dict
 # If set, will skip: cleaning, adding imputer objects, adding indicators, categorizing y, splitting data
 # and will start with imputing the data using the precomputed imputer objects.
-PRECOMPUTED_XGB_SELECTED_DATA: Path | None = PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy'/'2024-05-27-073726__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'  #None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
+PRECOMPUTED_XGB_SELECTED_DATA: Path | None = None  # PROJECT_ROOT/'data'/'results'/'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy'/'2024-05-27-073726__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'  #None  # PROJECT_ROOT/'data'/'results'/'XGB-RFECV-binlog-feat-select-num-est꞉ALL'/'2024-05-11-041302__FeatureSelect__XGB-RFE-CV_dataset_dict.pkl'  # 'XGB-RFECV-binlog-feat-select-num-est꞉ALL-Cut꞉17-Age'/'2024-05-17-154927__dataset_dict.pkl'
 
 # 37 specific features were found to be the best number of features using XGB feature selection.
 
@@ -256,8 +256,8 @@ VERBOSE_ITER_IMP: int = 3
 # Use precomputed imputed dataset
 # Leave as None to use the imputed dataset generated in the pipeline
 # Note that PRECOMPUTED_ITERATIVE_IMPUTED_DF is the full un-imputed dataset that was used to generate the imputed dataset
-PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_X_imputed.csv'
-PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None # PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_df.csv'
+PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA: Path | None = None  #PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_X_imputed.csv'
+PRECOMPUTED_ITERATIVE_IMPUTED_DF: Path | None = None  # PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy' / '2024-05-27-073726__IterativeImputer_df.csv'
 
 # Stop the pipeline after imputation
 STOP_AFTER_IMPUTATION: bool = False
@@ -354,19 +354,20 @@ SVC = True
 #     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
 #     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
 # ])))
-C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: little bit larger
-    np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
-    np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
-    np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
-    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
-    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
-    np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
-    np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
-])))
+# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: little bit larger
+#     np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+#     np.logspace(start=-6, stop=-7, num=5, base=10)[1:-1],
+#     np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
+#     np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
+#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+#     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
+#     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
+# ])))
 # C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: current space
 #     np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
 #     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
@@ -378,40 +379,41 @@ C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: littl
 #     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
 #     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
 # ])))
-# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller space
-#     np.logspace(start=-8, stop=-5, num=7+5+1, base=10),  # 10^-7 to 10^5
-#     np.logspace(start=-8, stop=-7, num=5, base=10)[1:-1],
-#     np.logspace(start=-7, stop=-6, num=5, base=10)[1:-1],
-#     np.logspace(start=-6, stop=-5, num=5, base=10)[1:-1],
-#     np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
-# ])))
+C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
+    np.logspace(start=-8, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+])))
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
-DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale']  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
-COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
-    -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
-    -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-    -np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-    -np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-    -np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-    -np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+GAMMA_PARAMS_SVC: Sequence[str | float] = ['auto', 'scale', 0, 0.1, 1.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
+# COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
+#     -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+#     -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+#     -np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+#     -np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+#     -np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+#     -np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+#     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
+#     np.linspace(0, 0, 1),              # 0
+#     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
+#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+# ])))
+COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
     np.linspace(0, 0, 1),              # 0
     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
-    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
-    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
 ])))
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
 TOL_PARAMS_SVC: Sequence[float] = [0.001]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
-CLASS_WEIGHT_SVC: str | None = 'balanced'  # TODO
+CLASS_WEIGHT_PARAMS_SVC: Sequence[str | None] = [None, 'balanced']
 VERB_SVC: int = VERBOSE
-MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]  # TODO CHANGE BACK TO 10M
+MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]  # TODO CHANGE BACK TO 10M for new prestudy
 DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
 BREAK_TIES_PARAMS_SVC: Sequence[bool] = [False]
 
@@ -568,6 +570,25 @@ verbose_cleaning = 0 if (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_
 dataset = cleaning.clean_data(dataset, verbose=verbose_cleaning, log=log, date=START_TIME, dataset_path=DATA_FILE)
 original_dataset = deepcopy(dataset)
 
+# Try print missingness in protein columns
+try:
+    num_missing = dataset.iloc[:, X_START_COLUMN_IDX:].isna().sum()
+    num_missing_df = num_missing.to_frame(name='Num_Missing')
+    missingness = num_missing / dataset.iloc[:, X_START_COLUMN_IDX:].shape[0]
+    missingness_df = missingness.to_frame(name='Percentage_Missing')
+    variance = dataset.iloc[:, X_START_COLUMN_IDX:].var()
+    variance_df = variance.to_frame(name='Var_Intensity')
+    combined_df = pd.concat([num_missing, missingness, variance], axis=1)
+    combined_df.index.name = 'HPA'
+    combined_df.columns = ['Num_Missing', 'Percentage_Missing', 'Var_Intensity']
+    combined_df.to_csv(PROJECT_ROOT/'out'/(START_TIME.strftime("%Y-%m-%d-%H%M%S")+'__prot_missingness_before_select.csv'))
+    log(f"Mean num missing in protein columns before selection {num_missing.mean()}")
+    log(f"Mean missingness in protein columns before selection {missingness.mean()}")
+    log(f"Mean Age: {dataset['Age'].mean()}")
+    log(f"Variance Age: {dataset['Age'].var()}")
+except Exception as e:
+    log(f"Error when trying to print missingness in protein columns before selection: {e}")
+
 
 # %% Generate new XGB selected data
 
@@ -706,6 +727,85 @@ if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
             for data_dict in dataset_dicts
         ]
 
+    dataset_dict = dataset_dicts[0]
+    # Try print missingness in train feature columns after selection
+    try:
+        print("Printing missingness in training feature columns after selection")
+        num_missing = dataset_dict['X_training'].isna().sum()
+        missingness = num_missing / dataset_dict['X_training'].shape[0]
+        mean_vals = dataset_dict['X_training'].mean()
+        med_vals = dataset_dict['X_training'].median()
+        var_vals = dataset_dict['X_training'].var()
+        min_vals = dataset_dict['X_training'].min()
+        max_vals = dataset_dict['X_training'].max()
+        combined_df = pd.concat([num_missing, missingness, med_vals, mean_vals, var_vals, min_vals, max_vals], axis=1)
+        combined_df.index.name = 'Feature_Name'
+        combined_df.columns = ['Num_Missing', 'Percentage_Missing', 'Median', 'Mean', 'Variance', 'Min', 'Max']
+        combined_df.to_csv(
+            PROJECT_ROOT/'out' / (START_TIME.strftime("%Y-%m-%d-%H%M%S") + '__X_train_missingness_after_select.csv')
+        )
+        print(f"Mean num missing in feature columns after selection {num_missing.mean()}")
+        print(f"Mean missingness in feature columns after selection {missingness.mean()}")
+        print(f"Mean Age: {dataset_dict['X_training']['Age'].mean()}")
+        print(f"Variance Age: {dataset_dict['X_training']['Age'].var()}")
+    except Exception as e:
+        print(f"Error when trying to print missingness in feature columns after selection: {e}")
+    finally:
+        del num_missing, missingness, mean_vals, med_vals, var_vals, min_vals, max_vals, combined_df
+
+    # Try print missingness in test feature columns after selection
+    try:
+        print("Printing missingness in testing feature columns after selection")
+        num_missing = dataset_dict['X_testing'].isna().sum()
+        missingness = num_missing / dataset_dict['X_training'].shape[0]
+        mean_vals = dataset_dict['X_testing'].mean()
+        med_vals = dataset_dict['X_testing'].median()
+        var_vals = dataset_dict['X_testing'].var()
+        min_vals = dataset_dict['X_testing'].min()
+        max_vals = dataset_dict['X_testing'].max()
+        combined_df = pd.concat([num_missing, missingness, med_vals, mean_vals, var_vals, min_vals, max_vals], axis=1)
+        combined_df.index.name = 'Feature_Name'
+        combined_df.columns = ['Num_Missing', 'Percentage_Missing', 'Median', 'Mean', 'Variance', 'Min', 'Max']
+        combined_df.to_csv(
+            PROJECT_ROOT/'out' / (START_TIME.strftime("%Y-%m-%d-%H%M%S") + '__X_test_missingness_after_select.csv')
+        )
+        print(f"Mean num missing in feature columns after selection {num_missing.mean()}")
+        print(f"Mean missingness in feature columns after selection {missingness.mean()}")
+        print(f"Mean Age: {dataset_dict['X_testing']['Age'].mean()}")
+        print(f"Variance Age: {dataset_dict['X_testing']['Age'].var()}")
+    except Exception as e:
+        print(f"Error when trying to print missingness in feature columns after selection: {e}")
+    finally:
+        del num_missing, missingness, mean_vals, med_vals, var_vals, min_vals, max_vals, combined_df
+
+    # Concatenate the training and testing data
+    X = pd.concat([dataset_dict['X_training'], dataset_dict['X_testing']], axis=0)
+
+    # Try print missingness in feature columns after selection
+    try:
+        print("Printing missingness in testing feature columns after selection")
+        num_missing = X.isna().sum()
+        missingness = num_missing / dataset_dict['X_training'].shape[0]
+        mean_vals = X.mean()
+        med_vals = X.median()
+        var_vals = X.var()
+        min_vals = X.min()
+        max_vals = X.max()
+        combined_df = pd.concat([num_missing, missingness, med_vals, mean_vals, var_vals, min_vals, max_vals], axis=1)
+        combined_df.index.name = 'Feature_Name'
+        combined_df.columns = ['Num_Missing', 'Percentage_Missing', 'Median', 'Mean', 'Variance', 'Min', 'Max']
+        combined_df.to_csv(
+            PROJECT_ROOT/'out' / (START_TIME.strftime("%Y-%m-%d-%H%M%S") + '__X_missingness_after_select.csv')
+        )
+        print(f"Mean num missing in feature columns after selection {num_missing.mean()}")
+        print(f"Mean missingness in feature columns after selection {missingness.mean()}")
+        print(f"Mean Age: {X['Age'].mean()}")
+        print(f"Variance Age: {X['Age'].var()}")
+    except Exception as e:
+        print(f"Error when trying to print missingness in feature columns after selection: {e}")
+    finally:
+        del num_missing, missingness, mean_vals, med_vals, var_vals, min_vals, max_vals, combined_df
+
     # if STOP_AFTER_FEATURE_SELECTION:
     utils.log_time(start_time=START_TIME, end_time=datetime.now(), log=log, logfile=LOG_FILE)
     joblib.dump(
@@ -716,7 +816,6 @@ if not (PRECOMPUTED_XGB_SELECTED_DATA or PRECOMPUTED_ITERATIVE_IMPUTED_X_DATA):
     del dataset_dicts[0]['feature_selection_rfecv']
     del dataset_dicts[0]['feature_selection_xgb']
     # exit(0)
-
 
 # %% Load Precomputed XGB Selected Data
 
@@ -869,9 +968,9 @@ for i, normalizer in enumerate(NORMALIZATION_MODES_PARAMS):
     param_grid.append(deepcopy(param_grid_SVC))
     param_grid[i]['normalizer'] = [normalizer]
 
-if CLASS_WEIGHT_SVC is not None:
+if CLASS_WEIGHT_PARAMS_SVC is not None:
     for param_set in param_grid:
-        param_set['classifier__class_weight'] = [CLASS_WEIGHT_SVC]
+        param_set['classifier__class_weight'] = CLASS_WEIGHT_PARAMS_SVC
 
 pipeline = Pipeline([
     ('normalizer', None),
