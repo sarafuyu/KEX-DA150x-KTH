@@ -52,9 +52,9 @@ if plot_bar_missing:
     bar_width = 0.4  # Set a bar width
     x = np.arange(len(summary))  # X axis
 
-    ax1.set_xlabel('Feature')
-    ax1.set_ylabel('Number of Missing Instances', color='tab:blue')
-    bars = ax1.bar(x - bar_width / 2, summary['Num_Missing'], color='tab:blue', width=bar_width, label='Missing Count')
+    ax1.set_xlabel('Features')
+    ax1.set_ylabel('Number of Missing Data Instances', color='tab:blue')
+    bars = ax1.bar(x - bar_width / 2, summary['Num_Missing'], color='tab:blue', width=bar_width, label='Missingness Count')
     ax1.tick_params(axis='y', labelcolor='tab:blue')
 
     ax2 = ax1.twinx()
@@ -70,7 +70,7 @@ if plot_bar_missing:
 
     fig.tight_layout()
     plt.subplots_adjust(bottom=0.3, top=0.9)  # Adjust the bottom and top margins
-    plt.title('Missing Data: Count and Feature Importance per Feature')
+    plt.title('Number of Missing Data Instances and Feature Importance per Feature')
     fig.legend(loc="upper right", bbox_to_anchor=(1, 1), bbox_transform=ax1.transAxes)
     plt.show()
 
@@ -81,7 +81,7 @@ box_data = summary[summary['Feature_Name'] != 'Age']
 
 if plot_box_stats:
 
-    num_hpa_per_plot = 30
+    num_hpa_per_plot = 44
     num_plots = (len(box_data) // num_hpa_per_plot) + 1  # Split into multiple plots if necessary
 
     for i in range(num_plots):
@@ -103,7 +103,7 @@ if plot_box_stats:
             plt.plot([idx - width / 2, idx + width / 2], [max_val, max_val], color='black', zorder=1)  # Max tick
             plt.fill_between(
                 [idx - width / 2, idx + width / 2], [mean_val - variance, mean_val - variance],
-                [mean_val + variance, mean_val + variance], color='lightblue', zorder=2
+                [mean_val + variance, mean_val + variance], color='red', zorder=2
                 )  # Variance box
             plt.plot(
                 [idx - width / 2, idx + width / 2], [mean_val, mean_val], color='blue', linewidth=1, zorder=3
@@ -111,8 +111,8 @@ if plot_box_stats:
 
         plt.xticks(ticks=np.arange(len(subset)), labels=subset['Feature_Name'], rotation=90, ha='center')
         plt.subplots_adjust(bottom=0.35)  # Adjust the bottom margin to fit the labels
-        plt.title(f'Distribution of Data per Feature (Mean, Variance, Min, Max) - Plot {i + 1}')
-        plt.xlabel('Feature')
-        plt.ylabel('Values')
+        plt.title(f'Data Distribution per Feature (Mean, Variance, Min, Max) - Plot {i + 1}/2')
+        plt.xlabel('Features')
+        plt.ylabel('Values (Mean, Variance, Min, Max)')
         plt.tight_layout()  # Adjust layout to fit everything
         plt.show()
