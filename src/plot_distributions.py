@@ -123,27 +123,27 @@ def plot_distribution(df, column, name):
         if unique_values < 20:
             # If the number of unique numeric values is less than 20, use a count plot
             sns.countplot(x=column_data, palette='viridis')
-            plt.title(f'Count Plot of {name}')
-            plt.xlabel(name)
-            plt.ylabel('Frequency')
+            plt.title(f'Count Plot of {name}', fontsize=16)
+            plt.xlabel(name, fontsize=13)
+            plt.ylabel('Frequency', fontsize=13)
         else:
             # Use a histogram and boxplot for numeric columns with many unique values
-            fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+            fig, axs = plt.subplots(1, 2, figsize=(15, 6))
             sns.histplot(column_data, kde=True, ax=axs[0], color='skyblue')
-            axs[0].set_title(f'Histogram of {name}')
+            axs[0].set_title(f'Histogram of {name}', fontsize=13)
             axs[0].set_xlabel(name)
-            axs[0].set_ylabel('Frequency')
+            axs[0].set_ylabel('Frequency', fontsize=13)
 
             sns.boxplot(x=column_data, ax=axs[1], color='salmon')
-            axs[1].set_title(f'Boxplot of {column}')
+            axs[1].set_title(f'Boxplot of {column}', fontsize=16)
             axs[1].set_xlabel(column)
             plt.tight_layout()
     else:
         # For categorical columns, use a count plot
         sns.countplot(x=column_data, palette='viridis')
-        plt.title(f'Count Plot of {column}')
+        plt.title(f'Count Plot of {column}', fontsize=16)
         plt.xlabel(column)
-        plt.ylabel('Frequency')
+        plt.ylabel('Frequency', fontsize=13)
 
     # Show the plot
     plt.show()
@@ -170,21 +170,21 @@ def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
     plt.figure(figsize=(10, 6))
 
     # Use a histogram and boxplot for numeric columns with many unique values
-    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
 
     # Histogram for 'Age'
     sns.histplot(hist_data, kde=True, bins=np.arange(int(hist_data.min()), int(hist_data.max()+2)), ax=axs[0], color='skyblue')
-    axs[0].set_title(f'Dataset Distribution of {hist_name}')
-    axs[0].set_xlabel(f'Value of {hist_name}')
-    axs[0].set_ylabel(f'Frequency of {hist_name} Instances')
+    axs[0].set_title(f'Distribution of {hist_name}', fontsize=16)
+    axs[0].set_xlabel(f'Age (Years)', fontsize=13)
+    axs[0].set_ylabel(f'Frequency', fontsize=13)
     axs[0].set_xticks(range(int(hist_data.min()), int(hist_data.max()) + 2))
 
     # Bar plot for 'NSAA'
     bar_freq = bar_data.value_counts().sort_index()
     sns.barplot(x=bar_freq.index, y=bar_freq.values, ax=axs[1], color='salmon')
-    axs[1].set_title(f'Dataset Distribution of {bar_name} Scores')
-    axs[1].set_xlabel(f'Value of {bar_name} Score')
-    axs[1].set_ylabel(f'Frequency of {bar_name} Instances')
+    axs[1].set_title(f'Distribution of {bar_name} Scores', fontsize=16)
+    axs[1].set_xlabel(f'NSAA Score', fontsize=13)
+    axs[1].set_ylabel('')
     axs[1].set_xticks(range(0, 35))
     axs[1].set_yticks(range(0, bar_freq.max() + 2, 2))  # Ensure y-axis has even integer values
     axs[1].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis has integer values
@@ -226,18 +226,21 @@ def age_split_plot(df, file, col1, name1, col2, name2, cutoff):
     plt.figure(figsize=(10, 6))
 
     # Use a histogram and boxplot for numeric columns with many unique values
-    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
 
     for (i, list) in enumerate([less_than_cutoff, greater_equal_to_cutoff]):
         # Histogram for 'Age'
         sns.histplot(list, kde=True, bins=np.arange(int(min(list)), int(max(list)+2)), ax=axs[i], color='skyblue')
-        axs[i].set_xlabel(f'Value of {name1}')
-        axs[i].set_ylabel(f'Frequency of {name1} Instances')
-        axs[i].set_ylim([0,65]) # Achive same scale for both sub plots
+        axs[i].set_xlabel(f'Age (Years)', fontsize=13)
+        if i == 0:
+            axs[i].set_ylabel(f'Frequency', fontsize=13)
+        else:
+            axs[i].set_ylabel('')
+        axs[i].set_ylim([0,65])  # Achive same scale for both subplots
         axs[i].set_xticks(range(int(min(list)), int(max(list))+2))
 
-    axs[0].set_title(f'Dataset Distribution of Class Under Cut-off for {name2}')
-    axs[1].set_title(f'Dataset Distribution of Class Including and Above Cut-off for {name2}')
+    axs[0].set_title(f'First NSAA Category Age Distribution (NSAA $<$ 17)', fontsize=16)
+    axs[1].set_title(f'Second NSAA Category Age Distribution (NSAA $\\geq$ 17)', fontsize=16)
 
     # Show and save the plot
     plt.tight_layout()
@@ -246,7 +249,7 @@ def age_split_plot(df, file, col1, name1, col2, name2, cutoff):
 
 # %% Generate plots
 cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
-#hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
+hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
 age_split_plot(cleaned_dataset, CV_RESULTS_DIR/'age_split_nsaa.png', 'Age', 'Age', 'FT5', 'NSAA', 17)
 
 # Load the cross-validation results

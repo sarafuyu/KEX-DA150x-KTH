@@ -48,7 +48,7 @@ summary = stats_importance.sort_values(by=["Feature Importance", "Feature Rank"]
 
 # %% Plotting missingness
 
-plot_bar_missing = False
+plot_bar_missing = True
 plot_box_stats_old = False
 plot_violin_stats = False
 plot_violin_stats_overview = False
@@ -63,7 +63,7 @@ if plot_bar_missing:
     bar_width = 0.7  # Set a bar width
     x = np.arange(len(summary))  # X axis
     bar_color = plt.cm.Paired(0)  # Use colorblind-friendly palette
-    ax1.set_xlabel('Feature (Name)', fontsize=13)
+    ax1.set_xlabel('Feature (Antibody or Age)', fontsize=13)
     ax1.set_ylabel('Missingness (Frequency)', color='k', fontsize=13)
     bars = ax1.bar(x, summary['Num_Missing'], color=bar_color, width=bar_width, label='Missingness Count')
 
@@ -286,10 +286,11 @@ box_data = summary
 
 if plot_violin_stats_overview_with_age:
     subset = box_data
-    fig, ax = plt.subplots(figsize=(15, 5), sharey=True, dpi=300)
+    fig, ax = plt.subplots(figsize=(15, 8), sharey=True, dpi=300)
     width = 1.75  # Width of the box and mean line
-    show_only_outside_percentiles = True
-    num_outliers_to_show = np.inf  # 4  # can be set to np.inf to show all outliers only if show_only_outside_percentiles is True
+    plot_outliers = False
+    show_only_outside_percentiles = False
+    num_outliers_to_show = 1  # np.inf  # can be set to np.inf to show all outliers only if show_only_outside_percentiles is True
     first_percentile = 100 - 95.4  # 25
     last_percentile = 95.4  # 75
 
@@ -322,7 +323,7 @@ if plot_violin_stats_overview_with_age:
     global_max = X[feature_names].max().max()
 
     # # Add a small margin
-    margin = 0.5
+    margin = 0.1
     y_min = global_min - margin
     y_max = global_max + margin
 
@@ -343,16 +344,17 @@ if plot_violin_stats_overview_with_age:
             l.set_alpha(0.8)
 
     # Add outliers
-    for i, (points, plot_index) in enumerate(zip(outliers, outlier_indexes)):
-        # Select only the two first and last outliers only if they exist
-        if len(points) > 2*num_outliers_to_show:
-            points = list(points)
-            points = points[:num_outliers_to_show] + points[-num_outliers_to_show:]
-        ax.scatter(x=(len(points)*[i]), y=points, color='k', s=2, alpha=0.5, zorder=3)
+    if plot_outliers:
+        for i, (points, plot_index) in enumerate(zip(outliers, outlier_indexes)):
+            # Select only the two first and last outliers only if they exist
+            if len(points) > 2*num_outliers_to_show:
+                points = list(points)
+                points = points[:num_outliers_to_show] + points[-num_outliers_to_show:]
+            ax.scatter(x=(len(points)*[i]), y=points, color='k', s=2, alpha=0.5, zorder=3)
 
 
     ax.set_ylabel('$\\log_2$-Normalized Intensity', fontsize=13)
-    ax.set_xlabel('Feature (HPA ID)', fontsize=13)
+    ax.set_xlabel('Feature (Antibody or Age)', fontsize=13)
     ax.tick_params(axis='y')
 
     # Show y-axis grid lines
