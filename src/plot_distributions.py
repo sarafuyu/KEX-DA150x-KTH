@@ -148,14 +148,18 @@ def plot_distribution(df, column, name):
     # Show the plot
     plt.show()
 
-# %%
+# %% Data distribution before data split
 def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
     """
     Plots the distribution of specified columns in a DataFrame.
 
     Parameters:
     df (pd.DataFrame): The DataFrame containing the data.
-    column (str): The name of the column to plot.
+    file (str): The save directory for final plot.
+    hist_col (str): Name of df column to plot in histogram.
+    hist_name (str): Name used in lables and the plot axis.
+    bar_col (str): Name of df column to plot in bar plot.
+    bar_name (str): Name used in lables and the plot axis.
     """
 
     # Extract data
@@ -190,10 +194,60 @@ def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
     plt.show()
     fig.savefig(file)
 
+# %% Age distribution based on cut-off
+def age_split_plot(df, file, col1, name1, col2, name2, cutoff):
+    """
+    Plots the distribution of specified columns in a DataFrame based on the binary classes.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame containing the data.
+    file (str): The save directory for final plot.
+    col1 (str): Name of df column to plot in histogram.
+    name1 (str): Name used in lables and the plot axis.
+    col2 (str): Name of df column to plot in bar plot.
+    name2 (str): Name used in lables and the plot axis.
+    cutoff (int): Treshold used for binary classification of col2.
+    """
+
+    # Split data
+    less_than_cutoff = [] # 1
+    greater_equal_to_cutoff = [] # 0
+
+    for idx, row in df.iterrows():
+        if row[col2] < cutoff:
+            less_than_cutoff.append(row[col1])
+        else:
+            greater_equal_to_cutoff.append(row[col1])
+
+    # print(f"Less than cut-off len: {len(less_than_cutoff)}")
+    # print(f"Equal or greater than cut-off len: {len(greater_equal_to_cutoff)}")
+
+    # Set up the matplotlib figure
+    plt.figure(figsize=(10, 6))
+
+    # Use a histogram and boxplot for numeric columns with many unique values
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+    for (i, list) in enumerate([less_than_cutoff, greater_equal_to_cutoff]):
+        # Histogram for 'Age'
+        sns.histplot(list, kde=True, bins=np.arange(int(min(list)), int(max(list)+2)), ax=axs[i], color='skyblue')
+        axs[i].set_xlabel(f'Value of {name1}')
+        axs[i].set_ylabel(f'Frequency of {name1} Instances')
+        axs[i].set_ylim([0,65]) # Achive same scale for both sub plots
+        axs[i].set_xticks(range(int(min(list)), int(max(list))+2))
+
+    axs[0].set_title(f'Dataset Distribution of Class Under Cut-off for {name2}')
+    axs[1].set_title(f'Dataset Distribution of Class Including and Above Cut-off for {name2}')
+
+    # Show and save the plot
+    plt.tight_layout()
+    plt.show()
+    fig.savefig(file)
+
 # %% Generate plots
 cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
-hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
-
+#hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
+age_split_plot(cleaned_dataset, CV_RESULTS_DIR/'age_split_nsaa.png', 'Age', 'Age', 'FT5', 'NSAA', 17)
 
 # Load the cross-validation results
 #cv_results = pd.read_csv(CV_RESULTS_PATH)
