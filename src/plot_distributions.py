@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns  # For heatmap or advanced plotting
+from matplotlib.ticker import MaxNLocator # new
 
 # Local imports
 import utils
@@ -32,19 +33,19 @@ import utils
 
 SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'GridSearch-full-final-StdScaler-MinMaxScaler-2024-05-16-112335'
+CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/'final-prestudy'
 
 
 # %% Configuration
 
 # Path to the cv_results_ csv file:
-CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-05-16-112335__cv_results.csv'
+CV_RESULTS_PATH: Path = CV_RESULTS_DIR/'2024-06-02-223758__FeatureSelect꞉XGB-RFE-CV꞉cv_results_.csv' #2024-05-16-112335__cv_results.csv'
 
 # Path to cleaned dataset
-CLEANED_DATASET_PATH: Path = CV_RESULTS_DIR/'2024-05-16-112335__cleaned_data.csv'
+CLEANED_DATASET_PATH: Path = CV_RESULTS_DIR/'2024-06-02-223758__cleaned_data.csv'
 
 # Path to the pickled dataset dictionary
-PICKLED_DATASET_PATH: Path = CV_RESULTS_DIR/'2024-05-16-112335__dataset_dict.pkl'
+PICKLED_DATASET_PATH: Path = CV_RESULTS_DIR/'2024-06-02-223758__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl'
 
 # Verbosity level:
 VERBOSE: int = 2  # Unused at the moment
@@ -92,7 +93,7 @@ def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl: str =
         df.columns = df.columns.str.replace(prefix, repl)
     return df
 
-def plot_distribution(df, column):
+def plot_distribution(df, column, name):
     """
     Plots the distribution of a specified column in a DataFrame based on its characteristics.
 
@@ -122,15 +123,15 @@ def plot_distribution(df, column):
         if unique_values < 20:
             # If the number of unique numeric values is less than 20, use a count plot
             sns.countplot(x=column_data, palette='viridis')
-            plt.title(f'Count Plot of {column}')
-            plt.xlabel(column)
+            plt.title(f'Count Plot of {name}')
+            plt.xlabel(name)
             plt.ylabel('Frequency')
         else:
             # Use a histogram and boxplot for numeric columns with many unique values
             fig, axs = plt.subplots(1, 2, figsize=(14, 6))
             sns.histplot(column_data, kde=True, ax=axs[0], color='skyblue')
-            axs[0].set_title(f'Histogram of {column}')
-            axs[0].set_xlabel(column)
+            axs[0].set_title(f'Histogram of {name}')
+            axs[0].set_xlabel(name)
             axs[0].set_ylabel('Frequency')
 
             sns.boxplot(x=column_data, ax=axs[1], color='salmon')
@@ -147,32 +148,74 @@ def plot_distribution(df, column):
     # Show the plot
     plt.show()
 
+# %%
+def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
+    """
+    Plots the distribution of specified columns in a DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame containing the data.
+    column (str): The name of the column to plot.
+    """
+
+    # Extract data
+    hist_data = df[hist_col] # floats
+    bar_data = df[bar_col] # int: 0-34
+
+    # Set up the matplotlib figure
+    plt.figure(figsize=(10, 6))
+
+    # Use a histogram and boxplot for numeric columns with many unique values
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Histogram for 'Age'
+    sns.histplot(hist_data, kde=True, bins=np.arange(int(hist_data.min()), int(hist_data.max()+2)), ax=axs[0], color='skyblue')
+    axs[0].set_title(f'Dataset Distribution of {hist_name}')
+    axs[0].set_xlabel(f'Value of {hist_name}')
+    axs[0].set_ylabel(f'Frequency of {hist_name} Instances')
+    axs[0].set_xticks(range(int(hist_data.min()), int(hist_data.max()) + 2))
+
+    # Bar plot for 'NSAA'
+    bar_freq = bar_data.value_counts().sort_index()
+    sns.barplot(x=bar_freq.index, y=bar_freq.values, ax=axs[1], color='salmon')
+    axs[1].set_title(f'Dataset Distribution of {bar_name} Scores')
+    axs[1].set_xlabel(f'Value of {bar_name} Score')
+    axs[1].set_ylabel(f'Frequency of {bar_name} Instances')
+    axs[1].set_xticks(range(0, 35))
+    axs[1].set_yticks(range(0, bar_freq.max() + 2, 2))  # Ensure y-axis has even integer values
+    axs[1].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis has integer values
+
+    # Show and save the plot
+    plt.tight_layout()
+    plt.show()
+    fig.savefig(file)
 
 # %% Generate plots
+cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
+hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
+
 
 # Load the cross-validation results
-cv_results = pd.read_csv(CV_RESULTS_PATH)
+#cv_results = pd.read_csv(CV_RESULTS_PATH)
 
 # Make all param prefixes the same
-cv_results = replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
+#cv_results = replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
 
 # Add prefix to the parameter names
-PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
-FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
-VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
+#PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
+#FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
+#VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
 
 # Sanitize the normalization column
-cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
+#cv_results['param_normalizer'] = cv_results['param_normalizer'].str.split('(').str[0]
 
 # Load cleaned dataset
-cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
+#cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
 
 # Load pickled dataset dictionary
-dataset_dict = joblib.load(PICKLED_DATASET_PATH)
+#dataset_dict = joblib.load(PICKLED_DATASET_PATH)
 
 # Plot distributions of the specified columns
-plot_distribution(cleaned_dataset, 'Age')
-plot_distribution(cleaned_dataset, 'FT5')
-plot_distribution(dataset_dict['dataset'],  'FT5')
-
-breakpoint()
+#plot_distribution(cleaned_dataset, 'Age', 'Age')
+#plot_distribution(cleaned_dataset, 'FT5', 'NSAA')
+#plot_distribution(dataset_dict['dataset'],  'FT5', 'NSAA')
