@@ -20,8 +20,8 @@ xgboost~=2.0.3
 joypy~=0.2.6
 
 # Needed for the Jupyter Notebooks
-matplotlib==3.8.3
-matplotlib-inline==0.1.6
+matplotlib==3.9.0
+matplotlib-inline==0.1.7
 jupyter==1.0.0
 jupyter-console==6.6.3
 jupyter-events==0.10.0
