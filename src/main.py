@@ -298,7 +298,7 @@ def identity(x): return x
 # Normalization modes to try in Grid search. Can be 'None', 'StandardScaler', 'MinMaxScaler'.
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
-    # MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
+    MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
     # FunctionTransformer(identity, validate=True), # No normalization
 ]
 
@@ -380,9 +380,10 @@ SVC = True
 #     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
 # ])))
 C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
-    np.logspace(start=-8, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
+    np.logspace(start=-8, stop=5, num=8+5+1, base=10),  # 10^-7 to 10^5
+    # np.logspace(start=-8, stop=2, num=8 + 2 + 1, base=10),  # 10^-7 to 10^5
 ])))
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly', 'rbf', 'sigmoid']  # 'linear', 'rbf', 'precomputed'
 DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 GAMMA_PARAMS_SVC: Sequence[str | float] = ['auto', 'scale', 0, 0.1, 1.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
 # COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
@@ -406,10 +407,13 @@ COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy s
     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
     np.linspace(0, 0, 1),              # 0
     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
+    # -np.logspace(start=-3, stop=0, num=3+0+1, base=10),  # -10^-3 to -10^3
+    # np.linspace(0, 0, 1),              # 0
+    # np.logspace(start=-3, stop=2, num=3+2+1, base=10),  # 10^-3 to  10^3
 ])))
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.001]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.001, 1, 1000]  #, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_PARAMS_SVC: Sequence[str | None] = [None, 'balanced']
 VERB_SVC: int = VERBOSE
