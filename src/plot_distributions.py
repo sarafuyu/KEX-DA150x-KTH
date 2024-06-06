@@ -252,6 +252,14 @@ cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
 hist_bar_plot(cleaned_dataset, CV_RESULTS_DIR/'age_nsaa_dist.png','Age', 'Age', 'FT5', 'NSAA')
 age_split_plot(cleaned_dataset, CV_RESULTS_DIR/'age_split_nsaa.png', 'Age', 'Age', 'FT5', 'NSAA', 17)
 
+# Check the number of unique patients
+unique_patients = cleaned_dataset['Participant_ID'].nunique()
+print(f"Number of unique participants: {unique_patients}")
+
+# Check the number of unique patients with disease status 0
+unique_patients_with_disease_0 = cleaned_dataset[cleaned_dataset['Disease'] == 0]['Participant_ID'].nunique()
+print(f"Number of unique Cnt participants with: {unique_patients_with_disease_0}")
+
 # Load the cross-validation results
 #cv_results = pd.read_csv(CV_RESULTS_PATH)
 
