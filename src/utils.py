@@ -21,15 +21,17 @@ from functools import reduce
 from pathlib import Path
 from collections.abc import Sequence
 
-import numpy as np
 ## External library imports
+import numpy as np
 import pandas as pd
+import matplotlib.path as mpath
+import matplotlib.patches as mpatches
 from scipy.sparse import csr_matrix  # Needed for dataframe_to_sparse
 from sklearn.feature_selection import f_classif
 from sklearn.linear_model import BayesianRidge
+from sklearn.preprocessing import FunctionTransformer
 from datetime import datetime
 
-from sklearn.preprocessing import FunctionTransformer
 
 # %% Module-Global Variables
 
@@ -737,6 +739,9 @@ SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
         max_value = df[f'mean_test_{primary_metric}'].max()
         best_rows_ = df[df[f'mean_test_{primary_metric}'] == max_value]
 
+        # Sort df by the primary metric and std deviation
+        best_rows_ = best_rows_.sort_values(by=[f'mean_test_{primary_metric}', f'std_test_{primary_metric}'], ascending=False)
+
         # If there is only one row with the best value, return it
         if best_rows_.shape[0] == 1:
             return best_rows_, True
@@ -800,10 +805,13 @@ SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
 
     # ------------------------- CLOSEST TO DEFAULTS ----------------------------
 
-    # If still tied, see which row is closest to the default parameters
+    # If still tied, see which row is closest to the default parameters in the specified order
     if default_params:
         for param_name, default_value in default_params.items():
-            best_rows['distance'] = abs(best_rows[param_name] - default_value)
+            if type(default_value) is str:
+                best_rows['distance'] = pd.Series(best_rows[param_name] != default_value).astype(int)
+            else:
+                best_rows['distance'] = abs(best_rows[param_name] - default_value)
             best_rows = best_rows.sort_values(by='distance', ascending=True)
             best_rows = best_rows[best_rows['distance'] == best_rows.iloc[0]['distance']]
             if best_rows.shape[0] == 1:
@@ -837,3 +845,86 @@ SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
     else:
         return best_rows[parameters].iloc[0]
 
+
+# %% Prestudy plotter helper functions
+
+def adjust_color(color, amount=0.1):
+    """
+    Lightens or darkens the given color. The amount parameter specifies the amount of lightening or darkening.
+    Set amount to a positive value to lighten the color, or a negative value to darken it.
+
+    """
+    from matplotlib.colors import to_rgba
+
+    c = np.array(to_rgba(color))
+    c[:3] = np.clip(c[:3] + amount, 0, 1)
+    return c
+
+def add_label_band(ax, top, bottom, label, *, spine_pos=-0.05, tip_pos=-0.02):
+    """
+    Helper function to add bracket around y-tick labels.
+
+    Author: @tacaswell
+    Source: https://stackoverflow.com/questions/67235301/vertical-grouping-of-labels-with-brackets-on-matplotlib
+
+    Parameters
+    ----------
+    ax : matplotlib.Axes
+        The axes to add the bracket to
+
+    top, bottom : floats
+        The positions in *data* space to bracket on the y-axis
+
+    label : str
+        The label to add to the bracket
+
+    spine_pos, tip_pos : float, optional
+        The position in *axes fraction* of the spine and tips of the bracket.
+        These will typically be negative
+
+    Returns
+    -------
+    bracket : matplotlib.patches.PathPatch
+        The "bracket" Aritst.  Modify this Artist to change the color etc of
+        the bracket from the defaults.
+
+    txt : matplotlib.text.Text
+        The label Artist.  Modify this to change the color etc of the label
+        from the defaults.
+
+    """
+    import numpy.typing
+    # grab the yaxis blended transform
+    transform = ax.get_yaxis_transform()
+
+    # add the bracket
+    bracket = mpatches.PathPatch(
+        mpath.Path(
+            [  # noqa
+                (tip_pos, top),
+                (spine_pos, top),
+                (spine_pos, bottom),
+                (tip_pos, bottom),
+            ]
+        ),
+        transform=transform,
+        clip_on=False,
+        facecolor="none",
+        edgecolor="k",
+        linewidth=2,
+    )
+    ax.add_artist(bracket)
+
+    # add the label
+    txt = ax.text(
+        spine_pos - 0.01,
+        (top + bottom) / 2,
+        label,
+        ha="right",
+        va="center",
+        rotation="vertical",
+        clip_on=False,
+        transform=transform,
+    )
+
+    return bracket, txt

@@ -30,7 +30,6 @@ from matplotlib.colors import to_rgba
 from matplotlib.ticker import MaxNLocator, SymmetricalLogLocator, FuncFormatter
 from joypy import joyplot
 
-
 # Local imports
 import utils
 
@@ -201,7 +200,7 @@ best_params = utils.replace_column_prefix(best_params, ['classifier__'],  'param
 # best_params['param_degree'] = best_cv_results_row['param_degree']
 # best_params['param_coef0'] = best_cv_results_row['param_coef0']
 
-# # Try setting hardcode best parameters
+# # Try setting hardcode the best parameters
 # best_params['param_C'] = 17.78279410038923  # 10^1.25
 # best_params['param_degree'] = 3
 # best_params['param_coef0'] = 0.01
@@ -240,6 +239,7 @@ def plot_parameter_effects_stacked(cv_results_, parameters, metrics, fixing_mode
 
         fig, ax = plt.subplots(figsize=(8, 5))
 
+        best_params_ = None
         for idx, (metric, mode) in enumerate([(metric, mode) for metric in metrics for mode in fixing_modes]):
             best_params_ = utils.get_best_params(cv_results_, GRIDSEARCH_METRIC, parameters, alpha=alpha, beta=beta) if mode == 'optimal' else pd.Series(default_params)
             mask = pd.DataFrame(cv_results_[fixed_params_] == best_params_.drop(index=param)).all(axis=1)
@@ -335,15 +335,7 @@ def plot_parameter_effects_stacked(cv_results_, parameters, metrics, fixing_mode
             bbox_inches='tight'
             )
 
-
-def adjust_color(color, amount=0.1):
-    """
-    Lightens or darkens the given color. The amount parameter specifies the amount of lightening or darkening.
-    Set amount to a positive value to lighten the color, or a negative value to darken it.
-    """
-    c = np.array(to_rgba(color))
-    c[:3] = np.clip(c[:3] + amount, 0, 1)
-    return c
+# TODO: deleted adjust_color duplicates
 
 
 def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing_mode='optimal', default_params=None):
@@ -376,7 +368,7 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
     bar_charts = []
     all_stacks = []
 
-    base_colors = plt.cm.get_cmap('tab10', len(metrics))
+    base_colors = plt.cm.get_cmap('tab10', len(metrics)) # noqa
     custom_colors = {
         'f1': '#5D3FD3',  # Purple
         'precision': '#ff7f0e',  # Orange
@@ -389,17 +381,18 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
         if fixing_mode != 'both':
             diff = 0.1
             lightness = 0.0
-        base_color = adjust_color(base_colors(i), diff+lightness)
+        base_color = utils.adjust_color(base_colors(i), diff+lightness)
         if metric in custom_colors:
-            base_color = adjust_color(custom_colors[metric], diff)
-        color_mapping[(metric, 'default')] = adjust_color(base_color, -diff)  # Slightly darker
-        color_mapping[(metric, 'optimal')] = adjust_color(base_color, diff)  # Slightly lighter
+            base_color = utils.adjust_color(custom_colors[metric], diff)
+        color_mapping[(metric, 'default')] = utils.adjust_color(base_color, -diff)  # Slightly darker
+        color_mapping[(metric, 'optimal')] = utils.adjust_color(base_color, diff)  # Slightly lighter
 
     if fixing_mode == 'both':
         hatch_mapping = {'default': '//', 'optimal': '\\\\'}  # Different hatch patterns
     else:
         hatch_mapping = {'default': '//', 'optimal': '\\\\'}
 
+    best_params_ = None
     for idx, (metric, mode) in enumerate([(metric, mode) for metric in metrics for mode in fixing_modes]):
         best_params_ = utils.get_best_params(cv_results_, GRIDSEARCH_METRIC, parameters, alpha=alpha, beta=beta) if mode == 'optimal' else pd.Series(
             default_params
@@ -433,7 +426,7 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
     for xi in sorted(sorted_stacks.keys()):
         y_offset = 0
         for yi, sei, metric, mode in sorted_stacks[xi]:
-            plt.rcParams['hatch.color'] = adjust_color(color_mapping[(metric, mode)], -0.2)
+            plt.rcParams['hatch.color'] = utils.adjust_color(color_mapping[(metric, mode)], -0.2)
             label = f'{metric} ({mode})' if (metric, mode) not in labels_added else ""
             b = ax.bar(
                 xi, yi, bar_width, bottom=y_offset, yerr=sei, capsize=10,
@@ -963,6 +956,8 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, test_metric, def
 
     # Filter ticks to only show powers of 10
     shrink_val = 1  # Set length of colorbar
+    xticks = None
+    yticks = None
     if x_param != 'param_degree' and x_param != 'param_kernel':
         xticks = [i for i in heatmap_data.columns if type(i) is not str and utils.is_power_of_10(i)]
     if y_param != 'param_degree' and y_param != 'param_kernel':
@@ -986,10 +981,10 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, test_metric, def
     #     ax.yaxis.set_major_formatter(FuncFormatter(utils.scientific_notation_formatter))
 
     # Set the ticks and labels
-    if x_param != 'param_degree' and x_param != 'param_kernel':
+    if xticks and x_param != 'param_degree' and x_param != 'param_kernel':
         ax.set_xticks([heatmap_data.columns.get_loc(i) + 0.5 for i in xticks])
         ax.set_xticklabels(list(utils.scientific_notation_formatter(xtick, pos=None) for xtick in xticks))
-    if y_param != 'param_degree' and y_param != 'param_kernel':
+    if yticks and y_param != 'param_degree' and y_param != 'param_kernel':
         ax.set_yticks([heatmap_data.index.get_loc(i) + 0.5 for i in yticks])
         ax.set_yticklabels(list(utils.scientific_notation_formatter(ytick, pos=None) for ytick in yticks))
 

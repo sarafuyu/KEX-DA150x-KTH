@@ -26,13 +26,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns  # For heatmap or advanced plotting
+import matplotlib.path as mpath
+import matplotlib.patches as mpatches
 from matplotlib.colors import to_rgba
 from matplotlib.ticker import MaxNLocator, SymmetricalLogLocator, FuncFormatter
 from joypy import joyplot
-
+from sklearn.model_selection import train_test_split, cross_validate, cross_val_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.metrics import confusion_matrix, roc_auc_score
 
 # Local imports
-import utils
+import utils  # The utils module need to be imported first to set verbosity level and random seed
+import features
 
 
 # %% Setup
@@ -323,15 +328,7 @@ def plot_parameter_effects_stacked(cv_results_, parameters, metrics, fixing_mode
             )
 
 
-def adjust_color(color, amount=0.1):
-    """
-    Lightens or darkens the given color. The amount parameter specifies the amount of lightening or darkening.
-    Set amount to a positive value to lighten the color, or a negative value to darken it.
-    """
-    c = np.array(to_rgba(color))
-    c[:3] = np.clip(c[:3] + amount, 0, 1)
-    return c
-
+# TODO: DONE flyttat adjust_color till utils
 
 def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing_mode='optimal', default_params=None):
     """
@@ -363,7 +360,7 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
     bar_charts = []
     all_stacks = []
 
-    base_colors = plt.cm.get_cmap('tab10', len(metrics))
+    base_colors = plt.cm.get_cmap('tab10', len(metrics))  # noqa
     custom_colors = {
         'f1': '#5D3FD3',  # Purple
         'precision': '#ff7f0e',  # Orange
@@ -376,17 +373,18 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
         if fixing_mode != 'both':
             diff = 0.1
             lightness = 0.0
-        base_color = adjust_color(base_colors(i), diff+lightness)
+        base_color = utils.adjust_color(base_colors(i), diff+lightness)
         if metric in custom_colors:
-            base_color = adjust_color(custom_colors[metric], diff)
-        color_mapping[(metric, 'default')] = adjust_color(base_color, -diff)  # Slightly darker
-        color_mapping[(metric, 'optimal')] = adjust_color(base_color, diff)  # Slightly lighter
+            base_color = utils.adjust_color(custom_colors[metric], diff)
+        color_mapping[(metric, 'default')] = utils.adjust_color(base_color, -diff)  # Slightly darker
+        color_mapping[(metric, 'optimal')] = utils.adjust_color(base_color, diff)  # Slightly lighter
 
     if fixing_mode == 'both':
         hatch_mapping = {'default': '//', 'optimal': '\\\\'}  # Different hatch patterns
     else:
         hatch_mapping = {'default': '//', 'optimal': '\\\\'}
 
+    best_params_ = None
     for idx, (metric, mode) in enumerate([(metric, mode) for metric in metrics for mode in fixing_modes]):
         best_params_ = utils.get_best_params(cv_results_, GRIDSEARCH_METRIC, parameters, alpha=alpha, beta=beta) if mode == 'optimal' else pd.Series(
             default_params
@@ -420,7 +418,7 @@ def plot_parameter_effects_stacked_bars(cv_results_, parameters, metrics, fixing
     for xi in sorted(sorted_stacks.keys()):
         y_offset = 0
         for yi, sei, metric, mode in sorted_stacks[xi]:
-            plt.rcParams['hatch.color'] = adjust_color(color_mapping[(metric, mode)], -0.2)
+            plt.rcParams['hatch.color'] = utils.adjust_color(color_mapping[(metric, mode)], -0.2)
             label = f'{metric} ({mode})' if (metric, mode) not in labels_added else ""
             b = ax.bar(
                 xi, yi, bar_width, bottom=y_offset, yerr=sei, capsize=10,
@@ -678,193 +676,7 @@ def plot_parameter_effects_opt(cv_results_, parameters, test_metric=None, defaul
                 plt.pause(0.5)
 
 
-import matplotlib.path as mpath
-import matplotlib.patches as mpatches
-
-
-def add_label_band(ax, top, bottom, label, *, spine_pos=-0.05, tip_pos=-0.02):
-    """
-    Helper function to add bracket around y-tick labels.
-
-    Author: @tacaswell
-    Source: https://stackoverflow.com/questions/67235301/vertical-grouping-of-labels-with-brackets-on-matplotlib
-
-    Parameters
-    ----------
-    ax : matplotlib.Axes
-        The axes to add the bracket to
-
-    top, bottom : floats
-        The positions in *data* space to bracket on the y-axis
-
-    label : str
-        The label to add to the bracket
-
-    spine_pos, tip_pos : float, optional
-        The position in *axes fraction* of the spine and tips of the bracket.
-        These will typically be negative
-
-    Returns
-    -------
-    bracket : matplotlib.patches.PathPatch
-        The "bracket" Aritst.  Modify this Artist to change the color etc of
-        the bracket from the defaults.
-
-    txt : matplotlib.text.Text
-        The label Artist.  Modify this to change the color etc of the label
-        from the defaults.
-
-    """
-    import numpy.typing
-    # grab the yaxis blended transform
-    transform = ax.get_yaxis_transform()
-
-    # add the bracket
-    bracket = mpatches.PathPatch(
-        mpath.Path(
-            [  # noqa
-                (tip_pos, top),
-                (spine_pos, top),
-                (spine_pos, bottom),
-                (tip_pos, bottom),
-            ]
-        ),
-        transform=transform,
-        clip_on=False,
-        facecolor="none",
-        edgecolor="k",
-        linewidth=2,
-    )
-    ax.add_artist(bracket)
-
-    # add the label
-    txt = ax.text(
-        spine_pos - 0.01,
-        (top + bottom) / 2,
-        label,
-        ha="right",
-        va="center",
-        rotation="vertical",
-        clip_on=False,
-        transform=transform,
-    )
-
-    return bracket, txt
-
-
-def get_fig_filename(param: str, source_data_filename: Path, suffix: str = '') -> Path:
-    """
-    Generate filename for figure based on main (e.g. fixed) parameter and source data filename.
-
-    :param param: Parameter to include in the filename.
-    :param source_data_filename: Path to the source data file.
-    :param suffix: Suffix to add to the filename.
-    :return: Path to the figure file.
-    """
-    return Path(source_data_filename.stem + 'PLT꞉' + param + suffix + '.png')
-
-
-def plot_tol_ridge(cv_results_, save_path, test_metric):
-    # Filter out tolerance parameter values greater or equal to 1e-3
-    cv_results_ = cv_results_[cv_results_['param_tol'] >= 1e-3]
-
-    # Ensure the save path is a Path object
-    save_path = Path(save_path)
-    save_path.mkdir(parents=True, exist_ok=True)
-
-    normalizers = ['MinMaxScaler', 'StandardScaler']
-    kernels = ['poly', 'sigmoid', 'rbf']
-
-    # Iterate over each combination of normalizer and kernel
-    for normalizer in normalizers:
-        for kernel in kernels:
-            # Filter the dataframe for the current normalizer and kernel
-            df_filtered = cv_results_[(cv_results_['param_normalizer'] == normalizer) &
-                                      (cv_results_['param_kernel'] == kernel)]
-            if kernel != 'poly':
-                # Drop duplicate rows that differ only by 'degree'
-                df_filtered = df_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
-                plot_ridge(df_filtered, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}.png", test_metric, kernel, normalizer)
-            else:
-                for degree in df_filtered['param_degree'].unique():
-                    # Filter the dataframe for the current degree
-                    df_degree = df_filtered[df_filtered['param_degree'] == degree]
-                    plot_ridge(df_degree, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}-deg{degree}.png", test_metric, kernel, normalizer)
-
-def plot_ridge(df, save_file, test_metric, kernel, normalizer):
-    test_metric_labels = {
-        'accuracy':  'Accuracy',
-        'roc_auc':   'ROC AUC',
-        'f1':        'F1 Score',
-        'recall':    'Recall',
-        'precision': 'Precision',
-    }
-    # Group by the combination of hyperparameters excluding 'tol'
-    hyperparams = ['param_C', 'param_coef0']
-    degree = df['param_degree'].iloc[0] if kernel == 'poly' else None
-    df = df.copy()  # Ensure we are working on a copy
-    df['hyperparams'] = df[hyperparams].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
-
-    # Sort the dataframe by 'tol'
-    df_sorted = df.sort_values(by='param_tol')
-
-    # Create a new dataframe for ridgeline plot
-    df_ridge = df_sorted.pivot(index='param_tol', columns='hyperparams', values=f'mean_test_{test_metric}')
-
-    # Create the ridgeline plot manually using Matplotlib
-    fig, ax = plt.subplots(figsize=(3, 12))  # Adjusted size for better visualization
-
-    # Reduce the vertical offset to allow for more overlap
-    vertical_offset = 0.2
-
-    # Colors for lines
-    colors = sns.color_palette(palette='husl', n_colors=len(df_ridge.columns))
-
-    # Plot each line
-    for i, col in enumerate(df_ridge.columns):
-        y = df_ridge[col].values
-        x = df_ridge.index.values
-        y_offset = y + i * vertical_offset
-        ax.plot(x, y_offset, color=colors[i], alpha=1, linewidth=1)
-
-    # Set axis labels and title
-    test_metric_label = test_metric_labels[test_metric]
-    yaxis = ax.yaxis
-    yaxis.set_label_text(f'Mean CV Validation {test_metric_label}')
-    yaxis.set_label_position('left')
-    yaxis.set_label(f'Mean CV Validation {test_metric_label}')
-    yaxis_sec = ax.secondary_yaxis('right')
-    yaxis_sec.set_ylabel('Hyperparameter Combinations', rotation=-90, labelpad=20)
-    yaxis_sec.set_yticks([])
-
-    ax.set_xlabel('Tolerance')
-    ax.set_title(f'Effect of Tolerance on CV Validation {test_metric_labels[test_metric]}\n'
-                 'for Different Hyperparameter Combinations\n'
-                 f'using {f'a Deg{degree}-' if degree else ''}{kernel} Kernel and {normalizer} Normalizer')
-
-    # Set x-axis to log scale
-    ax.set_xscale('log')
-
-    # Remove y-axis ticks and labels
-    ax.yaxis.set_major_locator(plt.NullLocator())
-    ax.yaxis.set_major_formatter(plt.NullFormatter())
-
-    # Create a small scale bar with a bracket to indicate the y-axis values
-    yaxis.set_ticks([0, 1])
-    yaxis.set_ticklabels([0, 1])
-    x_axis_start, x_axis_end = ax.get_xlim()
-    bracket_x = -0.12 + x_axis_start  # x position for the indicator bracket
-    bracket = add_label_band(ax, 0, 1, "Accuracy", spine_pos=bracket_x, tip_pos=bracket_x + 0.02)
-
-    yaxis.set_label_coords(x=-0.04, y=0.5)
-
-    plt.show()
-
-    # Save the plot
-    fig.savefig(save_file, bbox_inches='tight')
-    plt.pause(0.5)
-    plt.close(fig)
-
+# TODo: add_label_band flyttad till utils
 
 def create_heatmap(cv_results_, x_param, y_param, fixed_params, test_metric, default_params=False, use_default_params=None):
     global metrics_label
@@ -950,6 +762,8 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, test_metric, def
 
     # Filter ticks to only show powers of 10
     shrink_val = 1  # Set length of colorbar
+    xticks = None
+    yticks = None
     if x_param != 'param_degree' and x_param != 'param_kernel':
         xticks = [i for i in heatmap_data.columns if type(i) is not str and utils.is_power_of_10(i)]
     if y_param != 'param_degree' and y_param != 'param_kernel':
@@ -973,10 +787,10 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params, test_metric, def
     #     ax.yaxis.set_major_formatter(FuncFormatter(utils.scientific_notation_formatter))
 
     # Set the ticks and labels
-    if x_param != 'param_degree' and x_param != 'param_kernel':
+    if xticks and x_param != 'param_degree' and x_param != 'param_kernel':
         ax.set_xticks([heatmap_data.columns.get_loc(i) + 0.5 for i in xticks])
         ax.set_xticklabels(list(utils.scientific_notation_formatter(xtick, pos=None) for xtick in xticks))
-    if y_param != 'param_degree' and y_param != 'param_kernel':
+    if yticks and y_param != 'param_degree' and y_param != 'param_kernel':
         ax.set_yticks([heatmap_data.index.get_loc(i) + 0.5 for i in yticks])
         ax.set_yticklabels(list(utils.scientific_notation_formatter(ytick, pos=None) for ytick in yticks))
 
