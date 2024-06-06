@@ -46,16 +46,20 @@ SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 RESULTS_SETS = {
-    'final-prestudy': {  # Rerun (89 features), has refit with 'accuracy' metric
+    'final-prestudy': {
         'results_directory': 'final-prestudy',
         'cv_results_':       '2024-06-02-223758__GridSearchCV.pkl',
+    },
+    'final-prestudy-tol-normalizers': {
+        'results_directory': 'final-prestudy-tol-normalizers',
+        'cv_results_':       '2024-06-05-000027__GridSearchCV.pkl',
     },
 }
 
 
 # %% Configuration
 
-FEATURE_SELECTION_METRIC = 'final-prestudy'  # 'accuracy', 'roc_auc', 'f1'
+FEATURE_SELECTION_METRIC = 'final-prestudy-tol-normalizers'  # 'accuracy', 'roc_auc', 'f1'
 GRIDSEARCH_METRIC = 'roc_auc'  # 'accuracy', 'roc_auc', 'f1'  # noqa
 PLOT_METRIC: str = 'roc_auc'
 
@@ -75,7 +79,7 @@ GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/RESULTS_SETS[FEATURE_SELECTION_M
 VERBOSE: int = 2  # Unused at the moment
 
 # Specify parameters of interest
-PARAMS_OF_INTEREST = ['C', 'degree', 'coef0', 'kernel', 'gamma', 'class_weight']
+PARAMS_OF_INTEREST = ['C', 'degree', 'coef0', 'kernel', 'gamma', 'class_weight', 'tol']
 FIXED_PARAM = 'kernel'  # 'kernel'
 
 VARYING_PARAMS = ['coef0', 'tol']  # ['C', 'degree']
@@ -85,7 +89,7 @@ PARAM_PREFIX = 'param_'  # Prefix for the parameter columns in the cv_results_ D
 # Plot x-axis scale
 SCALE_X = 'log'  # 'linear' or 'log'
 
-SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
+SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0, 'param_gamma': 'scale', 'param_class_weight': 'None', 'param_tol': 0.001, 'param_kernel': 'rbf'}
 SVC_DEFAULT_KERNEL = 'rbf'
 
 GAMMA_PARAMS = ['scale']  # [0.01, 0.1, 1.0]
@@ -101,6 +105,7 @@ cv_results = utils.replace_column_prefix(cv_results, ['param_classifier__'],  'p
 PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
 FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
 VARYING_PARAMS = [f'{PARAM_PREFIX}{param}' for param in VARYING_PARAMS]
+metrics_label = f'FS-{FEATURE_SELECTION_METRIC}_GS-{GRIDSEARCH_METRIC}_PLOT-{PLOT_METRIC}'
 
 # Sanitize the normalizer repr
 cv_results['param_normalizer'] = cv_results['param_normalizer'].astype(str).str.split('(').str[0]
@@ -115,88 +120,114 @@ cv_results['param_tol'] = cv_results['param_tol'].astype(np.float64)
 cv_results['param_gamma'] = cv_results['param_gamma'].astype(str)
 cv_results['param_class_weight'] = cv_results['param_class_weight'].astype(str)
 
-# # Filter the cv_results_ DataFrame to only include data fixed by the FIXED_META_PARAMS
-# mask = pd.DataFrame(cv_results[FIXED_META_PARAMS.keys()] == pd.Series(FIXED_META_PARAMS)).all(axis=1)
-# cv_results = cv_results[mask]
+# Permanently remove all rows with tol, class weights and normalizer not equal to CHOSEN_TOL, CHOSEN_CLASS_WEIGHT, CHOSEN_NORMALIZER
+CHOSEN_TOL = 0.001
+CHOSEN_CLASS_WEIGHT = 'balanced'
+CHOSEN_NORMALIZER = 'StandardScaler'
+cv_results = cv_results[cv_results['param_tol'] == CHOSEN_TOL]
+cv_results = cv_results[cv_results['param_class_weight'] == CHOSEN_CLASS_WEIGHT]
+cv_results = cv_results[cv_results['param_normalizer'] == CHOSEN_NORMALIZER]
 
-metrics_label = f'FS-{FEATURE_SELECTION_METRIC}_GS-{GRIDSEARCH_METRIC}_PLOT-{PLOT_METRIC}_g-{FIXED_META_PARAMS["param_gamma"].replace('param_', '')}_cw-{FIXED_META_PARAMS["param_class_weight"].replace('param_', '')}'
-
+# Find the best parameters and break ties
 alpha = 0  # 0.7
-beta = 0  # 74
+beta = 0   # 74
+gamma = 0  # 0.1
 
-# best_cv_results_rows_accuracy = utils.get_best_params(cv_results, 'accuracy', PARAMS_OF_INTEREST, return_all=True)
-best_cv_results_rows_roc_auc = utils.get_best_params(cv_results, 'roc_auc', PARAMS_OF_INTEREST, return_all=True, alpha=alpha, beta=beta)
-# best_cv_results_rows_f1 = utils.get_best_params(cv_results, 'f1', PARAMS_OF_INTEREST, return_all=True)
-# best_cv_results_rows_recall = utils.get_best_params(cv_results, 'recall', PARAMS_OF_INTEREST, return_all=True)
-# best_cv_results_rows_precision = utils.get_best_params(cv_results, 'precision', PARAMS_OF_INTEREST, return_all=True)
-
-# Penalize score for higher degrees according to:
-#   Adjusted Score = Score − α×ln(degree) − β×ln(std(Score)+1)
-if 'param_degree' in cv_results.columns and (alpha > 0 or beta > 0):
-    cv_results[f'mean_test_{GRIDSEARCH_METRIC}'] = cv_results[f'mean_test_{GRIDSEARCH_METRIC}'] - alpha * np.log(
-        cv_results['param_degree']
-    ) - beta * np.log(cv_results[f'mean_test_{GRIDSEARCH_METRIC}'] + 1)
-
-# If not refit with chosen grid search metric, refit
-best_cv_results_rows = utils.get_best_params(cv_results, GRIDSEARCH_METRIC, PARAMS_OF_INTEREST, return_all=True, alpha=alpha, beta=beta)
+best_cv_results_rows = utils.get_best_params(cv_results, GRIDSEARCH_METRIC, PARAMS_OF_INTEREST, return_all=True, alpha=alpha, beta=beta, default_params=False)
+best_cv_results_rows_defaults = utils.get_best_params(cv_results, GRIDSEARCH_METRIC, PARAMS_OF_INTEREST, return_all=True, alpha=alpha, beta=beta, default_params=SVC_DEFAULT_PARAMS)
 best_cv_results_row = best_cv_results_rows if type(best_cv_results_rows) is pd.Series else best_cv_results_rows.iloc[0]
-
-# pa = PROJECT_ROOT / 'data' / 'results' / 'IterativeImputer-RFR-tol-00175-iter-98-cutoff-17-Age-GridSearch-tol-0001-FINAL-poly-detailed-accuracy-2'
-# dataset_dict = joblib.load(pa / f'2024-05-27-172747__GridSearch_dataset_dict.pkl')
-# del dataset_dict['X_training']
-# del dataset_dict['y_training']
-# pred_X = gridsearch_cv.best_estimator_.predict(dataset_dict['X_testing'])
 best_params = best_cv_results_row.to_dict() if type(best_cv_results_row) is pd.Series else best_cv_results_row
+
+# Penalize (modify) scores in cv_results according to:
+#   Adjusted Score = Score − α×ln(degree) − β×ln(std(Score)+1) − γ×ln(gamma+1)
+#                      (α only if kernel is poly)      (γ only if kernel is rbf or sigmoid)
+if alpha > 0 or beta > 0 or gamma > 0:
+    # Create a mask for the polynomial kernel
+    poly_kernel_mask = cv_results['param_kernel'] == 'poly'
+    rbf_sigmoid_kernel_mask = cv_results['param_kernel'].isin(['rbf', 'sigmoid']) & (cv_results['param_gamma'].isin(['scale', 'auto']) == False)
+    # Adjust the score based on the conditions
+    cv_results[f'mean_test_{GRIDSEARCH_METRIC}'] = (
+        cv_results[f'mean_test_{GRIDSEARCH_METRIC}']
+        - alpha * (np.log(cv_results['param_degree']) * poly_kernel_mask)
+        - beta * (np.log(cv_results[f'mean_test_{GRIDSEARCH_METRIC}'] + 1))
+        - gamma * (np.log(cv_results['param_gamma'] + 1) * rbf_sigmoid_kernel_mask)
+    )
+
 # Find row of the best parameters in cv_results
 mask = pd.DataFrame(cv_results['param_C'] == best_params['param_C']).all(axis=1)
 mask &= cv_results['param_degree'] == best_params['param_degree']
 mask &= cv_results['param_coef0'] == best_params['param_coef0']
+mask &= cv_results['param_kernel'] == best_params['param_kernel']
+mask &= cv_results['param_gamma'] == best_params['param_gamma']
+mask &= cv_results['param_tol'] == CHOSEN_TOL
+mask &= cv_results['param_class_weight'] == CHOSEN_CLASS_WEIGHT
 
-best_cv_results_row = cv_results[mask]
-# if gridsearch_cv.refit != GRIDSEARCH_METRIC:
-#     gridsearch_cv.refit = GRIDSEARCH_METRIC
-#     # Find the best parameters, score and estimator for GRIDSEARCH_METRIC
-#     gridsearch_cv.best_params_ = best_cv_results_row['params'] if 'params' in best_cv_results_row else best_params
-#     gridsearch_cv.best_score_ = best_cv_results_row[f'mean_test_{GRIDSEARCH_METRIC}']
-#     gridsearch_cv.best_estimator_ = gridsearch_cv.best_estimator_.set_params(**gridsearch_cv.best_params_)
-#     gridsearch_cv.best_index_ = cv_results[f'mean_test_{GRIDSEARCH_METRIC}'].idxmax()
-#     # Refit the model with the best parameters
-#     date = GRID_SEARCH_RESULTS_PATH.stem.split('__')[0]
-#     dataset_dict = None
-#     try:
-#         dataset_dict = joblib.load(CV_RESULTS_DIR / f'{date}__GridSearch_dataset_dict.pkl')
-#     except EOFError as e:
-#         warnings.warn(Warning(e))
-#         try:
-#             with open(CV_RESULTS_DIR / f'{date}__GridSearch_dataset_dict.pkl', 'rb') as f:
-#                 dataset_dict = pickle.load(f)
-#         except Exception as e:
-#             warnings.warn(Warning(e))
-#         try:
-#             with open(CV_RESULTS_DIR / f'{date}__GridSearch_dataset_dict.pkl', 'b') as f:
-#                 dataset_dict = pickle.load(f)
-#         except Exception as e:
-#             warnings.warn(Warning(e))
-#     finally:
-#         if dataset_dict is None:
-#             raise Exception("Was not able to load dataset_dict!")
-#     gridsearch_cv.best_estimator_ = gridsearch_cv.best_estimator_.fit(dataset_dict['X_training'], dataset_dict['y_training']['FT5'])
-#
-# # Extract the optimal parameters from the cv_results_ DataFrame
-# best_params = gridsearch_cv.best_params_
-best_params['param_kernel'] = best_cv_results_row['param_kernel'].values[0]
+# Pick the row with the best parameters and lowest rank
+best_rows = cv_results[mask].sort_values(f'rank_test_{GRIDSEARCH_METRIC}')
+lowest_rank = best_rows[f'rank_test_{GRIDSEARCH_METRIC}'].min()
+best_params = best_rows[best_rows[f'rank_test_{GRIDSEARCH_METRIC}'] == lowest_rank]
+
+# If there is only one row with the best value, return it
+if best_params.shape[0] != 1:
+    warnings.warn(f"Multiple rows with the best value found!")
+    breakpoint()
+
 best_params = utils.replace_column_prefix(best_params, ['classifier__'],  'param_')
-# best_params['param_normalizer'] = best_params.pop('normalizer')
-# best_params['param_normalizer'].__repr__ = lambda *self: print(best_params['param_normalizer'].__str__().split('(')[0])
 
-# best_params['param_C'] = best_cv_results_row['param_C']
-# best_params['param_degree'] = best_cv_results_row['param_degree']
-# best_params['param_coef0'] = best_cv_results_row['param_coef0']
+calculate_metrics = False
+if calculate_metrics:
+    # Load imputed data and split it into training and testing sets
+    imputed_X = pd.read_csv(CV_RESULTS_DIR / '2024-06-05-000027__IterativeImputer_X_imputed.csv')
+    imputed_X = imputed_X.drop(columns='Unnamed: 0')  # Drop the "Unnamed: 0" column
+    dataset_dict = joblib.load(CV_RESULTS_DIR / '2024-06-05-000027__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl')
+    y_training = dataset_dict['y_training']
+    y_testing = dataset_dict['y_testing']
+    dataset = dataset_dict['dataset']
+    y = dataset_dict['dataset']['FT5']
+    TEST_PROPORTION: float = 0.2
+    X_training, X_testing, y_training_, y_testing_ = train_test_split(
+        imputed_X, y,
+        test_size=TEST_PROPORTION,
+        random_state=SEED
+    )
 
-# # Try setting hardcode best parameters
-# best_params['param_C'] = 17.78279410038923  # 10^1.25
-# best_params['param_degree'] = 3
-# best_params['param_coef0'] = 0.01
+    # Make sure the labels after split match the original labels (i.e. that we have the same exact split as before)
+    if not (y_training['FT5'].equals(y_training_)) and not (y_testing['FT5'].equals(y_testing_)):
+        warnings.warn(Warning("The training and testing labels do not match the original labels!"))
+        breakpoint()
+
+    # Set parameters for the best estimator using the row with the best parameters making sure all parameters ('param_') are included
+    best_estimator = deepcopy(gridsearch_cv.best_estimator_)
+    for param in best_params.iloc[0, :].index:
+        if param.startswith(PARAM_PREFIX) and param not in ['param_normalizer', 'normalizer']:
+            best_estimator.set_params(**{param.replace('param_', 'classifier__'): best_params[param].values[0]})
+        elif param in ['param_normalizer', 'normalizer']:
+            if best_params[param].values[0] == 'StandardScaler':
+                best_estimator.set_params(**{'normalizer': StandardScaler(copy=False)})
+            elif best_params[param].values[0] == 'MinMaxScaler':
+                best_estimator.set_params(**{'normalizer': MinMaxScaler(copy=False)})
+            else:
+                warnings.warn(f"Unknown normalizer: {best_params[param].values[0]}")
+                breakpoint()
+    print("Winning parameters/model based on roc_auc:\n", best_estimator)
+
+    # Fit the model with full training set and evaluate using test set
+    best_estimator.fit(X_training, y_training)
+    final_roc_auc = roc_auc_score(y_testing, best_estimator.predict(X_testing))
+    final_M = confusion_matrix(y_testing, best_estimator.predict(X_testing))
+
+    # Print the calculated final test metrics
+    print("Confusion Matrix (final, separate test set):\n", final_M)
+    print("ROC AUC (final, separate test set): ", final_roc_auc)
+
+    # Print the CV classification report (mean validation metrics)
+    for label in best_params:
+        score = best_params[label].values[0]
+        if 'train' in label or 'param' in label:
+            continue
+        print(f"{label}={score}")
+
+    breakpoint_ = 1
 
 
 # %% Plot functions
