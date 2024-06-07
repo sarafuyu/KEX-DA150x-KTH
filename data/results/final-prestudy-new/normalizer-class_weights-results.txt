@@ -79,7 +79,7 @@ rank_test_recall=268693
 
 --------------------------------------------------------------------------------
 
-PRESTUDY RESULTS for class_weight='balanced' and normalizer='MinMaxScaler'
+='balanced' and normalizer='MinMaxScaler'
 Winning parameters/model based on roc_auc:
  Pipeline(steps=[
      ('normalizer', MinMaxScaler(copy=False)),

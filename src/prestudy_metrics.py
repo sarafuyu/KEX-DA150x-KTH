@@ -24,6 +24,7 @@ Co-authored-by: Noah Hopkins <nhopkins@kth.se>
 import warnings
 import pickle
 import itertools
+from numbers import Real
 from pathlib import Path
 from collections.abc import Sequence
 from copy import deepcopy, copy
@@ -98,7 +99,7 @@ cv_results = utils.replace_column_prefix(cv_results, ['param_classifier__'],  'p
 
 # Add prefix to the parameter names
 PARAMS_TO_GET_BEST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_TO_GET_BEST]
-PARAMS_TO_GET_BEST.append(f'mean_test_{GRIDSEARCH_METRIC}')
+# PARAMS_TO_GET_BEST.append(f'mean_test_{GRIDSEARCH_METRIC}')
 
 # Sanitize the normalizer repr
 cv_results['param_normalizer'] = cv_results['param_normalizer'].astype(str).str.split('(').str[0]
@@ -129,14 +130,44 @@ for combination in [dict(zip(FIXED_META_PARAMS.keys(), val_combination))
     print(f"\nPRESTUDY RESULTS for class_weight={repr(CHOSEN_CLASS_WEIGHT)} and normalizer={repr(CHOSEN_NORMALIZER)}")
 
     del cv_results_copy  # Delete the previous copy of cv_results_copy to free up memory
-    cv_results_copy = deepcopy(cv_results)  # TODO: potentially re-load the pickle file instead of copying the DataFrame if memory is an issue
+    cv_results_copy = deepcopy(cv_results)
     cv_results_copy = cv_results_copy[cv_results_copy['param_class_weight'] == CHOSEN_CLASS_WEIGHT]
     cv_results_copy = cv_results_copy[cv_results_copy['param_normalizer'] == CHOSEN_NORMALIZER]
 
     # Find the best parameters and break ties
-    alpha = 0
+    alpha = 0.1
     beta = 0
-    gamma = 0
+    gamma = 1
+
+    # Calculate the gamma value for the rbf and sigmoid kernels
+    # gamma = 1 / (n_features * X.var()) if gamma == 'scale'
+    # gamma = 1 / n_features if gamma == 'auto'
+    cv_results_copy['gamma_float'] = np.float64(np.nan)
+    cv_results_copy['gamma_float'].astype(np.float64)
+    X = deepcopy(X_training)
+    y = deepcopy(y_training['FT5'])
+    best_estimator = deepcopy(gridsearch_cv.best_estimator_)
+    X, y = best_estimator.named_steps.classifier._validate_data(  # noqa
+        X,
+        y,
+        dtype=np.float64,
+        order="C",
+        accept_sparse="csr",
+        accept_large_sparse=False,
+    )
+    sparse = False
+    for i, row in cv_results_copy.iterrows():
+        if isinstance(row['param_gamma'], str):
+            if row['param_gamma'] == "scale":
+                # var = E[X^2] - E[X]^2 if sparse
+                X_var = (X.multiply(X)).mean() - (X.mean()) ** 2 if sparse else X.var()
+                cv_results_copy.loc[i, 'gamma_float'] = 1.0 / (X.shape[1] * X_var) if X_var != 0 else 1.0
+            elif row['param_gamma'] == "auto":
+                cv_results_copy.loc[i, 'gamma_float'] = 1.0 / X.shape[1]
+        elif isinstance(row['param_gamma'], Real):
+            cv_results_copy.loc[i, 'gamma_float'] = row['param_gamma']
+    print(f"Number of NaN values in gamma_float: {cv_results_copy['gamma_float'].isna().sum()}")
+    print(f"Number of unique values in gamma_float (should be 4 if 'scale'='auto'): {cv_results_copy['gamma_float'].nunique()}")
 
     all_best_params = utils.get_best_params(cv_results_copy, GRIDSEARCH_METRIC, PARAMS_TO_GET_BEST, return_all=True, alpha=alpha, beta=beta, default_params=False)
     if all_best_params.shape[0] > 1:
@@ -155,20 +186,19 @@ for combination in [dict(zip(FIXED_META_PARAMS.keys(), val_combination))
     best_params_series = all_best_params if type(all_best_params) is pd.Series else all_best_params.iloc[0]
     best_params = best_params_series.to_dict() if type(best_params_series) is pd.Series else best_params_series
 
-
     # Penalize (modify) scores in cv_results_copy according to:
     #   Adjusted Score = Score − α×ln(degree) − β×ln(std(Score)+1) − γ×ln(gamma+1)
     #                      (α only if kernel is poly)      (γ only if kernel is rbf or sigmoid)
     if alpha > 0 or beta > 0 or gamma > 0:
         # Create a mask for the polynomial kernel
         poly_kernel_mask = cv_results_copy['param_kernel'] == 'poly'
-        rbf_sigmoid_kernel_mask = cv_results_copy['param_kernel'].isin(['rbf', 'sigmoid']) & (cv_results_copy['param_gamma'].isin(['scale', 'auto']) == False)
+        rbf_sigmoid_kernel_mask = ~poly_kernel_mask
         # Adjust the score based on the conditions
         cv_results_copy[f'mean_test_{GRIDSEARCH_METRIC}'] = (
             cv_results_copy[f'mean_test_{GRIDSEARCH_METRIC}']
             - alpha * (np.log(cv_results_copy['param_degree']) * poly_kernel_mask)
             - beta * (np.log(cv_results_copy[f'mean_test_{GRIDSEARCH_METRIC}'] + 1))
-            - gamma * (np.log(cv_results_copy['param_gamma'] + 1) * rbf_sigmoid_kernel_mask)
+            - gamma * (np.log(cv_results_copy['gamma_float'] + 1) * rbf_sigmoid_kernel_mask)
         )
 
     best_row = utils.get_row_from_best_params(cv_results_copy, best_params, CHOSEN_TOL, CHOSEN_CLASS_WEIGHT, GRIDSEARCH_METRIC)
@@ -181,8 +211,6 @@ for combination in [dict(zip(FIXED_META_PARAMS.keys(), val_combination))
         if param.startswith(PARAM_PREFIX) and param not in ['param_normalizer', 'normalizer']:
             if best_row[param].values[0] == 'None':
                 best_row[param].values[0] = None
-            # if param == 'param_gamma' and best_row[param].values[0] not in ['scale', 'auto'] and type(best_row[param].values[0]) is not np.float64:
-            #     best_row[param].values[0] = np.float64(best_row[param].values[0])
             best_estimator.set_params(**{param.replace('param_', 'classifier__'): best_row[param].values[0]})
         elif param in ['param_normalizer', 'normalizer']:
             if best_row[param].values[0] == 'StandardScaler':

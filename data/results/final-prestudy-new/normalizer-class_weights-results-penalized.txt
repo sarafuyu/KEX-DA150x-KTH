@@ -1,0 +1,314 @@
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='balanced' and normalizer='StandardScaler'
+Number of NaN values in gamma_float: 0
+Number of unique values in gamma_float (should be 4 if 'scale'='auto'): 5
+C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\src\utils.py:847: Warning: More than one parameter set still has the best rank when getting best according to roc_auc and trying all fallback methods.
+Extracting the first row...
+  warnings.warn(
+Multiple best parameters found...
+Difference among the best cv_results rows:
+'param_gamma': 'scale' | 'auto'
+Breaking ties with default parameters...
+Winning parameters/model based on roc_auc:
+mean_test_roc_auc = 0.7420150867122778 (std: 0.07671225857397782)
+Pipeline(steps=[
+    ('normalizer', StandardScaler(copy=False)),
+    ('classifier', SVC(
+        C=10.0,
+        cache_size=500,
+        class_weight='balanced',
+        degree=1,
+        max_iter=10000000,
+        random_state=42,
+        verbose=1
+    ))
+])
+
+[LibSVM].*.*
+optimization finished, #iter = 564
+obj = -154.381078, rho = -0.601013
+nSV = 201, nBSV = 0
+Total nSV = 201
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5534188034188035
+mean_fit_time=0.007028627395629883
+std_fit_time=0.0007041367210412062
+mean_score_time=0.011316442489624023
+std_score_time=0.00202310532589115
+split0_test_roc_auc=0.8760504201680672
+split1_test_roc_auc=0.7648351648351649
+split2_test_roc_auc=0.8021978021978022
+split3_test_roc_auc=0.7186813186813187
+split4_test_roc_auc=0.6483516483516484
+mean_test_roc_auc=0.7420150867122778
+std_test_roc_auc=0.07671225857397782
+rank_test_roc_auc=13409
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+gamma_float=0.020209689525929327
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='balanced' and normalizer='MinMaxScaler'
+Number of NaN values in gamma_float: 0
+Number of unique values in gamma_float (should be 4 if 'scale'='auto'): 4
+Winning parameters/model based on roc_auc:
+mean_test_roc_auc = 0.09381468110779867 (std: 0.08259298065584557)
+Pipeline(steps=[
+    ('normalizer', MinMaxScaler(copy=False)),
+    ('classifier', SVC(
+        C=10.0,
+        cache_size=500,
+        class_weight='balanced',
+        degree=1,
+        gamma=1.0,
+        max_iter=10000000,
+        random_state=42,
+        verbose=1
+    ))
+])
+[LibSVM].*
+optimization finished, #iter = 462
+obj = -103.980022, rho = -0.514064
+nSV = 223, nBSV = 0
+Total nSV = 223
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5
+mean_fit_time=0.0045565605163574215
+std_fit_time=0.0005156158969611373
+mean_score_time=0.009009170532226562
+std_score_time=0.002283724099604908
+split0_test_roc_auc=0.8886554621848739
+split1_test_roc_auc=0.7736263736263735
+split2_test_roc_auc=0.8681318681318682
+split3_test_roc_auc=0.7384615384615385
+split4_test_roc_auc=0.6659340659340659
+mean_test_roc_auc=0.09381468110779867
+std_test_roc_auc=0.08259298065584557
+rank_test_roc_auc=2251
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+gamma_float=1.0
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='None' and normalizer='StandardScaler'
+Number of NaN values in gamma_float: 0
+Number of unique values in gamma_float (should be 4 if 'scale'='auto'): 5
+C:\Users\Alwis\PycharmProjects\KEX-DA150x-KTH\src\utils.py:847: Warning: More than one parameter set still has the best rank when getting best according to roc_auc and trying all fallback methods.
+Extracting the first row...
+  warnings.warn(
+Multiple best parameters found...
+Difference among the best cv_results rows:
+'param_gamma': 'auto' | 'scale'
+Breaking ties with default parameters...
+Winning parameters/model based on roc_auc:
+mean_test_roc_auc = 0.5542361327931653 (std: 0.06064894647121008)
+Pipeline(steps=[
+    ('normalizer', StandardScaler(copy=False)),
+    ('classifier', SVC(
+        C=0.01,
+        cache_size=500,
+        coef0=-1.0,
+        degree=1,
+        kernel='sigmoid',
+        max_iter=10000000,
+        random_state=42,
+        verbose=1
+    ))
+])
+[LibSVM]*
+optimization finished, #iter = 132
+obj = -1.318020, rho = -0.996920
+nSV = 171, nBSV = 103
+Total nSV = 171
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5
+mean_fit_time=0.005044412612915039
+std_fit_time=0.00075442422050611
+mean_score_time=0.00940079689025879
+std_score_time=0.0017667275035436931
+split0_test_roc_auc=0.8319327731092437
+split1_test_roc_auc=0.7626373626373627
+split2_test_roc_auc=0.8395604395604397
+split3_test_roc_auc=0.7274725274725276
+split4_test_roc_auc=0.6813186813186813
+mean_test_roc_auc=0.5542361327931653
+std_test_roc_auc=0.06064894647121008
+rank_test_roc_auc=10354
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+gamma_float=0.23905404806799324
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='None' and normalizer='MinMaxScaler'
+Number of NaN values in gamma_float: 0
+Number of unique values in gamma_float (should be 4 if 'scale'='auto'): 4
+Winning parameters/model based on roc_auc:
+mean_test_roc_auc = 0.09381468110779867 (std: 0.08259298065584557)
+Pipeline(steps=[
+    ('normalizer', MinMaxScaler(copy=False)),
+    ('classifier', SVC(
+        C=10.0,
+        cache_size=500,
+        degree=1,
+        gamma=1.0,
+        max_iter=10000000,
+        random_state=42,
+        verbose=1
+    ))
+])
+[LibSVM].*
+optimization finished, #iter = 462
+obj = -103.980022, rho = -0.514064
+nSV = 223, nBSV = 0
+Total nSV = 223
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5
+mean_fit_time=0.003947639465332031
+std_fit_time=0.00023317408220303399
+mean_score_time=0.008209037780761718
+std_score_time=0.00047404948766466016
+split0_test_roc_auc=0.8886554621848739
+split1_test_roc_auc=0.7736263736263735
+split2_test_roc_auc=0.8681318681318682
+split3_test_roc_auc=0.7384615384615385
+split4_test_roc_auc=0.6659340659340659
+mean_test_roc_auc=0.09381468110779867
+std_test_roc_auc=0.08259298065584557
+rank_test_roc_auc=2251
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+gamma_float=1.0
+
+--------------------------------------------------------------------------------

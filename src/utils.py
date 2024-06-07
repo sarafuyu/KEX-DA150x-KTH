@@ -703,7 +703,7 @@ def format_number(num, latex=False):
 
 
 def get_best_params(cv_results_: pd.DataFrame, metric: str, parameters: list[str], return_all=False, force_select=False,
-                    default_params=None, alpha=0.01, beta=0) -> pd.Series:
+                    default_params=None, alpha=0, beta=0, gamma=0) -> pd.Series:
     """
 Extracts the row of cv_results with the highest value in the specified metric column
 and returns the values of the specified parameters from that row.
@@ -716,6 +716,7 @@ and returns the values of the specified parameters from that row.
 :param default_params: dict - A dictionary with default parameters to use if no best row is found.
 :param alpha: float - The penalty for higher degrees in the score.
 :param beta: float - The penalty for higher standard deviations in the score.
+:param gamma: float - The penalty for higher gamma values in the score.
 :return: pd.Series - A series containing the best parameters.
 
 
@@ -728,11 +729,19 @@ SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0}
     metric_name = f'mean_test_{metric}'
 
     # Penalize score for higher degrees according to:
-    #   Adjusted Score = Score − α×ln(degree) − β×ln(std(Score)+1)
-    if 'param_degree' in cv_results_.columns:
-        cv_results_[metric_name] = cv_results_[metric_name] - alpha * np.log(
-            cv_results_['param_degree']
-            ) - beta * np.log(cv_results_[f'std_test_{metric}'] + 1)
+    #   Adjusted Score = Score − α×ln(degree) − β×ln(std(Score)+1) − γ×ln(gamma+1)
+    #   where α, β, and γ are the penalty coefficients (α only for polynomial kernels, γ only for rbf and sigmoid)
+    if alpha > 0 or beta > 0 or gamma > 0:
+        # Create a mask for the polynomial kernel
+        poly_kernel_mask = cv_results_['param_kernel'] == 'poly'
+        rbf_sigmoid_kernel_mask = ~poly_kernel_mask
+        # Adjust the score based on the conditions
+        cv_results_[f'mean_test_{metric}'] = (
+                cv_results_[f'mean_test_{metric}']
+                - alpha * (np.log(cv_results_['param_degree']) * poly_kernel_mask)
+                - beta * (np.log(cv_results_[f'mean_test_{metric}'] + 1))
+                - gamma * (np.log(cv_results_['gamma_float'] + 1) * rbf_sigmoid_kernel_mask)
+        )
 
     # Helper function to find the best row based on a primary metric and its std deviation
     def find_best_row(primary_metric, df):
@@ -958,7 +967,7 @@ def get_row_from_best_params(cv_results_, best_params_, chosen_tol, chosen_class
 
     # Pick the row with the best parameters and lowest rank
     best_rows = cv_results_[mask].sort_values(f'rank_test_{gridsearch_metric}')
-    lowest_rank = best_rows[f'rank_test_{gridsearch_metric}'].min()
+    lowest_rank = best_rows[f'rank_test_{gridsearch_metric}'].min(numeric_only=True)
     best_row_ = best_rows[best_rows[f'rank_test_{gridsearch_metric}'] == lowest_rank]
 
     # If there is only one row with the best value, return it

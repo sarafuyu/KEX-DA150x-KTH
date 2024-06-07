@@ -72,6 +72,7 @@ START_TIME = datetime.now()
 PROJECT_ROOT = Path(__file__).parents[1]
 
 
+
 # %% Configuration
 
 # **********----------------------------------------------------------------------------********** #
@@ -413,7 +414,7 @@ COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy s
 ])))
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-TOL_PARAMS_SVC: Sequence[float] = [0.001, 1, 1000]  #, 0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
+TOL_PARAMS_SVC: Sequence[float] = [0.001, 1, 1000]  # [0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
 CLASS_WEIGHT_PARAMS_SVC: Sequence[str | None] = [None, 'balanced']
 VERB_SVC: int = VERBOSE
@@ -999,8 +1000,13 @@ clf = GridSearchCV(
 # else:
 #     clf = clf.fit(X_training, y_training)
 
+X_training.to_csv(PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearch_X_training.csv')
+y_training.to_csv(PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearch_y_training.csv')
+X_testing.to_csv(PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearch_X_testing.csv')
+y_testing.to_csv(PROJECT_ROOT/'out'/f'{START_TIME.strftime("%Y-%m-%d-%H%M%S")}__GridSearch_y_testing.csv')
+
 try:
-    clf = clf.fit(X_testing, y_testing)
+    clf = clf.fit(X_training, y_training)
 except Exception as e:
     log(e)
 

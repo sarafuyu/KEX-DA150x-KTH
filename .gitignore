@@ -360,3 +360,7 @@ out/*/*
 /data/results/final-prestudy-tol-normalizers/2024-06-05-000027__GridSearchCV.pkl
 /data/results/final-prestudy-tol-normalizers/2024-06-05-000027__GridSearch_dataset_dict.pkl
 /data/results/final-prestudy-tol-normalizers/2024-06-05-000027__GridSearch_cv_results.csv
+/data/results/final-prestudy-new/2024-06-06-190955__raw_console_output.log
+/data/results/final-prestudy-new/cv_results_prestudy_tol0001.csv
+/data/results/final-prestudy-new/2024-06-06-190955__GridSearchCV.pkl
+/data/results/final-prestudy-new/2024-06-06-190955__GridSearch_cv_results.csv
