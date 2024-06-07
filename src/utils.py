@@ -928,3 +928,62 @@ def add_label_band(ax, top, bottom, label, *, spine_pos=-0.05, tip_pos=-0.02):
     )
 
     return bracket, txt
+
+
+def get_row_from_best_params(cv_results_, best_params_, chosen_tol, chosen_class_weight, gridsearch_metric):
+    """
+    Get the row from the cv_results_ DataFrame that matches the best parameters.
+
+    :param cv_results_: (pd.DataFrame) The DataFrame containing the cross-validation results.
+    :param best_params_: (dict) The best parameters for the model.
+    :param chosen_tol: (float) The chosen tolerance for the model.
+    :param chosen_class_weight: (str) The chosen class weight for the model.
+    :param gridsearch_metric: (str) The metric used for the grid search.
+    :return: (pd.Series) The row from the cv_results_ DataFrame that matches the best parameters.
+    """
+    # Convert best_params_ to a dictionary if it's not already
+    if isinstance(best_params_, pd.Series):
+        best_params_dict = best_params_.to_dict()
+    elif isinstance(best_params_, pd.DataFrame):
+        best_params_dict = best_params_.iloc[:, 0].to_dict()
+    else:
+        best_params_dict = best_params_
+
+    # Create a mask to find the row in cv_results that matches best_params_ and the chosen tol and class_weight
+    mask = pd.Series(True, index=cv_results_.index)  # Initialize the mask with True values
+    for param_name, param_value in best_params_dict.items():
+        mask &= cv_results_[param_name] == param_value
+    mask &= cv_results_['param_tol'] == chosen_tol
+    mask &= cv_results_['param_class_weight'] == chosen_class_weight
+
+    # Pick the row with the best parameters and lowest rank
+    best_rows = cv_results_[mask].sort_values(f'rank_test_{gridsearch_metric}')
+    lowest_rank = best_rows[f'rank_test_{gridsearch_metric}'].min()
+    best_row_ = best_rows[best_rows[f'rank_test_{gridsearch_metric}'] == lowest_rank]
+
+    # If there is only one row with the best value, return it
+    if best_row_.shape[0] != 1:
+        warnings.warn(f"Multiple rows with the best value found!")
+        breakpoint()
+
+    return best_row_
+
+def print_differences(df):
+    differences = []
+    num_rows = df.shape[0]
+
+    # Iterate over each pair of rows using iloc for integer-based indexing
+    for i in range(num_rows - 1):
+        for j in range(i + 1, num_rows):
+            # Iterate over each column
+            for col in df.columns:
+                if not pd.api.types.is_dict_like(df.iloc[i][col]):
+                    if df.iloc[i][col] != df.iloc[j][col]:
+                        differences.append((col, df.iloc[i][col], df.iloc[j][col]))
+                else:
+                    if df.iloc[i][col] != df.iloc[j][col]:
+                        differences.append((col, df.iloc[i][col], df.iloc[j][col]))
+
+    # Print the differences
+    for diff in differences:
+        print(f"'{diff[0]}': {repr(diff[1])} | {repr(diff[2])}")

@@ -1,0 +1,295 @@
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='balanced' and normalizer='StandardScaler'
+More than one parameter set still has the best rank when getting best according to roc_auc and trying all fallback methods.
+Extracting the first row...
+  warnings.warn(
+Multiple best parameters found...
+Difference among the best cv_results rows:
+'param_gamma': 'auto' | 'scale'
+Breaking ties with default parameters...
+Winning parameters/model based on roc_auc:
+mean_test_roc_auc = 0.7754621848739497 (std 0.06494899718834878)
+ Pipeline(steps=[
+     ('normalizer', StandardScaler(copy=False)),
+     ('classifier', SVC(
+         cache_size=500,
+         class_weight='balanced',
+         coef0=1.0,
+         degree=4,
+         kernel='poly',
+         max_iter=10000000,
+         random_state=42,
+         verbose=1
+     ))
+ ])
+[LibSVM].*.*
+optimization finished, #iter = 674
+obj = -14.363262, rho = -0.287577
+nSV = 194, nBSV = 1
+Total nSV = 194
+Confusion Matrix (final, separate test set):
+ [[ 1 51]
+ [ 0  9]]
+ROC AUC (final, separate test set):  0.5822649572649573
+mean_fit_time=0.005894231796264649
+std_fit_time=0.000894110620196714
+mean_score_time=0.009587335586547851
+std_score_time=0.0011203012089574889
+split0_test_roc_auc=0.8487394957983194
+split1_test_roc_auc=0.7626373626373626
+split2_test_roc_auc=0.8417582417582418
+split3_test_roc_auc=0.7516483516483516
+split4_test_roc_auc=0.6725274725274726
+mean_test_roc_auc=0.7754621848739497
+std_test_roc_auc=0.06494899718834878
+rank_test_roc_auc=9457
+split0_test_accuracy=0.2916666666666667
+split1_test_accuracy=0.2708333333333333
+split2_test_accuracy=0.2708333333333333
+split3_test_accuracy=0.6458333333333334
+split4_test_accuracy=0.2708333333333333
+mean_test_accuracy=0.35
+std_test_accuracy=0.1481365736219265
+rank_test_accuracy=292477
+split0_test_f1=0.45161290322580644
+split1_test_f1=0.4262295081967213
+split2_test_f1=0.4262295081967213
+split3_test_f1=0.37037037037037035
+split4_test_f1=0.4262295081967213
+mean_test_f1=0.42013435963726814
+std_test_f1=0.026753713170686554
+rank_test_f1=266579
+split0_test_precision=0.2916666666666667
+split1_test_precision=0.2708333333333333
+split2_test_precision=0.2708333333333333
+split3_test_precision=0.35714285714285715
+split4_test_precision=0.2708333333333333
+mean_test_precision=0.2922619047619047
+std_test_precision=0.03342885971928328
+rank_test_precision=1516
+split0_test_recall=1.0
+split1_test_recall=1.0
+split2_test_recall=1.0
+split3_test_recall=0.38461538461538464
+split4_test_recall=1.0
+mean_test_recall=0.876923076923077
+std_test_recall=0.24615384615384614
+rank_test_recall=268693
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='balanced' and normalizer='MinMaxScaler'
+Winning parameters/model based on roc_auc:
+ Pipeline(steps=[
+     ('normalizer', MinMaxScaler(copy=False)),
+     ('classifier', SVC(
+         C=10.0,
+         cache_size=500,
+         class_weight='balanced',
+         degree=1,
+         gamma=1.0,
+         max_iter=10000000,
+         random_state=42,
+         verbose=1
+     ))
+ ])
+mean_test_roc_auc = 0.786961861667744 (std 0.08259298065584557)
+[LibSVM].*
+optimization finished, #iter = 462
+obj = -103.980022, rho = -0.514064
+nSV = 223, nBSV = 0
+Total nSV = 223
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5
+mean_fit_time=0.0045565605163574215
+std_fit_time=0.0005156158969611373
+mean_score_time=0.009009170532226562
+std_score_time=0.002283724099604908
+split0_test_roc_auc=0.8886554621848739
+split1_test_roc_auc=0.7736263736263735
+split2_test_roc_auc=0.8681318681318682
+split3_test_roc_auc=0.7384615384615385
+split4_test_roc_auc=0.6659340659340659
+mean_test_roc_auc=0.786961861667744
+std_test_roc_auc=0.08259298065584557
+rank_test_roc_auc=2251
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='None' and normalizer='StandardScaler'
+Winning parameters/model based on roc_auc:
+ Pipeline(steps=[
+     ('normalizer', StandardScaler(copy=False)),
+     ('classifier', SVC(
+         C=0.001,
+         cache_size=500,
+         coef0=10.0,
+         gamma=0.1,
+         kernel='poly',
+         max_iter=10000000,
+         random_state=42,
+         verbose=1
+     ))
+ ])
+mean_test_roc_auc = 0.779644473173885 (std 0.06315622071990841)
+[LibSVM]..*
+optimization finished, #iter = 708
+obj = -0.038510, rho = -0.358144
+nSV = 181, nBSV = 13
+Total nSV = 181
+Confusion Matrix (final, separate test set):
+ [[ 0 52]
+ [ 0  9]]
+ROC AUC (final, separate test set):  0.3803418803418803
+mean_fit_time=0.005167961120605469
+std_fit_time=0.0009860814077251156
+mean_score_time=0.007475423812866211
+std_score_time=0.0018915495899129572
+split0_test_roc_auc=0.8718487394957983
+split1_test_roc_auc=0.7824175824175824
+split2_test_roc_auc=0.8109890109890111
+split3_test_roc_auc=0.7516483516483516
+split4_test_roc_auc=0.6813186813186813
+mean_test_roc_auc=0.779644473173885
+std_test_roc_auc=0.06315622071990841
+rank_test_roc_auc=4953
+split0_test_accuracy=0.2916666666666667
+split1_test_accuracy=0.2708333333333333
+split2_test_accuracy=0.2708333333333333
+split3_test_accuracy=0.6458333333333334
+split4_test_accuracy=0.2916666666666667
+mean_test_accuracy=0.35416666666666663
+std_test_accuracy=0.14613064930625155
+rank_test_accuracy=291796
+split0_test_f1=0.45161290322580644
+split1_test_f1=0.4262295081967213
+split2_test_f1=0.4262295081967213
+split3_test_f1=0.37037037037037035
+split4_test_f1=0.43333333333333335
+mean_test_f1=0.4215551246645905
+std_test_f1=0.02722416223302433
+rank_test_f1=266277
+split0_test_precision=0.2916666666666667
+split1_test_precision=0.2708333333333333
+split2_test_precision=0.2708333333333333
+split3_test_precision=0.35714285714285715
+split4_test_precision=0.2765957446808511
+mean_test_precision=0.2934143870314083
+std_test_precision=0.032762927622438785
+rank_test_precision=1370
+split0_test_recall=1.0
+split1_test_recall=1.0
+split2_test_recall=1.0
+split3_test_recall=0.38461538461538464
+split4_test_recall=1.0
+mean_test_recall=0.876923076923077
+std_test_recall=0.24615384615384614
+rank_test_recall=268693
+
+--------------------------------------------------------------------------------
+
+PRESTUDY RESULTS for class_weight='None' and normalizer='MinMaxScaler'
+Winning parameters/model based on roc_auc:
+ Pipeline(steps=[
+     ('normalizer', MinMaxScaler(copy=False)),
+     ('classifier', SVC(
+         C=10.0,
+         cache_size=500,
+         degree=1,
+         gamma=1.0,
+         max_iter=10000000,
+         random_state=42,
+         verbose=1
+     ))
+ ])
+mean_test_roc_auc = 0.786961861667744 (std 0.08259298065584557)
+[LibSVM].*
+optimization finished, #iter = 462
+obj = -103.980022, rho = -0.514064
+nSV = 223, nBSV = 0
+Total nSV = 223
+Confusion Matrix (final, separate test set):
+ [[52  0]
+ [ 9  0]]
+ROC AUC (final, separate test set):  0.5
+mean_fit_time=0.003947639465332031
+std_fit_time=0.00023317408220303399
+mean_score_time=0.008209037780761718
+std_score_time=0.00047404948766466016
+split0_test_roc_auc=0.8886554621848739
+split1_test_roc_auc=0.7736263736263735
+split2_test_roc_auc=0.8681318681318682
+split3_test_roc_auc=0.7384615384615385
+split4_test_roc_auc=0.6659340659340659
+mean_test_roc_auc=0.786961861667744
+std_test_roc_auc=0.08259298065584557
+rank_test_roc_auc=2251
+split0_test_accuracy=0.7083333333333334
+split1_test_accuracy=0.7291666666666666
+split2_test_accuracy=0.7291666666666666
+split3_test_accuracy=0.7291666666666666
+split4_test_accuracy=0.7291666666666666
+mean_test_accuracy=0.7249999999999999
+std_test_accuracy=0.008333333333333304
+rank_test_accuracy=1
+split0_test_f1=0.0
+split1_test_f1=0.0
+split2_test_f1=0.0
+split3_test_f1=0.0
+split4_test_f1=0.0
+mean_test_f1=0.0
+std_test_f1=0.0
+rank_test_f1=374289
+split0_test_precision=0.0
+split1_test_precision=0.0
+split2_test_precision=0.0
+split3_test_precision=0.0
+split4_test_precision=0.0
+mean_test_precision=0.0
+std_test_precision=0.0
+rank_test_precision=374289
+split0_test_recall=0.0
+split1_test_recall=0.0
+split2_test_recall=0.0
+split3_test_recall=0.0
+split4_test_recall=0.0
+mean_test_recall=0.0
+std_test_recall=0.0
+rank_test_recall=374289
+
+--------------------------------------------------------------------------------
