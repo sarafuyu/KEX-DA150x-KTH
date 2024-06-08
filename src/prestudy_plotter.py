@@ -686,10 +686,14 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params_, test_metric, de
         'precision': 'Precision',
     }
 
+    if y_param == 'param_kernel_deg':
+        # TODO: handle individual kernels
+        pass
+
     # Filter results based on fixed_params
     mask = np.ones(len(cv_results_), dtype=bool)
     for param, value in fixed_params_.items():
-        mask = mask & (cv_results_[param] == value)
+        mask = mask & (cv_results_[param] == value)  # TODO: value should be a single value, not a series with one value
     filtered_results = cv_results_[mask]
 
     # Aggregate to avoid duplicate entries
