@@ -675,7 +675,7 @@ def plot_parameter_effects_opt(cv_results_, parameters, test_metric=None, defaul
 # TODo: add_label_band flyttad till utils
 
 def create_heatmap(cv_results_, x_param, y_param, fixed_params_, test_metric, default_params=False, use_default_params=None):
-    global metrics_label
+    global metrics_label, gamma_param
     if default is None:
         raise ValueError("Default parameter must be specified")
     test_metric_labels = {
@@ -689,10 +689,24 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params_, test_metric, de
     if y_param == 'param_kernel_deg':
         # TODO: handle individual kernels
         pass
+        best_params_gamma_poly = get_best_parameter_set_for_kernel(
+            kernel='poly', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC,
+            params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS
+            )
+        best_params_gamma_rbf = get_best_parameter_set_for_kernel(
+            kernel='rbf', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC,
+            params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS
+            )
+        best_params_gamma_sigmoid = get_best_parameter_set_for_kernel(
+            kernel='sigmoid', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC,
+            params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS
+            )
 
     # Filter results based on fixed_params
     mask = np.ones(len(cv_results_), dtype=bool)
     for param, value in fixed_params_.items():
+        if type(value) is pd.Series:
+            value = value.iloc[0]
         mask = mask & (cv_results_[param] == value)  # TODO: value should be a single value, not a series with one value
     filtered_results = cv_results_[mask]
 
@@ -829,19 +843,36 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params_, test_metric, de
     plt.close(fig)
 
 
-for gamma in GAMMA_PARAMS:
+def get_best_parameter_set_for_kernel(kernel, cv_results_, gridsearch_metric, params_to_get_best, alpha_, beta_, svc_default_params):
+    # TODO: lägga till gamma som parameter
+    if kernel:
+        best_params_ = utils.get_best_params(
+            cv_results_[cv_results_['param_kernel'] == kernel], gridsearch_metric, params_to_get_best, alpha=alpha_, beta=beta_, default_params=svc_default_params
+        )
+    else:
+        best_params_ = utils.get_best_params(cv_results_, gridsearch_metric, params_to_get_best, alpha=alpha_, beta=beta_, default_params=svc_default_params)
+    if type(best_params_) is pd.DataFrame and best_params_.shape[0] != 1:
+        warnings.warn(f"Multiple best parameter sets found for kernel '{kernel}'! Take the first one?")
+        breakpoint()
+        best_params_ = best_params_.iloc[0, :]
+    best_params_ = best_params_.to_dict() if type(best_params_) is pd.Series else best_params_.iloc[0].to_dict()
+    return best_params_
+
+
+for gamma_param in GAMMA_PARAMS:
     # if gamma in [0.01, 0.1]:
     #     continue
 
     # Extract only the rows with the current gamma value
-    gamma_mask = cv_results['param_gamma'] == gamma
+    gamma_mask = cv_results['param_gamma'] == gamma_param
     cv_results_gamma = cv_results[gamma_mask]
 
-    all_best_params_gamma = utils.get_best_params(
-        cv_results_gamma, GRIDSEARCH_METRIC, PARAMS_TO_GET_BEST, return_all=True, alpha=alpha, beta=beta, default_params=SVC_DEFAULT_PARAMS
-        )
-    best_params_gamma_series = all_best_params_gamma if type(all_best_params_gamma) is pd.Series else all_best_params_gamma.iloc[0]
-    best_params_gamma = best_params_gamma_series.to_dict() if type(best_params_gamma_series) is pd.Series else best_params_gamma_series
+    all_best_params_gamma = get_best_parameter_set_for_kernel(kernel=None, cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC, params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS)
+    # all_best_params_gamma = utils.get_best_params(
+    #     cv_results_gamma, GRIDSEARCH_METRIC, PARAMS_TO_GET_BEST, return_all=True, alpha=alpha, beta=beta, default_params=SVC_DEFAULT_PARAMS
+    #     )
+    # best_params_gamma_series = all_best_params_gamma if type(all_best_params_gamma) is pd.Series else all_best_params_gamma.iloc[0]
+    # best_params_gamma = best_params_gamma_series.to_dict() if type(best_params_gamma_series) is pd.Series else best_params_gamma_series
 
 
 # %% Generate parameter effect line plots
@@ -876,17 +907,6 @@ for gamma in GAMMA_PARAMS:
     # Only plot the effect of 'tol' if it is a hyperparameter
     # with plt.rc_context({'font.size': 12}):
     #     plot_tol_ridge(cv_results_=cv_results_gamma, save_path=CV_RESULTS_DIR, test_metric=PLOT_METRIC)
-
-    def get_best_parameter_set_for_kernel(kernel, cv_results_, gridsearch_metric, params_to_get_best, alpha_, beta_, svc_default_params):
-        best_params_ = utils.get_best_params(
-            cv_results_[cv_results_['param_kernel'] == kernel], gridsearch_metric, params_to_get_best, alpha=alpha_, beta=beta_, default_params=svc_default_params
-        )
-        if type(best_params_) is pd.DataFrame and best_params_.shape[0] != 1:
-            warnings.warn(f"Multiple best parameter sets found for kernel '{kernel}'! Take the first one?")
-            breakpoint()
-            best_params_ = best_params_.iloc[0, :]
-        best_params_ = all_best_params_gamma.to_dict() if type(all_best_params_gamma) is pd.Series else all_best_params_gamma.iloc[0].to_dict()
-        return best_params_
 
 
     # %% Create heatmaps
@@ -976,3 +996,5 @@ for gamma in GAMMA_PARAMS:
         create_heatmap(deepcopy(cv_results[cv_results['param_kernel'] == 'poly']), 'param_coef0', 'param_degree', fixed_parameters, PLOT_METRIC, use_default_params=default)
 
     breakpoint_ = 1
+
+breakpoint()
