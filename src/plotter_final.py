@@ -690,6 +690,9 @@ def create_heatmap(cv_results_, x_param, y_param, fixed_params_, test_metric, de
     max_degree = 15
     if y_param in ['param_degree'] or x_param in ['param_degree']:
         max_degree = filtered_results['param_degree'].max()
+        if type(max_degree) is float:
+            breakpoint()
+            max_degree = int(max_degree)
     if y_param == 'param_degree':
         custom_order = list(range(1, max_degree+1))
     else:
