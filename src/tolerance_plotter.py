@@ -260,7 +260,7 @@ def plot_ridge(df, save_file, test_metric, kernel, normalizer):
     plt.show()
 
     # Save the plot
-    fig.savefig(save_file, bbox_inches='tight')
+    fig.savefig(save_file, dpi=300, transparent=True, bbox_inches='tight')
     plt.pause(0.5)
     plt.close(fig)
 

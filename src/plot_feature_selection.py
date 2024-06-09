@@ -103,5 +103,5 @@ with plt.rc_context(rc={'font.size': 13, 'axes.titlesize': 15, 'axes.labelsize':
     plt.legend()
     plt.tight_layout()
 
-    plt.savefig(FEATURE_RESULTS_DIR/'FeatureSelect_optimal_features.png', bbox_inches='tight')
+    plt.savefig(FEATURE_RESULTS_DIR/'FeatureSelect_optimal_features.png', dpi=300, transparent=True, bbox_inches='tight')
     plt.show()

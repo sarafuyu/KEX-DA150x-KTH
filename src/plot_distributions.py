@@ -93,7 +93,7 @@ def replace_column_prefix(df: pd.DataFrame, prefixes: Sequence[str], repl: str =
         df.columns = df.columns.str.replace(prefix, repl)
     return df
 
-def plot_distribution(df, column, name):
+def plot_distribution(df, column, name, file):
     """
     Plots the distribution of a specified column in a DataFrame based on its characteristics.
 
@@ -116,7 +116,7 @@ def plot_distribution(df, column, name):
     column_data = column_data.dropna()
 
     # Set up the matplotlib figure
-    plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6))
 
     if numeric:
         unique_values = column_data.nunique()
@@ -146,7 +146,10 @@ def plot_distribution(df, column, name):
         plt.ylabel('Frequency', fontsize=13)
 
     # Show the plot
+    plt.tight_layout()
     plt.show()
+    fig.savefig(file, dpi=300, transparent=True, bbox_inches='tight')
+
 
 # %% Data distribution before data split
 def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
@@ -192,7 +195,7 @@ def hist_bar_plot(df, file, hist_col, hist_name, bar_col, bar_name):
     # Show and save the plot
     plt.tight_layout()
     plt.show()
-    fig.savefig(file)
+    fig.savefig(file, dpi=300, transparent=True, bbox_inches='tight')
 
 # %% Age distribution based on cut-off
 def age_split_plot(df, file, col1, name1, col2, name2, cutoff):
@@ -245,7 +248,7 @@ def age_split_plot(df, file, col1, name1, col2, name2, cutoff):
     # Show and save the plot
     plt.tight_layout()
     plt.show()
-    fig.savefig(file)
+    fig.savefig(file, dpi=300, transparent=True, bbox_inches='tight')
 
 # %% Generate plots
 cleaned_dataset = pd.read_csv(CLEANED_DATASET_PATH)
