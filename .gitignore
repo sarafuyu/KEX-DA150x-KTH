@@ -364,3 +364,6 @@ out/*/*
 /data/results/final-prestudy-new/cv_results_prestudy_tol0001.csv
 /data/results/final-prestudy-new/2024-06-06-190955__GridSearchCV.pkl
 /data/results/final-prestudy-new/2024-06-06-190955__GridSearch_cv_results.csv
+/data/results/final-results/2024-06-08-014208__GridSearch_cv_results.csv
+/data/results/final-results/2024-06-08-014208__GridSearchCV.pkl
+/data/results/final-results/raw_console_output.log
