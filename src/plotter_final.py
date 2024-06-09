@@ -47,24 +47,16 @@ SEED = utils.RANDOM_SEED  # get random seed
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 RESULTS_SETS = {
-    'final-prestudy': {
-        'results_directory': 'final-prestudy',
-        'cv_results_':       '2024-06-02-223758__GridSearchCV.pkl',
-    },
-    'final-prestudy-tol-normalizers': {
-        'results_directory': 'final-prestudy-tol-normalizers',
-        'cv_results_':       '2024-06-05-000027__GridSearchCV.pkl',
-    },
-    'final-prestudy-new': {
-        'results_directory': 'final-prestudy-new',
-        'cv_results_':       '2024-06-06-190955__GridSearchCV.pkl',
-    },
+    'final-results': {
+        'results_directory': 'final-results',
+        'cv_results_':       '2024-06-08-014208__GridSearchCV.pkl',
+    }
 }
 
 
 # %% Configuration
 
-FEATURE_SELECTION_METRIC = 'final-prestudy-new'  # 'accuracy', 'roc_auc', 'f1'
+FEATURE_SELECTION_METRIC = 'final-results'  # 'accuracy', 'roc_auc', 'f1'
 GRIDSEARCH_METRIC = 'roc_auc'  # 'accuracy', 'roc_auc', 'f1'  # noqa
 PLOT_METRIC: str = 'roc_auc'
 
@@ -74,21 +66,21 @@ GRID_SEARCH_RESULTS_PATH: Path = CV_RESULTS_DIR/RESULTS_SETS[FEATURE_SELECTION_M
 # Specify parameters
 PARAMS_TO_GET_BEST = ['C', 'degree', 'coef0', 'kernel', 'gamma', 'class_weight', 'tol']
 PARAMS_OF_INTEREST = ['C', 'degree', 'coef0']
-FIXED_PARAM = 'kernel'  # 'kernel'
+FIXED_KERNEL = 'poly'  # 'kernel'
 PARAM_PREFIX = 'param_'  # Prefix for the parameter columns in the cv_results_ DataFrame
 SVC_DEFAULT_PARAMS = {'param_C': 1.0, 'param_degree': 3, 'param_coef0': 0.0, 'param_gamma': 'scale', 'param_class_weight': 'None', 'param_tol': 0.001}
 SVC_DEFAULT_KERNEL = 'rbf'
-GAMMA_PARAMS = ['auto', 'scale', 0.1, 1.0]
+GAMMA_PARAMS = ['scale', 0.01, 0.1, 1.0, 10.0]
 
 # # Load the cross-validation results
 gridsearch_cv = joblib.load(GRID_SEARCH_RESULTS_PATH)
 cv_results = pd.DataFrame(gridsearch_cv.cv_results_)
 
 # Load the data
-X_training = pd.read_csv(CV_RESULTS_DIR / '2024-06-06-190955__GridSearch_X_training.csv').drop(columns='Unnamed: 0')
-X_testing = pd.read_csv(CV_RESULTS_DIR / '2024-06-06-190955__GridSearch_X_testing.csv').drop(columns='Unnamed: 0')
-y_training = pd.read_csv(CV_RESULTS_DIR / '2024-06-06-190955__GridSearch_y_training.csv').drop(columns='Unnamed: 0')
-y_testing = pd.read_csv(CV_RESULTS_DIR / '2024-06-06-190955__GridSearch_y_testing.csv').drop(columns='Unnamed: 0')
+X_training = pd.read_csv(CV_RESULTS_DIR / '2024-06-08-014208__GridSearch_X_training.csv').drop(columns='Unnamed: 0')
+X_testing = pd.read_csv(CV_RESULTS_DIR / '2024-06-08-014208__GridSearch_X_testing.csv').drop(columns='Unnamed: 0')
+y_training = pd.read_csv(CV_RESULTS_DIR / '2024-06-08-014208__GridSearch_y_training.csv').drop(columns='Unnamed: 0')
+y_testing = pd.read_csv(CV_RESULTS_DIR / '2024-06-08-014208__GridSearch_y_testing.csv').drop(columns='Unnamed: 0')
 
 # Make all param prefixes the same
 cv_results = utils.replace_column_prefix(cv_results, ['param_classifier__'],  'param_')
@@ -96,7 +88,6 @@ cv_results = utils.replace_column_prefix(cv_results, ['param_classifier__'],  'p
 # Add prefix to the parameter names
 PARAMS_OF_INTEREST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_OF_INTEREST]
 PARAMS_TO_GET_BEST = [f'{PARAM_PREFIX}{param}' for param in PARAMS_TO_GET_BEST]
-FIXED_PARAM = f'{PARAM_PREFIX}{FIXED_PARAM}'
 metrics_label = f'FS-{FEATURE_SELECTION_METRIC}_GS-{GRIDSEARCH_METRIC}_PLOT-{PLOT_METRIC}'
 
 # Sanitize the normalizer repr
@@ -115,9 +106,14 @@ cv_results['param_class_weight'] = cv_results['param_class_weight'].astype(str)
 CHOSEN_TOL = 0.001
 CHOSEN_CLASS_WEIGHT = 'balanced'
 CHOSEN_NORMALIZER = 'StandardScaler'
-cv_results = cv_results[cv_results['param_tol'] == CHOSEN_TOL]
-cv_results = cv_results[cv_results['param_class_weight'] == CHOSEN_CLASS_WEIGHT]
-cv_results = cv_results[cv_results['param_normalizer'] == CHOSEN_NORMALIZER]
+CHOSEN_KERNEL = 'poly'
+cv_results = cv_results[
+    (cv_results['param_tol'] == CHOSEN_TOL) &
+    (cv_results['param_class_weight'] == CHOSEN_CLASS_WEIGHT) &
+    (cv_results['param_normalizer'] == CHOSEN_NORMALIZER) &
+    (cv_results['param_kernel'] == CHOSEN_KERNEL) &
+    (cv_results['param_gamma'] != 0.0)
+].copy()
 
 # Find the best parameters and break ties
 alpha = 0  # 0.1
@@ -908,6 +904,7 @@ for gamma_param in GAMMA_PARAMS:
         axis=1
     )
 
+    plot_deg = False
     for default in [True, False]:
 
         # %% 1. param_C vs param_coef0 with one of the non-rbf kernels fixed
@@ -929,16 +926,17 @@ for gamma_param in GAMMA_PARAMS:
 
         # %% 2. param_C vs param_degree (kernel 'poly') with param_coef0 fixed
 
-        # Find the param_coef0 value to fix
-        if default:
-            fixed_coef0 = SVC_DEFAULT_PARAMS['param_coef0']
-        else:
-            fixed_coef0 = best_params_gamma_poly['param_coef0']
+        if plot_deg:
+            # Find the param_coef0 value to fix
+            if default:
+                fixed_coef0 = SVC_DEFAULT_PARAMS['param_coef0']
+            else:
+                fixed_coef0 = best_params_gamma_poly['param_coef0']
 
-        # Set fixed params for the second heatmap
-        fixed_parameters = {'param_kernel': 'poly', 'param_coef0': fixed_coef0}
+            # Set fixed params for the second heatmap
+            fixed_parameters = {'param_kernel': 'poly', 'param_coef0': fixed_coef0}
 
-        create_heatmap(deepcopy(cv_results_gamma[cv_results_gamma['param_kernel'] == 'poly']), 'param_C', 'param_degree', fixed_parameters, PLOT_METRIC, default_params=SVC_DEFAULT_PARAMS, use_default_params=default)
+            create_heatmap(deepcopy(cv_results_gamma[cv_results_gamma['param_kernel'] == 'poly']), 'param_C', 'param_degree', fixed_parameters, PLOT_METRIC, default_params=SVC_DEFAULT_PARAMS, use_default_params=default)
 
 
         # %% 3. param_C vs kernel (rbf, sigmoid, poly deg1, poly deg2, ... poly deg10) with param_coef0 fixed
@@ -967,16 +965,17 @@ for gamma_param in GAMMA_PARAMS:
 
         # %% 5. param_degree vs coef0 (only for kernel = 'poly') with param_C fixed
 
-        # Find the param_C value to fix
-        if default:
-            fixed_C = SVC_DEFAULT_PARAMS['param_C']
-        else:
-            fixed_C = best_params_gamma_poly['param_C']
+        if plot_deg:
+            # Find the param_C value to fix
+            if default:
+                fixed_C = SVC_DEFAULT_PARAMS['param_C']
+            else:
+                fixed_C = best_params_gamma_poly['param_C']
 
-        # Set fixed params for the fifth heatmap
-        fixed_parameters = {'param_C': fixed_C}
+            # Set fixed params for the fifth heatmap
+            fixed_parameters = {'param_C': fixed_C}
 
-        create_heatmap(deepcopy(cv_results_gamma[cv_results_gamma['param_kernel'] == 'poly']), 'param_coef0', 'param_degree', fixed_parameters, PLOT_METRIC, default_params=SVC_DEFAULT_PARAMS, use_default_params=default)
+            create_heatmap(deepcopy(cv_results_gamma[cv_results_gamma['param_kernel'] == 'poly']), 'param_coef0', 'param_degree', fixed_parameters, PLOT_METRIC, default_params=SVC_DEFAULT_PARAMS, use_default_params=default)
 
     breakpoint_ = 1
 
