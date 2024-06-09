@@ -891,10 +891,6 @@ for gamma_param in GAMMA_PARAMS:
     # %% Create heatmaps
     SVC_DEFAULT_PARAMS['param_kernel'] = SVC_DEFAULT_KERNEL
 
-    best_params_gamma_poly = get_best_parameter_set_for_kernel(kernel='poly', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC, params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS)
-    best_params_gamma_rbf = get_best_parameter_set_for_kernel(kernel='rbf', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC, params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS)
-    best_params_gamma_sigmoid = get_best_parameter_set_for_kernel(kernel='sigmoid', cv_results_=cv_results_gamma, gridsearch_metric=GRIDSEARCH_METRIC, params_to_get_best=PARAMS_TO_GET_BEST, alpha_=alpha, beta_=beta, svc_default_params=SVC_DEFAULT_PARAMS)
-
     # Add a new column to the cv_results DataFrame to combine the kernel and degree parameters
     cv_results_gamma.loc[:, 'param_kernel_deg'] = cv_results_gamma.apply(
         lambda row_: (
@@ -917,7 +913,7 @@ for gamma_param in GAMMA_PARAMS:
             # Set fixed params for the first heatmap
             match fixed_kernel:
                 case 'poly':
-                    fixed_parameters = {'param_kernel': fixed_kernel, 'param_degree': best_params_gamma_poly['param_degree']}
+                    fixed_parameters = {'param_kernel': fixed_kernel, 'param_degree': all_best_params_gamma['param_degree']}
                 case 'sigmoid':
                     fixed_parameters = {'param_kernel': fixed_kernel}
 
@@ -931,7 +927,7 @@ for gamma_param in GAMMA_PARAMS:
             if default:
                 fixed_coef0 = SVC_DEFAULT_PARAMS['param_coef0']
             else:
-                fixed_coef0 = best_params_gamma_poly['param_coef0']
+                fixed_coef0 = all_best_params_gamma['param_coef0']
 
             # Set fixed params for the second heatmap
             fixed_parameters = {'param_kernel': 'poly', 'param_coef0': fixed_coef0}
@@ -970,7 +966,7 @@ for gamma_param in GAMMA_PARAMS:
             if default:
                 fixed_C = SVC_DEFAULT_PARAMS['param_C']
             else:
-                fixed_C = best_params_gamma_poly['param_C']
+                fixed_C = all_best_params_gamma['param_C']
 
             # Set fixed params for the fifth heatmap
             fixed_parameters = {'param_C': fixed_C}
