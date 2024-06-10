@@ -299,7 +299,7 @@ def identity(x): return x
 # Normalization modes to try in Grid search. Can be 'None', 'StandardScaler', 'MinMaxScaler'.
 NORMALIZATION_MODES_PARAMS = [
     StandardScaler(copy=False, with_mean=True, with_std=True),
-    MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
+    # MinMaxScaler(feature_range=(0, 1), copy=False, clip=False),
     # FunctionTransformer(identity, validate=True), # No normalization
 ]
 
@@ -338,23 +338,23 @@ N_JOBS_GRID_SEARCH: int = 7
 SVC = True
 
 # Hyperparameters:            # np.logspace(start, stop, num=50)
-# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
-#     np.logspace(start=-9, stop=5, num=9+5+1, base=10),  # 10^-7 to 10^5  # TODO: larger space
-#     np.logspace(start=-9, stop=-8, num=5, base=10)[1:-1],
-#     np.logspace(start=-8, stop=-7, num=5, base=10)[1:-1],
-#     np.logspace(start=-7, stop=-6, num=5, base=10)[1:-1],
-#     np.logspace(start=-6, stop=-5, num=5, base=10)[1:-1],
-#     np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
-#     np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
-#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
-#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
-#     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
-#     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
-# ])))
+C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
+    np.logspace(start=-9, stop=5, num=9+5+1, base=10),  # 10^-7 to 10^5  # TODO: larger space
+    np.logspace(start=-9, stop=-8, num=5, base=10)[1:-1],
+    np.logspace(start=-8, stop=-7, num=5, base=10)[1:-1],
+    np.logspace(start=-7, stop=-6, num=5, base=10)[1:-1],
+    np.logspace(start=-6, stop=-5, num=5, base=10)[1:-1],
+    np.logspace(start=-5, stop=-4, num=5, base=10)[1:-1],
+    np.logspace(start=-4, stop=-3, num=5, base=10)[1:-1],
+    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+    np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
+    np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
+])))
 # C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: little bit larger
 #     np.logspace(start=-7, stop=5, num=7+5+1, base=10),  # 10^-7 to 10^5
 #     np.logspace(start=-6, stop=-7, num=5, base=10)[1:-1],
@@ -380,62 +380,43 @@ SVC = True
 #     np.logspace(start=3, stop=4, num=5, base=10)[1:-1],
 #     np.logspace(start=4, stop=5, num=5, base=10)[1:-1],
 # ])))
-C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
-    # np.logspace(start=-8, stop=5, num=8+5+1, base=10),  # 10^-8 to 10^5
-    np.logspace(start=-8, stop=2, num=8 + 2 + 1, base=10),  # 10^-8 to 10^2
-])))
-KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
-# DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  # TODO: large final space
-DEGREE_PARAMS_SVC: Sequence[int] = [4]
-# GAMMA_PARAMS_SVC: Sequence[str | float] = [0.00001, 0.0001, 0.001, 'scale', 0.01, 0.1, 1.0, 10.0, 100.0]  # , 'auto', 0.01, 0.1, 1.0]  # TODO: final large space
-GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale', 0.01, 0.1, 1.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
-# COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: final large space
-#     -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
-#     -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-#     -np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-#     -np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-#     -np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-#     -np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
-#     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
-#     np.linspace(0, 0, 1),              # 0
-#     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
-#     np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
-#     np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
-#     np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
-#     np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
-#     np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
-#     np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+# C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
+#     np.logspace(start=-8, stop=5, num=8+5+1, base=10),  # 10^-7 to 10^5
+#     # np.logspace(start=-8, stop=2, num=8 + 2 + 1, base=10),  # 10^-7 to 10^5
 # ])))
-COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
+KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
+DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  # TODO: Note: deg 13 missing from new gamma run
+GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale']  #, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
+COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
+    -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
+    -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    -np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    -np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    -np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    -np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
     np.linspace(0, 0, 1),              # 0
     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
-    # -np.logspace(start=-3, stop=0, num=3+0+1, base=10),  # -10^-3 to -10^3
-    # np.linspace(0, 0, 1),              # 0
-    # np.logspace(start=-3, stop=2, num=3+2+1, base=10),  # 10^-3 to  10^3
+    np.logspace(start=-3, stop=-2, num=5, base=10)[1:-1],
+    np.logspace(start=-2, stop=-1, num=5, base=10)[1:-1],
+    np.logspace(start=-1, stop=0, num=5, base=10)[1:-1],
+    np.logspace(start=0, stop=1, num=5, base=10)[1:-1],
+    np.logspace(start=1, stop=2, num=5, base=10)[1:-1],
+    np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
 ])))
+# COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([  # TODO: smaller prestudy space
+#     -np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # -10^-3 to -10^3
+#     np.linspace(0, 0, 1),              # 0
+#     np.logspace(start=-3, stop=3, num=3+3+1, base=10),  # 10^-3 to  10^3
+#     # -np.logspace(start=-3, stop=0, num=3+0+1, base=10),  # -10^-3 to -10^3
+#     # np.linspace(0, 0, 1),              # 0
+#     # np.logspace(start=-3, stop=2, num=3+2+1, base=10),  # 10^-3 to  10^3
+# ])))
 SHRINKING_PARAMS_SVC: Sequence[bool] = [True]
 PROBABILITY_SVC: Sequence[bool] = [False]
-# TOL_PARAMS_SVC: Sequence[float] = [0.001]  # [0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
-TOL_PARAMS_SVC = [
-    0.001,
-    0.01,
-    0.1,
-    1.0,
-    2.0,
-    3.0,
-    4.0,
-    5.0,
-    6.0,
-    7.0,
-    8.0,
-    9.0,
-    10.0,
-    100.0,
-    1000.0
-]
+TOL_PARAMS_SVC: Sequence[float] = [0.001]  # [0.01, 0.1, 1.0, 10.0, 100.0]  # np.linspace(0.01, 0.0001, 10)  # np.linspace(0.01, 0.0001, 10)
 CACHE_SIZE_PARAMS_SVC: Sequence[int] = [500]
-CLASS_WEIGHT_PARAMS_SVC: Sequence[str | None] = ['balanced', None]
+CLASS_WEIGHT_PARAMS_SVC: Sequence[str | None] = ['balanced']
 VERB_SVC: int = VERBOSE
 MAX_ITER_PARAMS_SVC: Sequence[int] = [10_000_000]  # [-1]  # TODO CHANGE BACK TO 10M for new prestudy
 DECISION_FUNCTION_PARAMS_SVC: Sequence[str] = ['ovr']  # only ovo if multi class
