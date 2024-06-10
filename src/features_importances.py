@@ -27,7 +27,7 @@ feature_ranking_info['name'] = feature_ranking_info['name'].astype(str)
 
 # %% Data migration
 
-genreate_data = False
+genreate_data = True
 
 if genreate_data:
     
@@ -38,23 +38,73 @@ if genreate_data:
         selected = row['selected']
         importance = row['importance']
 
+        # Change name to HPA ID
+        feature_ranking_info.at[i, 'name'] = hpa_id
+        
         # Find the index of the row in targets_antibodies where Antibody ID HPA matches the HPA ID
         matching_rows = targets_antibodies[targets_antibodies['Antibody ID HPA'] == hpa_id]
+        
+        # If there isn't a match add false in indicator col
+        if matching_rows.empty:
+            feature_ranking_info.at[i, 'InTargetsAntibodies'] = False
+        
         if not matching_rows.empty:
+            # Add true in indicator col
+            feature_ranking_info.at[i, 'InTargetsAntibodies'] = True
+            
+            # Get the index of the first matching row
             index_in_targets = matching_rows.index[0]
             feature_ranking_info.at[i, 'IndexInTargetsAntibodies'] = index_in_targets
 
-            # Extract the IHC validation score
-            ihc_validation = targets_antibodies.at[index_in_targets, 'IHC validation score']
-            if isinstance(ihc_validation, str):
-                ihc_validation_score = int(ihc_validation.split(':')[0])
+            # Extract UnitProt No
+            uniprot_no = targets_antibodies.at[index_in_targets, 'UniProt No']
+            if isinstance(uniprot_no, str):
+                feature_ranking_info.at[i, 'UniProtNo'] = uniprot_no
             else:
-                ihc_validation_score = ihc_validation
-            feature_ranking_info.at[i, 'IHCValidationScore'] = ihc_validation_score
+                feature_ranking_info.at[i, 'UniProtNo'] = 'No Data'
+                
+            # Extract ENSEMBL gene ID
+            ensembl_gene_id = targets_antibodies.at[index_in_targets, 'ENSEMBL gene ID']
+            if isinstance(ensembl_gene_id, str):
+                feature_ranking_info.at[i, 'ENSEMBLGeneID'] = ensembl_gene_id
+            else:
+                feature_ranking_info.at[i, 'ENSEMBLGeneID'] = 'No Data'
+                
+            # Extract Gene description
+            gene_description = targets_antibodies.at[index_in_targets, 'Gene description']
+            if isinstance(gene_description, str):
+                feature_ranking_info.at[i, 'GeneDescription'] = gene_description
+            else:
+                feature_ranking_info.at[i, 'GeneDescription'] = 'No Data'
+            
+            # Extract Gene name
+            gene_name = targets_antibodies.at[index_in_targets, 'Gene name']
+            if isinstance(gene_name, str):
+                feature_ranking_info.at[i, 'GeneName'] = gene_name
+            else:
+                feature_ranking_info.at[i, 'GeneName'] = 'No Data'
+            
+            # Extract Antibody ID HPA
+            antibody_id_hpa = targets_antibodies.at[index_in_targets, 'Antibody ID HPA']
+            if isinstance(antibody_id_hpa, str):
+                feature_ranking_info.at[i, 'AntibodyIDHPA'] = antibody_id_hpa
+            else:
+                feature_ranking_info.at[i, 'AntibodyIDHPA'] = 'No Data'
+
+            # Extract the IHC validation score
+            #ihc_validation = targets_antibodies.at[index_in_targets, 'IHC validation score']
+            #if isinstance(ihc_validation, str):
+            #    ihc_validation_score = int(ihc_validation.split(':')[0])
+            #else:
+            #    ihc_validation_score = ihc_validation
+            #feature_ranking_info.at[i, 'IHCValidationScore'] = ihc_validation_score
 
             # Extract the Target selection criteria
             target_selection_criteria = targets_antibodies.at[index_in_targets, 'Target selection criteria']
-            feature_ranking_info.at[i, 'TargetSelectionCriteria'] = target_selection_criteria
+            if isinstance(target_selection_criteria, str):
+                feature_ranking_info.at[i, 'TargetSelectionCriteria'] = target_selection_criteria
+            else:
+                feature_ranking_info.at[i, 'TargetSelectionCriteria'] = 'No Data'
 
     # Save the updated DataFrame to a new CSV file
     feature_ranking_info.to_csv('updated_feature_ranking_info.csv', index=False)
