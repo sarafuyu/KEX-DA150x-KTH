@@ -386,7 +386,7 @@ C_PARAMS_SVC: Sequence[float] = sorted(np.unique(np.concatenate([
 # ])))
 KERNEL_PARAMS_SVC: Sequence[str] = ['poly']  # 'linear', 'rbf', 'precomputed'
 DEGREE_PARAMS_SVC: Sequence[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  # TODO: Note: deg 13 missing from new gamma run
-GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale']  #, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
+GAMMA_PARAMS_SVC: Sequence[str | float] = ['scale', 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0]  # , 'auto', 0.01, 0.1, 1.0]  # scale not needed since normalization X_var
 COEF0_PARAMS_SVC = sorted(np.unique(np.concatenate([
     -np.logspace(start=2, stop=3, num=5, base=10)[1:-1],
     -np.logspace(start=1, stop=2, num=5, base=10)[1:-1],

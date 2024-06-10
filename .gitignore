@@ -367,3 +367,7 @@ out/*/*
 /data/results/final-results/2024-06-08-014208__GridSearch_cv_results.csv
 /data/results/final-results/2024-06-08-014208__GridSearchCV.pkl
 /data/results/final-results/raw_console_output.log
+/data/results/final-final-results/2024-06-10-022518__GridSearch_cv_results.csv
+/data/results/final-final-results/2024-06-10-022518__GridSearch_dataset_dict.pkl
+/data/results/final-final-results/2024-06-10-022518__GridSearchCV.pkl
+/data/results/final-final-results/2024-06-10-022518__raw_console_output.log
