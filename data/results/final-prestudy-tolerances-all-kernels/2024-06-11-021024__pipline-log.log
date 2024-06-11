@@ -1,0 +1,146 @@
+[2024-06-11 02:10:24,522] {main.py      :527 } : INFO | ======================= PIPELINE LOG ========================= |
+[2024-06-11 02:10:24,522] {main.py      :528 } : INFO | Date: 2024-06-11 02:10:24
+[2024-06-11 02:10:24,522] {main.py      :529 } : INFO | Debug mode: False
+[2024-06-11 02:10:25,063] {main.py      :609 } : INFO | Mean num missing in protein columns before selection 24.130260521042086
+[2024-06-11 02:10:25,064] {main.py      :610 } : INFO | Mean missingness in protein columns before selection 0.08016697847522287
+[2024-06-11 02:10:25,064] {main.py      :611 } : INFO | Mean Age: 7.317953874174875
+[2024-06-11 02:10:25,064] {main.py      :612 } : INFO | Variance Age: 3.631799401625682
+[2024-06-11 02:10:25,178] {utils.py     :382 } : INFO | ====================== PRE-PROCESSING ======================== |
+[2024-06-11 02:10:25,179] {utils.py     :383 } : INFO | /__ ORIGINAL DATASET __________________________________________
+[2024-06-11 02:10:25,179] {utils.py     :384 } : INFO | Missing indicators: ------------------ False
+[2024-06-11 02:10:25,179] {utils.py     :385 } : INFO | Shape (incl. misc columns): ---------- (301, 1009)
+[2024-06-11 02:10:25,180] {utils.py     :386 } : INFO | X start column index: ---------------- 11
+[2024-06-11 02:10:25,180] {utils.py     :387 } : INFO | Number of entries (N): --------------- 301
+[2024-06-11 02:10:25,180] {utils.py     :388 } : INFO | Number of features (X): -------------- 998
+[2024-06-11 02:10:25,180] {utils.py     :389 } : INFO | Number of classes (y): --------------- 2
+[2024-06-11 02:10:25,180] {utils.py     :390 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-06-11 02:10:25,181] {utils.py     :391 } : INFO | Min y: ------------------------------- 0.0
+[2024-06-11 02:10:25,181] {utils.py     :392 } : INFO | Max y: ------------------------------- 1.0
+[2024-06-11 02:10:25,182] {utils.py     :393 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-06-11 02:10:25,182] {utils.py     :394 } : INFO | Median y: ---------------------------- 0.0
+[2024-06-11 02:10:25,183] {utils.py     :395 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-06-11 02:10:25,183] {utils.py     :396 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-06-11 02:10:25,188] {utils.py     :397 } : INFO | Min minimum X: ----------------------- 8.72125121808696
+[2024-06-11 02:10:25,192] {utils.py     :398 } : INFO | Max maximum X: ----------------------- 16.6934712065454
+[2024-06-11 02:10:25,197] {utils.py     :399 } : INFO | Mean mean X: ------------------------- 12.331256538045068
+[2024-06-11 02:10:25,229] {utils.py     :400 } : INFO | Mean median X: ----------------------- 12.32640037713433
+[2024-06-11 02:10:25,239] {utils.py     :401 } : INFO | Mean variance X: --------------------- 0.026574325939378692
+[2024-06-11 02:10:25,252] {utils.py     :402 } : INFO | Mean std deviation X: ---------------- 0.12609969268146295
+
+[2024-06-11 02:10:25,253] {utils.py     :405 } : INFO | /__ CATEGORIZATION ____________________________________________
+[2024-06-11 02:10:25,253] {utils.py     :407 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,253] {utils.py     :408 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+[2024-06-11 02:10:25,253] {utils.py     :412 } : INFO | Cut-offs: ---------------------------- [17]
+[2024-06-11 02:10:25,253] {utils.py     :413 } : INFO | Number of classes: ------------------- 2
+
+[2024-06-11 02:10:25,253] {utils.py     :416 } : INFO | /__ TRAINING SPLIT (FOR FEATURE SELECTION) ____________________
+[2024-06-11 02:10:25,253] {utils.py     :418 } : INFO | Seed: -------------------------------- 42
+[2024-06-11 02:10:25,253] {utils.py     :419 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,254] {utils.py     :420 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+
+[2024-06-11 02:10:25,254] {utils.py     :423 } : INFO | /__ FEATURE SELECTION _________________________________________
+[2024-06-11 02:10:25,254] {utils.py     :424 } : INFO | Feature selection: ------------------- XGB-RFECV
+[2024-06-11 02:10:25,254] {utils.py     :426 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,254] {utils.py     :427 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+
+[2024-06-11 02:10:25,254] {utils.py     :435 } : INFO | /__ IMPUTATION ________________________________________________
+[2024-06-11 02:10:25,254] {utils.py     :437 } : INFO | Pre-computed imputed data: ----------- True
+[2024-06-11 02:10:25,254] {utils.py     :438 } : INFO | Pre-computed imputed data file: ------ C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__IterativeImputer_X_imputed.csv
+[2024-06-11 02:10:25,255] {utils.py     :442 } : INFO | Imputer: ----------------------------- IterativeImputer
+[2024-06-11 02:10:25,255] {utils.py     :447 } : INFO | Sparse: ------------------------------ False
+[2024-06-11 02:10:25,255] {utils.py     :452 } : INFO | NaN Elimination: --------------------- False
+
+[2024-06-11 02:10:25,255] {utils.py     :483 } : INFO | /__ TRAINING SPLIT (FOR GRID SEARCH) __________________________
+[2024-06-11 02:10:25,255] {utils.py     :484 } : INFO | Pre-computed: ------------------------ False
+[2024-06-11 02:10:25,255] {utils.py     :485 } : INFO | Seed: -------------------------------- 42
+[2024-06-11 02:10:25,255] {utils.py     :486 } : INFO | Test proportion: --------------------- 0.2
+[2024-06-11 02:10:25,255] {utils.py     :487 } : INFO | Training proportion: ----------------- 0.8
+[2024-06-11 02:10:25,256] {utils.py     :488 } : INFO | X start column index: ---------------- 11
+[2024-06-11 02:10:25,256] {utils.py     :489 } : INFO | y column label: ---------------------- 'FT5'
+
+[2024-06-11 02:10:25,286] {main.py      :900 } : INFO | Precomputed imputed data loaded successfully!
+
+[2024-06-11 02:10:25,287] {utils.py     :608 } : INFO | Logs saved to: ----------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\out\2024-06-11-021024__pipline-log.log
+
+[2024-06-11 02:10:25,287] {utils.py     :609 } : INFO | Pipeline finished 2024-06-11 02:10:25, and took 0h:00m:01s 118.000ms to run.
+
+[2024-06-11 02:10:25,290] {utils.py     :382 } : INFO | ====================== PRE-PROCESSING ======================== |
+[2024-06-11 02:10:25,290] {utils.py     :383 } : INFO | /__ ORIGINAL DATASET __________________________________________
+[2024-06-11 02:10:25,290] {utils.py     :384 } : INFO | Missing indicators: ------------------ False
+[2024-06-11 02:10:25,290] {utils.py     :385 } : INFO | Shape (incl. misc columns): ---------- (301, 1009)
+[2024-06-11 02:10:25,290] {utils.py     :386 } : INFO | X start column index: ---------------- 11
+[2024-06-11 02:10:25,290] {utils.py     :387 } : INFO | Number of entries (N): --------------- 301
+[2024-06-11 02:10:25,290] {utils.py     :388 } : INFO | Number of features (X): -------------- 998
+[2024-06-11 02:10:25,290] {utils.py     :389 } : INFO | Number of classes (y): --------------- 2
+[2024-06-11 02:10:25,291] {utils.py     :390 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-06-11 02:10:25,291] {utils.py     :391 } : INFO | Min y: ------------------------------- 0.0
+[2024-06-11 02:10:25,292] {utils.py     :392 } : INFO | Max y: ------------------------------- 1.0
+[2024-06-11 02:10:25,292] {utils.py     :393 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-06-11 02:10:25,292] {utils.py     :394 } : INFO | Median y: ---------------------------- 0.0
+[2024-06-11 02:10:25,293] {utils.py     :395 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-06-11 02:10:25,293] {utils.py     :396 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-06-11 02:10:25,296] {utils.py     :397 } : INFO | Min minimum X: ----------------------- 8.72125121808696
+[2024-06-11 02:10:25,299] {utils.py     :398 } : INFO | Max maximum X: ----------------------- 16.6934712065454
+[2024-06-11 02:10:25,302] {utils.py     :399 } : INFO | Mean mean X: ------------------------- 12.331256538045068
+[2024-06-11 02:10:25,323] {utils.py     :400 } : INFO | Mean median X: ----------------------- 12.32640037713433
+[2024-06-11 02:10:25,329] {utils.py     :401 } : INFO | Mean variance X: --------------------- 0.026574325939378692
+[2024-06-11 02:10:25,337] {utils.py     :402 } : INFO | Mean std deviation X: ---------------- 0.12609969268146295
+
+[2024-06-11 02:10:25,337] {utils.py     :405 } : INFO | /__ CATEGORIZATION ____________________________________________
+[2024-06-11 02:10:25,337] {utils.py     :407 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,338] {utils.py     :408 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+[2024-06-11 02:10:25,338] {utils.py     :412 } : INFO | Cut-offs: ---------------------------- [17]
+[2024-06-11 02:10:25,338] {utils.py     :413 } : INFO | Number of classes: ------------------- 2
+
+[2024-06-11 02:10:25,338] {utils.py     :416 } : INFO | /__ TRAINING SPLIT (FOR FEATURE SELECTION) ____________________
+[2024-06-11 02:10:25,338] {utils.py     :418 } : INFO | Seed: -------------------------------- 42
+[2024-06-11 02:10:25,338] {utils.py     :419 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,338] {utils.py     :420 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+
+[2024-06-11 02:10:25,338] {utils.py     :423 } : INFO | /__ FEATURE SELECTION _________________________________________
+[2024-06-11 02:10:25,338] {utils.py     :424 } : INFO | Feature selection: ------------------- XGB-RFECV
+[2024-06-11 02:10:25,338] {utils.py     :426 } : INFO | Pre-computed: ------------------------ True
+[2024-06-11 02:10:25,338] {utils.py     :427 } : INFO | Pre-computed file: ------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__FeatureSelect꞉XGB-RFE-CV_dataset_dict.pkl
+
+[2024-06-11 02:10:25,338] {utils.py     :435 } : INFO | /__ IMPUTATION ________________________________________________
+[2024-06-11 02:10:25,338] {utils.py     :437 } : INFO | Pre-computed imputed data: ----------- True
+[2024-06-11 02:10:25,338] {utils.py     :438 } : INFO | Pre-computed imputed data file: ------ C:\Users\Noah\repos\KEX-DA150x-KTH\data\results\final-results\2024-06-08-014208__IterativeImputer_X_imputed.csv
+[2024-06-11 02:10:25,338] {utils.py     :442 } : INFO | Imputer: ----------------------------- IterativeImputer
+[2024-06-11 02:10:25,338] {utils.py     :447 } : INFO | Sparse: ------------------------------ False
+[2024-06-11 02:10:25,338] {utils.py     :452 } : INFO | NaN Elimination: --------------------- False
+
+[2024-06-11 02:10:25,338] {utils.py     :483 } : INFO | /__ TRAINING SPLIT (FOR GRID SEARCH) __________________________
+[2024-06-11 02:10:25,338] {utils.py     :484 } : INFO | Pre-computed: ------------------------ False
+[2024-06-11 02:10:25,339] {utils.py     :485 } : INFO | Seed: -------------------------------- 42
+[2024-06-11 02:10:25,339] {utils.py     :486 } : INFO | Test proportion: --------------------- 0.2
+[2024-06-11 02:10:25,339] {utils.py     :487 } : INFO | Training proportion: ----------------- 0.8
+[2024-06-11 02:10:25,339] {utils.py     :488 } : INFO | X start column index: ---------------- 11
+[2024-06-11 02:10:25,339] {utils.py     :489 } : INFO | y column label: ---------------------- 'FT5'
+
+[2024-06-11 02:14:31,937] {utils.py     :507 } : INFO | /__ SUMMARY STATISTICS FINAL DATASET (UN-NORMALIZED) __________
+[2024-06-11 02:14:31,937] {utils.py     :508 } : INFO | Number of entries (N): --------------- 301
+[2024-06-11 02:14:31,937] {utils.py     :509 } : INFO | Number of features (X): -------------- 89
+[2024-06-11 02:14:31,938] {utils.py     :510 } : INFO | Number of classes (y): --------------- 2
+[2024-06-11 02:14:31,938] {utils.py     :511 } : INFO | Classes: ----------------------------- [0, 1]
+[2024-06-11 02:14:31,938] {utils.py     :512 } : INFO | Min y: ------------------------------- 0
+[2024-06-11 02:14:31,938] {utils.py     :513 } : INFO | Max y: ------------------------------- 1
+[2024-06-11 02:14:31,938] {utils.py     :514 } : INFO | Mean y: ------------------------------ 0.24916943521594684
+[2024-06-11 02:14:31,939] {utils.py     :515 } : INFO | Median y: ---------------------------- 0.0
+[2024-06-11 02:14:31,939] {utils.py     :516 } : INFO | Variance y: -------------------------- 0.1877076411960133
+[2024-06-11 02:14:31,939] {utils.py     :517 } : INFO | Std deviation y: --------------------- 0.43325239895009615
+[2024-06-11 02:14:31,940] {utils.py     :518 } : INFO | Min minimum X: ----------------------- 4.02
+[2024-06-11 02:14:31,940] {utils.py     :519 } : INFO | Max maximum X: ----------------------- 15.4142363031804
+[2024-06-11 02:14:31,940] {utils.py     :520 } : INFO | Mean mean X: ------------------------- 12.250705239862064
+[2024-06-11 02:14:31,942] {utils.py     :521 } : INFO | Mean median X: ----------------------- 12.24527433239045
+[2024-06-11 02:14:31,943] {utils.py     :522 } : INFO | Mean variance X: --------------------- 0.05312615069838204
+[2024-06-11 02:14:31,943] {utils.py     :523 } : INFO | Mean std deviation X: ---------------- 0.11648888294109279
+
+[2024-06-11 02:14:31,943] {utils.py     :525 } : INFO | ======================== GRID SEARCH ========================= |
+[2024-06-11 02:14:31,943] {utils.py     :526 } : INFO | Grid search finished: ----- 2024-06-11 02:14:31
+
+[2024-06-11 02:14:33,342] {utils.py     :592 } : INFO | CV results saved to: ----------------- 2024-06-11-021024__GridSearch_cv_results.csv
+
+[2024-06-11 02:14:34,244] {utils.py     :608 } : INFO | Logs saved to: ----------------------- C:\Users\Noah\repos\KEX-DA150x-KTH\out\2024-06-11-021024__pipline-log.log
+
+[2024-06-11 02:14:34,244] {utils.py     :609 } : INFO | Pipeline finished 2024-06-11 02:14:34, and took 0h:04m:10s 075.000ms to run.
+
