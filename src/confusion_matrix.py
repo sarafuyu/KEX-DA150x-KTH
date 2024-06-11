@@ -36,6 +36,7 @@ def plot_matrix(matrix1, matrix2):
     ax[1].set_xlabel('True Class')
 
     plt.tight_layout()
+    plt.savefig('confusion_matrix.png', dpi=300, transparent=True, bbox_inches='tight')
     plt.show()
 
 # %% Data for the confusion matrices
