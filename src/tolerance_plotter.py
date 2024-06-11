@@ -56,21 +56,25 @@ RESULTS_SETS = {
         'results_directory': 'final-prestudy-tolerances',
         'cv_results_':       '2024-06-10-165351__GridSearchCV.pkl',
     },
+    'final-prestudy-tolerances-all-kernels': {
+        'results_directory': 'final-prestudy-tolerances-all-kernels',
+        'cv_results_':       '2024-06-11-021024__GridSearchCV.pkl',
+    },
 }
 
 
 # %% Configuration
 
-FEATURE_SELECTION_METRIC = 'final-prestudy-tolerances'  # 'accuracy', 'roc_auc', 'f1'
+FEATURE_SELECTION_METRIC = 'final-prestudy-tolerances-all-kernels'  # 'accuracy', 'roc_auc', 'f1'
 GRIDSEARCH_METRIC = 'roc_auc'  # 'accuracy', 'roc_auc', 'f1'  # noqa
 PLOT_METRIC: str = 'accuracy'
 
 FIXED_META_PARAMS = {
-    # 'normalizer': 'StandardScaler', # ['StandardScaler', 'MinMaxScaler']
-    # 'kernel': 'poly',  # ['poly', 'rbf', 'sigmoid']
+    'param_normalizer': ['StandardScaler'],  # ['StandardScaler', 'MinMaxScaler']
+    'param_kernel': ['poly', 'rbf', 'sigmoid'],
     # 'param_tol': np.float64(0.001),
-    'param_gamma': ['scale', 0.01, 0.1, 1.0],
-    'param_class_weight': ['None', 'balanced'],
+    'param_gamma': ['scale'],
+    'param_class_weight': ['balanced'],
 }
 
 CV_RESULTS_DIR = PROJECT_ROOT/'data'/'results'/RESULTS_SETS[FEATURE_SELECTION_METRIC]['results_directory']  # noqa
@@ -166,9 +170,9 @@ def plot_tol_ridge(cv_results_, save_path, test_metric):
     save_path = Path(save_path)
     save_path.mkdir(parents=True, exist_ok=True)
 
-    normalizers = ['MinMaxScaler', 'StandardScaler']
-    kernels = ['poly']  # , 'sigmoid', 'rbf']
-    class_weights = ['None', 'balanced']
+    normalizers = ['StandardScaler']
+    kernels = ['poly', 'sigmoid', 'rbf']
+    class_weights = ['balanced']
 
     # Iterate over each combination of normalizer and kernel
     for class_weight in class_weights:
@@ -178,16 +182,23 @@ def plot_tol_ridge(cv_results_, save_path, test_metric):
                 df_filtered = cv_results_.copy()[(cv_results_['param_normalizer'] == normalizer) &
                                                  (cv_results_['param_kernel'] == kernel) &
                                                  (cv_results_['param_class_weight'] == class_weight)]
+                if df_filtered.empty:
+                    print(f"No data for {normalizer} {kernel} class weight {class_weight}!\n")
+                    continue
                 if kernel != 'poly':
+                    pass
                     # Drop duplicate rows that differ only by 'degree'
                     df_filtered = df_filtered.drop_duplicates(subset=['param_C', 'param_tol', 'param_coef0'])
-                    plot_ridge(df_filtered, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_{kernel}_clsweight{class_weight}.png", test_metric, kernel, normalizer)
+                    plot_ridge(df_filtered, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_{kernel}_clsweight{class_weight}.png", test_metric, kernel, normalizer, class_weight)
+                    print(f"Plotted {normalizer} {kernel} class weight {class_weight} saved at: \n{save_path}\n"
+                          f"ridgeplot-param-tol_fixed-{normalizer}_{kernel}_clsweight{class_weight}.png")
                 else:
                     for degree in df_filtered['param_degree'].unique():
                         # Filter the dataframe for the current degree
                         df_degree = df_filtered[df_filtered['param_degree'] == degree]
                         plot_ridge(df_degree, save_path / f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}-deg{degree}-clsweight{class_weight}.png", test_metric, kernel, normalizer, class_weight)
-
+                        print(f"Plotted {normalizer} {kernel} degree {degree} class weight {class_weight} saved at: \n{save_path}\n"
+                              f"ridgeplot-param-tol_fixed-{normalizer}_fixed-{kernel}-deg{degree}-clsweight{class_weight}.png")
 
 def plot_ridge(df, save_file, test_metric, kernel, normalizer, class_weight):
     test_metric_labels = {
@@ -302,5 +313,5 @@ for meta_combination in meta_param_combinations:
     # Plot the tolerance ridge plot
     plot_tol_ridge(cv_results_filtered, PROJECT_ROOT/'figures'/metrics_label, PLOT_METRIC)
 
-    print(f'Plotted {meta_combination}!')
+    # print(f'Plotted {meta_combination} saved at: \n{PROJECT_ROOT/"figures"/metrics_label_}')
 
